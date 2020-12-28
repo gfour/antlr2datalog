@@ -10,6 +10,7 @@ import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -87,6 +88,21 @@ public class Main {
     }
 
     private static void parseFile(Map<Class<?>, Rule> schema, Database db, AtomicInteger counter, ParserConfiguration pc, String path) {
+        File pathFile = new File(path);
+        if (pathFile.isDirectory()) {
+            if (Main.debug)
+                System.out.println("Processing directory: " + path);
+            File[] files = pathFile.listFiles();
+            if (files != null)
+                for (File f : files)
+                    try {
+                        parseFile(schema, db, counter, pc, f.getCanonicalPath());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+            return;
+        }
+
         boolean ignore = true;
         for (String ext : pc.extensions)
             if (path.endsWith(ext)) {
