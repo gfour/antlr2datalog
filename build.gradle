@@ -33,7 +33,7 @@ dependencies {
 
 application {
     // Define the main class for the application
-    mainClassName = 'org.clyze.antlr2facts.Main'
+    mainClassName = 'org.clyze.antlr2datalog.Main'
 }
 
 wrapper {
