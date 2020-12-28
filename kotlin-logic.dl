@@ -1,0 +1,16 @@
+#include "schema.dl"
+
+.decl DeclaredVariable(varName: symbol)
+.output DeclaredVariable
+
+DeclaredVariable(varName) :-
+  VariableDeclarationContext_simpleIdentifier(_, id),
+  SimpleIdentifierContext_Identifier(id, _, varName, _, _, _, _).
+
+.decl UsedVariable(varName: symbol)
+.output UsedVariable
+
+UsedVariable(varName) :-
+  DeclaredVariable(varName),
+  PrimaryExpressionContext_simpleIdentifier(_, id),
+  SimpleIdentifierContext_Identifier(id, _, varName, _, _, _, _).

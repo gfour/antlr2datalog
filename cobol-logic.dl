@@ -1,0 +1,7 @@
+#include "schema.dl"
+
+.decl StringConstant(str: symbol, line:number)
+.output StringConstant
+
+StringConstant(str, line) :-
+  LiteralContext_NONNUMERICLITERAL(_, _, str, line, _, _, _).
