@@ -110,7 +110,8 @@ public class Main {
                 break;
             }
         if (ignore) {
-            System.out.println("Ignoring: " + path);
+            if (Main.debug)
+                System.out.println("Ignoring: " + path);
             return;
         }
         try (InputStream inputStream = new FileInputStream(path)) {

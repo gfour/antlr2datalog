@@ -32,19 +32,23 @@ public class SchemaFinder {
             return;
 
         Collection<Class<? extends ParseTree>> next = new LinkedList<>();
-        System.out.println("Processing class: " + c.getSimpleName());
+        if (Main.debug)
+            System.out.println("Processing class: " + c.getSimpleName());
         Rule cRule = new Rule();
         for (Method m : c.getDeclaredMethods()) {
             Class<?> retType = m.getReturnType();
             if (RULE_NODE_CLASS.isAssignableFrom(retType)) {
-                System.out.println("+ Rule method: " + m.getName() + " with type " + retType.getName());
+                if (Main.debug)
+                    System.out.println("+ Rule method: " + m.getName() + " with type " + retType.getName());
                 registerComponent(m, retType, cRule, false, next);
             } else if (TERMINAL_NODE_CLASS.isAssignableFrom(retType)) {
-                System.out.println("+ Terminal method: " + m.getName() + " with type " + retType.getName());
+                if (Main.debug)
+                    System.out.println("+ Terminal method: " + m.getName() + " with type " + retType.getName());
                 registerComponent(m, retType, cRule, true, next);
             }
         }
-        System.out.println("\\-> Recording " + c.getSimpleName());
+        if (Main.debug)
+            System.out.println("\\-> Recording " + c.getSimpleName());
         schema.put(c, cRule);
         visitedRules.add(c);
         for (Class<? extends ParseTree> c0 : next)
