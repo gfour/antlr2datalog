@@ -13,7 +13,7 @@ Three sample cases are included: COBOL, Kotlin, and Solidity.
 
 ## Use
 
-Install the "grammars-v4" parsers:
+* Install the "grammars-v4" parsers:
 
 ```
 git clone https://github.com/antlr/grammars-v4.git
@@ -21,9 +21,9 @@ cd grammars-v4
 mvn install
 ```
 
-Install [Souffle](https://github.com/souffle-lang/souffle/).
+* Install [Souffle](https://github.com/souffle-lang/souffle/).
 
-Run analyze.sh to see an example run.
+* Run analyze.sh to see an example run.
 
 ## Adding a language/parser
 
