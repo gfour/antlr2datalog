@@ -1,5 +1,6 @@
 package org.clyze.antlr2datalog;
 
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -22,7 +23,7 @@ public enum ParserConfiguration {
     /** The (fully qualified) class name of the parser. */
     private final String parserClassName;
     /** The name of the root node in the grammar. */
-    final String rootNode;
+    private final String rootNode;
     /** The file extensions recognized by the parser. */
     final Collection<String> extensions;
     /** The parser JAR path in the local Maven repo (suffix). */
@@ -31,6 +32,8 @@ public enum ParserConfiguration {
     public Class<? extends Lexer> lexerClass = null;
     /** The resolved (by load method) parser Class. */
     public Class<? extends Parser> parserClass = null;
+    /** The resolved (by load method) root node Method. */
+    public Method rootNodeMethod = null;
 
     /**
      * Create a new parser configuration.
@@ -53,7 +56,7 @@ public enum ParserConfiguration {
      * @throws MalformedURLException   on bad local paths
      * @throws ClassNotFoundException  on bad JAR contents
      */
-    public void load() throws MalformedURLException, ClassNotFoundException {
+    public void load() throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
         String homeDir = System.getProperty("user.home");
         String jarPath = "file://" + homeDir + "/.m2/repository/org/antlr/grammars/" + mavenPath;
         System.out.println("Using JAR: " + jarPath);
@@ -61,5 +64,6 @@ public enum ParserConfiguration {
         ClassLoader loader = new URLClassLoader(urls, this.getClass().getClassLoader());
         this.lexerClass = (Class<? extends Lexer>)loader.loadClass(lexerClassName);
         this.parserClass = (Class<? extends Parser>)loader.loadClass(parserClassName);
+        this.rootNodeMethod = parserClass.getDeclaredMethod(rootNode);
     }
 }

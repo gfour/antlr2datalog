@@ -11,7 +11,6 @@ import org.apache.commons.cli.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -69,7 +68,7 @@ public class Main {
             System.out.println("Using facts directory: " + factsDir);
             parserConfiguration = ParserConfiguration.valueOf(lang.toUpperCase());
             parserConfiguration.load();
-        } catch (ParseException | MalformedURLException | ClassNotFoundException e) {
+        } catch (ParseException | MalformedURLException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
             printUsage(options);
             return;
@@ -102,7 +101,7 @@ public class Main {
             Lexer lexer = pc.lexerClass.getConstructor(CharStream.class).newInstance(CharStreams.fromStream(inputStream));
             TokenStream tokenStream = new CommonTokenStream(lexer);
             Parser parser = pc.parserClass.getConstructor(TokenStream.class).newInstance(tokenStream);
-            ParserRuleContext ruleContext = (ParserRuleContext) pc.parserClass.getDeclaredMethod(pc.rootNode).invoke(parser);
+            ParserRuleContext ruleContext = (ParserRuleContext) pc.rootNodeMethod.invoke(parser);
             process(db, path, schema, counter, ruleContext);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -110,16 +109,10 @@ public class Main {
     }
 
     private static Map<Class<?>, Rule> getSchema(ParserConfiguration parserConfiguration) {
-        String rootNode = parserConfiguration.rootNode;
         SchemaFinder sf = new SchemaFinder();
-        try {
-            Method rootNodeMethod = parserConfiguration.parserClass.getDeclaredMethod(rootNode);
-            Class<? extends ParseTree> rootNodeClass = (Class<? extends ParseTree>)rootNodeMethod.getReturnType();
-            sf.discoverSchema(rootNodeClass);
-            sf.printSchema(new File("schema.dl"));
-        } catch (NoSuchMethodException ex) {
-            throw new RuntimeException("Root node does not exist: " + rootNode);
-        }
+        Class<? extends ParseTree> rootNodeClass = (Class<? extends ParseTree>)parserConfiguration.rootNodeMethod.getReturnType();
+        sf.discoverSchema(rootNodeClass);
+        sf.printSchema(new File("schema.dl"));
         return sf.schema;
     }
 

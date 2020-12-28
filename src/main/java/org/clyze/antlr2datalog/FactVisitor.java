@@ -52,8 +52,9 @@ public class FactVisitor {
         try {
             if (Main.debug)
                 System.out.println("Invoking: " + c.getName() + "." + comp.name + "()");
+            Object result = c.getDeclaredMethod(comp.name).invoke(parseTree);
             if (comp.index) {
-                List<? extends ParseTree> pts = (List<? extends ParseTree>)c.getDeclaredMethod(comp.name).invoke(parseTree);
+                List<? extends ParseTree> pts = (List<? extends ParseTree>)result;
                 if (pts != null) {
                     int idx = 0;
                     for (ParseTree pt : pts)
@@ -63,7 +64,7 @@ public class FactVisitor {
             } else {
                 if (Main.debug)
                     System.out.println("c = " + c.getName() + ", comp.name = " + comp.name + ", tpt: " + parseTree.getClass().getName());
-                ParseTree pt = (ParseTree) c.getDeclaredMethod(comp.name).invoke(parseTree);
+                ParseTree pt = (ParseTree)result;
                 if (pt != null)
                     visitPt(relName, comp, nodeId, new TypedParseTree(pt, comp.type), 0, subTrees);
             }
