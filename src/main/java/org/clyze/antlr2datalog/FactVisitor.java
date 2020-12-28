@@ -52,7 +52,13 @@ public class FactVisitor {
         try {
             if (Main.debug)
                 System.out.println("Invoking: " + c.getName() + "." + comp.name + "()");
-            Object result = c.getDeclaredMethod(comp.name).invoke(parseTree);
+            Object result;
+            try {
+                result = comp.getter.invoke(parseTree);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                return;
+            }
             if (comp.index) {
                 List<? extends ParseTree> pts = (List<? extends ParseTree>)result;
                 if (pts != null) {

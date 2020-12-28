@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -17,7 +15,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * in order to generate a database schema for the output Datalog facts.
  */
 public class SchemaFinder {
-    private final Collection<Class<? extends ParseTree>> visitedRules = new LinkedList<>();
+    private final Collection<Class<? extends ParseTree>> visitedRules = new HashSet<>();
     /** The computed schema. */
     public final Map<Class<?>, Rule> schema = new HashMap<>();
     private static final Class<RuleNode> RULE_NODE_CLASS = RuleNode.class;
@@ -57,7 +55,17 @@ public class SchemaFinder {
 
     private void registerComponent(Method m, Class<?> retType, Rule cRule, boolean isTerminal, Collection<Class<? extends ParseTree>> next) {
         Class<? extends ParseTree> retParseTreeType = (Class<? extends ParseTree>)retType;
-        cRule.rules.add(new Component(m.getName(), retParseTreeType, isIndex(m.getParameterCount()), isTerminal));
+        boolean index = isIndex(m.getParameterCount());
+        if (index) {
+            try {
+                m = m.getDeclaringClass().getDeclaredMethod(m.getName());
+            } catch (NoSuchMethodException e) {
+                System.out.println("WARNING: method " + m + " does not have a no-arg version.");
+                e.printStackTrace();
+                return;
+            }
+        }
+        cRule.rules.add(new Component(retParseTreeType, index, isTerminal, m));
         if (!visitedRules.contains(retType))
             next.add(retParseTreeType);
 
