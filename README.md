@@ -1,6 +1,6 @@
 # antlr2datalog
 
-This program tranforms ANTLR parsers to
+This program transforms ANTLR parsers to
 [Datalog](https://github.com/souffle-lang/souffle/) front ends. It
 currently uses the parsers from the
 [grammars-v4](https://github.com/antlr/grammars-v4) repository.
