@@ -22,20 +22,11 @@ class Component {
     /** The getter returning the sub-rule/terminal. */
     final MethodHandle getter;
 
-    Component(Class<? extends ParseTree> type, boolean index, boolean isTerminal, Method getter) {
+    Component(Class<? extends ParseTree> type, boolean index, boolean isTerminal, Method getter) throws IllegalAccessException {
         this.name = getter.getName();
         this.type = type;
         this.index = index;
         this.isTerminal = isTerminal;
-        this.getter = toMethodHandle(getter);
-    }
-
-    private static MethodHandle toMethodHandle(Method m) {
-        try {
-            return lookup.unreflect(m);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            return null;
-        }
+        this.getter = lookup.unreflect(getter);
     }
 }

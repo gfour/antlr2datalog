@@ -69,7 +69,11 @@ public final class SchemaFinder {
                 return;
             }
         }
-        cRules.add(new Component(retParseTreeType, index, isTerminal, m));
+        try {
+            cRules.add(new Component(retParseTreeType, index, isTerminal, m));
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
         if (!visitedRules.contains(retType))
             next.add(retParseTreeType);
 
