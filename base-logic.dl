@@ -1,0 +1,2 @@
+// Recursive case for parent-of relation.
+BASE_ParentOf(a, c) :- BASE_ParentOf(a, b), BASE_ParentOf(b, c).

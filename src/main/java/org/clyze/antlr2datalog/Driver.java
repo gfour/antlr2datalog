@@ -89,10 +89,11 @@ public class Driver {
 
     private void process(Database db, String path, Map<Class<?>, Collection<Component>> schema, AtomicInteger counter, ParserRuleContext rootNode) {
         int fileId = counter.getAndIncrement();
-        db.writeRow("Source_File_Id", path + '\t' + fileId);
         FactVisitor fv = new FactVisitor(fileId, schema, db);
         rootNode.accept(new ParseTreeVisitor<Void>() {
             @Override public Void visit(ParseTree parseTree) {
+                String parseTreeRelationName = parseTree.getClass().getSimpleName();
+                db.writeRow(BaseSchema.SOURCE_FILE_ID, path + '\t' + fileId + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
                 fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass()));
                 return null;
             }

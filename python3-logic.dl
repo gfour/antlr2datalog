@@ -1,7 +1,15 @@
 #include "schema.dl"
+#include "base-logic.dl"
 
-.decl Function(name: symbol)
+// .output BASE_ParentOf
+// .output BASE_SourceFileId
+
+// Function "name" declared at source file "location".
+.decl Function(name: symbol, location: symbol)
 .output Function
 
-Function(name) :-
-  FuncdefContext_NAME(_, _, name, _, _, _, _).
+Function(name, location) :-
+  FuncdefContext_NAME(fd, _, name, line, _, _, pos),
+  BASE_ParentOf(rootNode, fd),
+  BASE_SourceFileId(path, _, rootNode),
+  location = cat(path, cat(":(", cat(to_string(line), cat(",", cat(to_string(pos), ")"))))).

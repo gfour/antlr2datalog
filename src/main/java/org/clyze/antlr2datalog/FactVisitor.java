@@ -24,7 +24,7 @@ public class FactVisitor {
         this.db = db;
     }
 
-    private String getNodeId(String name, Object obj) {
+    public String getNodeId(String name, Object obj) {
         return obj == null ? "##null" : name + fileId + obj.hashCode();
     }
 
@@ -46,7 +46,7 @@ public class FactVisitor {
             visitParseTree(subTree);
     }
 
-    private void visitComponent(TypedParseTree tpt, String relName, String nodeId, Component comp, List<TypedParseTree> subTrees) {
+    private void visitComponent(TypedParseTree tpt, String relName, String parentNodeId, Component comp, List<TypedParseTree> subTrees) {
         try {
             if (Main.debug)
                 System.out.println("Invoking: " + tpt.c.getName() + "." + comp.name + "()");
@@ -63,24 +63,25 @@ public class FactVisitor {
                     int idx = 0;
                     for (ParseTree pt : pts)
                         if (pt != null)
-                            visitPt(relName, comp, nodeId, new TypedParseTree(pt, comp.type), idx++, subTrees);
+                            visitPt(relName, comp, parentNodeId, new TypedParseTree(pt, comp.type), idx++, subTrees);
                 }
             } else {
                 if (Main.debug)
                     System.out.println("comp.name = " + comp.name + ", tpt: " + tpt.parseTree.getClass().getName());
                 ParseTree pt = (ParseTree)result;
                 if (pt != null)
-                    visitPt(relName, comp, nodeId, new TypedParseTree(pt, comp.type), 0, subTrees);
+                    visitPt(relName, comp, parentNodeId, new TypedParseTree(pt, comp.type), 0, subTrees);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private void visitPt(String relName, Component comp, String nodeId,
+    private void visitPt(String relName, Component comp, String parentNodeId,
                          TypedParseTree typedParseTree, int index, List<TypedParseTree> subTrees) {
-        String nodeId0 = getNodeId(comp.type.getSimpleName(), typedParseTree.parseTree);
-        StringBuilder sb = new StringBuilder().append(nodeId).append('\t').append(nodeId0);
+        String compNodeId = getNodeId(comp.type.getSimpleName(), typedParseTree.parseTree);
+        StringBuilder sb = new StringBuilder().append(parentNodeId).append('\t').append(compNodeId);
+        db.writeRow(BaseSchema.PARENT_OF, sb.toString());
         if (comp.index)
             sb.append("\t").append(index);
         if (comp.isTerminal) {

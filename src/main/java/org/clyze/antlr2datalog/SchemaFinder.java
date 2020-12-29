@@ -42,11 +42,11 @@ public final class SchemaFinder {
             if (RULE_NODE_CLASS.isAssignableFrom(retType)) {
                 if (Main.debug)
                     System.out.println("+ Rule method: " + m.getName() + " with type " + retType.getName());
-                registerComponent(m, retType, cRules, false, next);
+                registerComponent(m, c, retType, cRules, false, next);
             } else if (TERMINAL_NODE_CLASS.isAssignableFrom(retType)) {
                 if (Main.debug)
                     System.out.println("+ Terminal method: " + m.getName() + " with type " + retType.getName());
-                registerComponent(m, retType, cRules, true, next);
+                registerComponent(m, c, retType, cRules, true, next);
             }
         }
         if (Main.debug)
@@ -57,12 +57,14 @@ public final class SchemaFinder {
             discoverSchema(c0);
     }
 
-    private void registerComponent(Method m, Class<?> retType, Collection<Component> cRules, boolean isTerminal, Collection<Class<? extends ParseTree>> next) {
+    private void registerComponent(Method m, Class<? extends ParseTree> c,
+                                   Class<?> retType, Collection<Component> cRules,
+                                   boolean isTerminal, Collection<Class<? extends ParseTree>> next) {
         Class<? extends ParseTree> retParseTreeType = (Class<? extends ParseTree>)retType;
         boolean index = isIndex(m.getParameterCount());
         if (index) {
             try {
-                m = m.getDeclaringClass().getDeclaredMethod(m.getName());
+                m = c.getDeclaredMethod(m.getName());
             } catch (NoSuchMethodException e) {
                 System.out.println("WARNING: method " + m + " does not have a no-arg version.");
                 e.printStackTrace();
@@ -99,8 +101,10 @@ public final class SchemaFinder {
             sbSchema.append(key.getSimpleName());
             sbSchema.append(" = symbol\n");
         }
-        sbSchema.append(".decl Source_File_Id(filename: symbol, id: symbol)\n");
-        sbSchema.append(".input Source_File_Id\n");
+        sbSchema.append(".decl ").append(BaseSchema.SOURCE_FILE_ID).append("(filename: symbol, file_id: symbol, node_id: symbol)\n");
+        sbSchema.append(".input ").append(BaseSchema.SOURCE_FILE_ID).append('\n');
+        sbSchema.append(".decl ").append(BaseSchema.PARENT_OF).append("(id: symbol, parent_id: symbol)\n");
+        sbSchema.append(".input ").append(BaseSchema.PARENT_OF).append('\n');
         for (Map.Entry<Class<?>, Collection<Component>> relation : schema.entrySet()) {
             Collection<Component> rules = relation.getValue();
             String relName = relation.getKey().getSimpleName();
