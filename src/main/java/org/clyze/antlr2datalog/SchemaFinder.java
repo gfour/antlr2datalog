@@ -14,11 +14,16 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * in order to generate a database schema for the output Datalog facts.
  */
 public final class SchemaFinder {
-    private final Collection<Class<? extends ParseTree>> visitedRules = new HashSet<>();
-    /** The computed schema. */
-    public final Map<Class<?>, Collection<Component>> schema = new HashMap<>();
     private static final Class<RuleNode> RULE_NODE_CLASS = RuleNode.class;
     private static final Class<TerminalNode> TERMINAL_NODE_CLASS = TerminalNode.class;
+    private final Collection<Class<? extends ParseTree>> visitedRules = new HashSet<>();
+    private final ParserConfiguration parserConfiguration;
+    /** The computed schema. */
+    public final Map<Class<?>, Collection<Component>> schema = new HashMap<>();
+
+    public SchemaFinder(ParserConfiguration parserConfiguration) {
+        this.parserConfiguration = parserConfiguration;
+    }
 
     /**
      * Discovers the facts schema starting from an API node.
@@ -31,7 +36,7 @@ public final class SchemaFinder {
         Collection<Class<? extends ParseTree>> next = new LinkedList<>();
         if (Main.debug)
             System.out.println("Processing class: " + c.getSimpleName());
-        Collection<Component> cRules = new ArrayList();
+        Collection<Component> cRules = new ArrayList<>();
         for (Method m : c.getDeclaredMethods()) {
             Class<?> retType = m.getReturnType();
             if (RULE_NODE_CLASS.isAssignableFrom(retType)) {
@@ -123,5 +128,15 @@ public final class SchemaFinder {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    /**
+     * Compute the logic schema from the underlying parser configuration.
+     * @return     the logic schema (parser rule class to a collection of sub-rules/terminals)
+     */
+    public Map<Class<?>, Collection<Component>> computeSchema() {
+        Class<? extends ParseTree> rootNodeClass = (Class<? extends ParseTree>)parserConfiguration.rootNodeMethod.getReturnType();
+        discoverSchema(rootNodeClass);
+        return schema;
     }
 }

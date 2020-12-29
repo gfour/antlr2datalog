@@ -3,18 +3,10 @@
  */
 package org.clyze.antlr2datalog;
 
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.tree.*;
 import org.apache.commons.cli.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The main application.
@@ -46,6 +38,11 @@ public class Main {
         factsOpt.setArgName("PATH");
         options.addOption(factsOpt);
 
+        String DEFAULT_SCHEMA_PATH = "schema.dl";
+        Option schemaOpt = new Option("s", "schema", true, "Schema output file (default: " + DEFAULT_SCHEMA_PATH + ").");
+        schemaOpt.setArgName("FILE");
+        options.addOption(schemaOpt);
+
         Option debugOpt = new Option("d", "debug", false, "Enable debug mode.");
         options.addOption(debugOpt);
 
@@ -55,7 +52,7 @@ public class Main {
         }
 
         ParserConfiguration parserConfiguration;
-        String factsDir;
+        String factsDir, schemaPath = DEFAULT_SCHEMA_PATH;
         String[] inputs;
         CommandLineParser parser = new GnuParser();
         try {
@@ -65,8 +62,11 @@ public class Main {
             String lang = cli.getOptionValue('l');
             factsDir = cli.getOptionValue('f');
             inputs = cli.getOptionValues('i');
+            if (cli.hasOption('s'))
+                schemaPath = cli.getOptionValue('s');
             System.out.println("Using language: " + lang);
             System.out.println("Using facts directory: " + factsDir);
+            System.out.println("Output schema written to: " + schemaPath);
             parserConfiguration = ParserConfiguration.valueOf(lang.toUpperCase());
             parserConfiguration.load();
         } catch (ParseException | MalformedURLException | ClassNotFoundException | NoSuchMethodException e) {
@@ -75,92 +75,7 @@ public class Main {
             return;
         }
 
-        System.out.println("Discovering schema...");
-        Map<Class<?>, Collection<Component>> schema = getSchema(parserConfiguration);
-
-        System.out.println("Recording facts...");
-        Map<String, Collection<String>> tables = new HashMap<>();
-        Database db = new Database(tables, factsDir);
-        AtomicInteger counter = new AtomicInteger(0);
-        for (String path : inputs)
-            parseFile(schema, db, counter, parserConfiguration, path);
-        db.writeFacts();
-    }
-
-    private static void parseFile(Map<Class<?>, Collection<Component>> schema, Database db, AtomicInteger counter, ParserConfiguration pc, String path) {
-        File pathFile = new File(path);
-        if (pathFile.isDirectory()) {
-            if (Main.debug)
-                System.out.println("Processing directory: " + path);
-            File[] files = pathFile.listFiles();
-            if (files != null)
-                for (File f : files)
-                    try {
-                        parseFile(schema, db, counter, pc, f.getCanonicalPath());
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-            return;
-        }
-
-        boolean ignore = true;
-        for (String ext : pc.extensions)
-            if (path.endsWith(ext)) {
-                ignore = false;
-                break;
-            }
-        if (ignore) {
-            if (Main.debug)
-                System.out.println("Ignoring: " + path);
-            return;
-        }
-        try (InputStream inputStream = new FileInputStream(path)) {
-            Lexer lexer = pc.lexerClass.getConstructor(CharStream.class).newInstance(CharStreams.fromStream(inputStream));
-            TokenStream tokenStream = new CommonTokenStream(lexer);
-            Parser parser = pc.parserClass.getConstructor(TokenStream.class).newInstance(tokenStream);
-            ParserRuleContext ruleContext = (ParserRuleContext) pc.rootNodeMethod.invoke(parser);
-            process(db, path, schema, counter, ruleContext);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private static Map<Class<?>, Collection<Component>> getSchema(ParserConfiguration parserConfiguration) {
-        SchemaFinder sf = new SchemaFinder();
-        Class<? extends ParseTree> rootNodeClass = (Class<? extends ParseTree>)parserConfiguration.rootNodeMethod.getReturnType();
-        sf.discoverSchema(rootNodeClass);
-        sf.printSchema(new File("schema.dl"));
-        return sf.schema;
-    }
-
-    private static void process(Database db, String path, Map<Class<?>, Collection<Component>> schema, AtomicInteger counter, ParserRuleContext rootNode) {
-        int fileId = counter.getAndIncrement();
-        db.writeRow("Source_File_Id", path + '\t' + fileId);
-        FactVisitor fv = new FactVisitor(fileId, schema, db);
-//        fv.visit(rootNode);
-        rootNode.accept(new ParseTreeVisitor<Void>() {
-            @Override
-            public Void visit(ParseTree parseTree) {
-                fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass()));
-                return null;
-            }
-
-            @Override
-            public Void visitChildren(RuleNode ruleNode) {
-                return visit(ruleNode);
-            }
-
-            @Override
-            public Void visitTerminal(TerminalNode terminalNode) {
-                return null;
-            }
-
-            @Override
-            public Void visitErrorNode(ErrorNode errorNode) {
-                return null;
-            }
-
-        });
+        (new Driver(parserConfiguration)).generateSchemaAndParseSources(schemaPath, factsDir, inputs);
     }
 
     private static void printUsage(Options options) {
