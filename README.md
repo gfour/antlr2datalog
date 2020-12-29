@@ -9,7 +9,7 @@ The ANTLR parser API is translated into a Datalog schema and the
 parser can then be invoked on source code to populate a "facts"
 directory according to the schema.
 
-Three sample cases are included: COBOL, Kotlin, and Solidity.
+Three sample cases are included: COBOL, Kotlin, Python3 and Solidity.
 
 ## Use
 

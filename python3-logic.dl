@@ -1,0 +1,7 @@
+#include "schema.dl"
+
+.decl Function(name: symbol)
+.output Function
+
+Function(name) :-
+  FuncdefContext_NAME(_, _, name, _, _, _, _).

@@ -27,11 +27,18 @@ function useSolidity() {
     LOGIC=solidity-logic.dl
 }
 
+function usePython3() {
+    ./gradlew run --args="-l python3 -i grammars-v4/python/python3/examples/coroutines.py -f out-facts"
+    LOGIC=python3-logic.dl
+}
+
+
 rm -rf out-facts
 
 # Only uncomment one of the following.
 # useKotlin
 # useCobol
-useSolidity
+# useSolidity
+usePython3
 
 analyze
