@@ -2,14 +2,24 @@
 
 set -e
 
+function compileAndRunLogic() {
+    echo "Compiling logic..."
+    cpp -P "${LOGIC}" -o logic-out.dl
+    souffle -c logic-out.dl -o logic
+    echo "Running logic..."
+    /usr/bin/time ./logic -D out-db -F out-facts
+}
+
+function interpretLogic() {
+    /usr/bin/time souffle logic-out.dl -F out-facts -D out-db
+}
+
 function analyze() {
     echo "Running analysis..."
     rm -rf out-db
     mkdir -p out-db
-    cpp -P "${LOGIC}" -o logic-out.dl
-    # souffle -c logic-out.dl -o logic
-    # ./logic -D out-db -F out-facts
-    souffle logic-out.dl -F out-facts -D out-db
+    # compileAndRunLogic
+    interpretLogic
 }
 
 function useKotlin() {
