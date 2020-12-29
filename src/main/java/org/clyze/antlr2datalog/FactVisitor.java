@@ -74,7 +74,6 @@ public class FactVisitor {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.exit(0);
         }
     }
 
