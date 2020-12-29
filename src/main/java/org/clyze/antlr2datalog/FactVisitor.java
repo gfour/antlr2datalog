@@ -81,14 +81,18 @@ public class FactVisitor {
     private void visitPt(String relName, Component comp, String nodeId,
                          TypedParseTree typedParseTree, int index, List<TypedParseTree> subTrees) {
         String nodeId0 = getNodeId(comp.type.getSimpleName(), typedParseTree.parseTree);
-        String suffix = comp.index ? ("\t" + index) : "";
+        StringBuilder sb = new StringBuilder().append(nodeId).append('\t').append(nodeId0);
+        if (comp.index)
+            sb.append("\t").append(index);
         if (comp.isTerminal) {
             Token token = ((TerminalNode) typedParseTree.parseTree).getSymbol();
-            suffix += ("\t" + token.getText().replace('\t', ' ').replace('\n', ' '));
-            suffix += ("\t" + token.getLine() + "\t" +  token.getStartIndex() + "\t" + token.getStopIndex() + "\t" + token.getCharPositionInLine());
+            sb.append("\t").append(token.getText().replace('\t', ' ').replace('\n', ' '))
+                    .append("\t").append(token.getLine())
+                    .append("\t").append(token.getStartIndex())
+                    .append("\t").append(token.getStopIndex())
+                    .append("\t").append(token.getCharPositionInLine());
         }
-        db.writeRow(relName + "_" + comp.name, nodeId + '\t' + nodeId0 + suffix);
-//        if (typedParseTree != null)
+        db.writeRow(relName + "_" + comp.name, sb.toString());
         subTrees.add(typedParseTree);
     }
 }
