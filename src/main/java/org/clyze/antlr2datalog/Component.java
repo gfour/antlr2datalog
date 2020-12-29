@@ -30,7 +30,7 @@ class Component {
         this.getter = toMethodHandle(getter);
     }
 
-    private static final MethodHandle toMethodHandle(Method m) {
+    private static MethodHandle toMethodHandle(Method m) {
         try {
             return lookup.unreflect(m);
         } catch (IllegalAccessException e) {

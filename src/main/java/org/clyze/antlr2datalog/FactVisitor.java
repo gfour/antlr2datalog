@@ -8,8 +8,8 @@ import org.antlr.v4.runtime.tree.*;
  * The AST visitor that records facts.
  */
 public class FactVisitor {
-    private final int fileId;
-    private final Map<Class<?>, Rule> schema;
+    private final String fileId;
+    private final Map<Class<?>, Collection<Component>> schema;
     private final Database db;
 
     /**
@@ -18,43 +18,41 @@ public class FactVisitor {
      * @param schema   the database schema to use
      * @param db       the database object to use for writing
      */
-    public FactVisitor(int fileId, Map<Class<?>, Rule> schema, Database db) {
-        this.fileId = fileId;
+    public FactVisitor(int fileId, Map<Class<?>, Collection<Component>> schema, Database db) {
+        this.fileId = "#" + fileId + "#";
         this.schema = schema;
         this.db = db;
     }
 
     private String getNodeId(String name, Object obj) {
-        return obj == null ? "null" : name + "#" + fileId + "#" + obj.hashCode();
+        return obj == null ? "##null" : name + fileId + obj.hashCode();
     }
 
     public void visitParseTree(TypedParseTree typedParseTree) {
-        Class<? extends ParseTree> c = typedParseTree.c;
-        String relName = c.getSimpleName();
+        String relName = typedParseTree.simpleName;
         if (Main.debug)
             System.out.println("relName = " + relName);
         String nodeId = getNodeId(relName, typedParseTree.parseTree);
         db.writeRow("is" + relName, nodeId);
-        Rule r = schema.get(c);
-        if (r == null) {
+        Collection<Component> rules = schema.get(typedParseTree.c);
+        if (rules == null) {
             System.out.println("WARNING: schema lacks " + relName);
-            System.exit(0);
             return;
         }
         List<TypedParseTree> subTrees = new LinkedList<>();
-        for (Component rule : r.rules)
-            visitComponent(typedParseTree.parseTree, c, relName, nodeId, rule, subTrees);
+        for (Component rule : rules)
+            visitComponent(typedParseTree, relName, nodeId, rule, subTrees);
         for (TypedParseTree subTree : subTrees)
             visitParseTree(subTree);
     }
 
-    private void visitComponent(ParseTree parseTree, Class<? extends ParseTree> c, String relName, String nodeId, Component comp, List<TypedParseTree> subTrees) {
+    private void visitComponent(TypedParseTree tpt, String relName, String nodeId, Component comp, List<TypedParseTree> subTrees) {
         try {
             if (Main.debug)
-                System.out.println("Invoking: " + c.getName() + "." + comp.name + "()");
+                System.out.println("Invoking: " + tpt.c.getName() + "." + comp.name + "()");
             Object result;
             try {
-                result = comp.getter.invoke(parseTree);
+                result = comp.getter.invoke(tpt.parseTree);
             } catch (Throwable t) {
                 t.printStackTrace();
                 return;
@@ -69,7 +67,7 @@ public class FactVisitor {
                 }
             } else {
                 if (Main.debug)
-                    System.out.println("c = " + c.getName() + ", comp.name = " + comp.name + ", tpt: " + parseTree.getClass().getName());
+                    System.out.println("comp.name = " + comp.name + ", tpt: " + tpt.parseTree.getClass().getName());
                 ParseTree pt = (ParseTree)result;
                 if (pt != null)
                     visitPt(relName, comp, nodeId, new TypedParseTree(pt, comp.type), 0, subTrees);
@@ -90,8 +88,8 @@ public class FactVisitor {
             suffix += ("\t" + token.getLine() + "\t" +  token.getStartIndex() + "\t" + token.getStopIndex() + "\t" + token.getCharPositionInLine());
         }
         db.writeRow(relName + "_" + comp.name, nodeId + '\t' + nodeId0 + suffix);
-        if (typedParseTree != null)
-            subTrees.add(typedParseTree);
+//        if (typedParseTree != null)
+        subTrees.add(typedParseTree);
     }
 }
 

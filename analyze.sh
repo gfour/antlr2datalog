@@ -3,6 +3,7 @@
 set -e
 
 function analyze() {
+    echo "Running analysis..."
     rm -rf out-db
     mkdir -p out-db
     cpp -P "${LOGIC}" -o logic-out.dl

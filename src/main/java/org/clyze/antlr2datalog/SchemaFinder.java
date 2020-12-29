@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
-
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -14,10 +13,10 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * This class supports traversing the ANTLR parser API to understand the grammar,
  * in order to generate a database schema for the output Datalog facts.
  */
-public class SchemaFinder {
+public final class SchemaFinder {
     private final Collection<Class<? extends ParseTree>> visitedRules = new HashSet<>();
     /** The computed schema. */
-    public final Map<Class<?>, Rule> schema = new HashMap<>();
+    public final Map<Class<?>, Collection<Component>> schema = new HashMap<>();
     private static final Class<RuleNode> RULE_NODE_CLASS = RuleNode.class;
     private static final Class<TerminalNode> TERMINAL_NODE_CLASS = TerminalNode.class;
 
@@ -32,28 +31,28 @@ public class SchemaFinder {
         Collection<Class<? extends ParseTree>> next = new LinkedList<>();
         if (Main.debug)
             System.out.println("Processing class: " + c.getSimpleName());
-        Rule cRule = new Rule();
+        Collection<Component> cRules = new ArrayList();
         for (Method m : c.getDeclaredMethods()) {
             Class<?> retType = m.getReturnType();
             if (RULE_NODE_CLASS.isAssignableFrom(retType)) {
                 if (Main.debug)
                     System.out.println("+ Rule method: " + m.getName() + " with type " + retType.getName());
-                registerComponent(m, retType, cRule, false, next);
+                registerComponent(m, retType, cRules, false, next);
             } else if (TERMINAL_NODE_CLASS.isAssignableFrom(retType)) {
                 if (Main.debug)
                     System.out.println("+ Terminal method: " + m.getName() + " with type " + retType.getName());
-                registerComponent(m, retType, cRule, true, next);
+                registerComponent(m, retType, cRules, true, next);
             }
         }
         if (Main.debug)
             System.out.println("\\-> Recording " + c.getSimpleName());
-        schema.put(c, cRule);
+        schema.put(c, cRules);
         visitedRules.add(c);
         for (Class<? extends ParseTree> c0 : next)
             discoverSchema(c0);
     }
 
-    private void registerComponent(Method m, Class<?> retType, Rule cRule, boolean isTerminal, Collection<Class<? extends ParseTree>> next) {
+    private void registerComponent(Method m, Class<?> retType, Collection<Component> cRules, boolean isTerminal, Collection<Class<? extends ParseTree>> next) {
         Class<? extends ParseTree> retParseTreeType = (Class<? extends ParseTree>)retType;
         boolean index = isIndex(m.getParameterCount());
         if (index) {
@@ -65,7 +64,7 @@ public class SchemaFinder {
                 return;
             }
         }
-        cRule.rules.add(new Component(retParseTreeType, index, isTerminal, m));
+        cRules.add(new Component(retParseTreeType, index, isTerminal, m));
         if (!visitedRules.contains(retType))
             next.add(retParseTreeType);
 
@@ -93,8 +92,8 @@ public class SchemaFinder {
         }
         sbSchema.append(".decl Source_File_Id(filename: symbol, id: symbol)\n");
         sbSchema.append(".input Source_File_Id\n");
-        for (Map.Entry<Class<?>, Rule> relation : schema.entrySet()) {
-            Rule r = relation.getValue();
+        for (Map.Entry<Class<?>, Collection<Component>> relation : schema.entrySet()) {
+            Collection<Component> rules = relation.getValue();
             String relName = relation.getKey().getSimpleName();
             // Relation isX
             String relName0 = "is" + relName;
@@ -105,7 +104,7 @@ public class SchemaFinder {
             sbSchema.append(relName0);
             sbSchema.append('\n');
             // Relations X_component
-            for (Component comp : r.rules) {
+            for (Component comp : rules) {
                 String relNameC = relName + "_" + comp.name;
                 sbSchema.append(".decl " );
                 sbSchema.append(relNameC);

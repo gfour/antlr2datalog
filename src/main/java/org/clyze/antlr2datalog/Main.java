@@ -76,7 +76,7 @@ public class Main {
         }
 
         System.out.println("Discovering schema...");
-        Map<Class<?>, Rule> schema = getSchema(parserConfiguration);
+        Map<Class<?>, Collection<Component>> schema = getSchema(parserConfiguration);
 
         System.out.println("Recording facts...");
         Map<String, Collection<String>> tables = new HashMap<>();
@@ -87,7 +87,7 @@ public class Main {
         db.writeFacts();
     }
 
-    private static void parseFile(Map<Class<?>, Rule> schema, Database db, AtomicInteger counter, ParserConfiguration pc, String path) {
+    private static void parseFile(Map<Class<?>, Collection<Component>> schema, Database db, AtomicInteger counter, ParserConfiguration pc, String path) {
         File pathFile = new File(path);
         if (pathFile.isDirectory()) {
             if (Main.debug)
@@ -125,7 +125,7 @@ public class Main {
         }
     }
 
-    private static Map<Class<?>, Rule> getSchema(ParserConfiguration parserConfiguration) {
+    private static Map<Class<?>, Collection<Component>> getSchema(ParserConfiguration parserConfiguration) {
         SchemaFinder sf = new SchemaFinder();
         Class<? extends ParseTree> rootNodeClass = (Class<? extends ParseTree>)parserConfiguration.rootNodeMethod.getReturnType();
         sf.discoverSchema(rootNodeClass);
@@ -133,7 +133,7 @@ public class Main {
         return sf.schema;
     }
 
-    private static void process(Database db, String path, Map<Class<?>, Rule> schema, AtomicInteger counter, ParserRuleContext rootNode) {
+    private static void process(Database db, String path, Map<Class<?>, Collection<Component>> schema, AtomicInteger counter, ParserRuleContext rootNode) {
         int fileId = counter.getAndIncrement();
         db.writeRow("Source_File_Id", path + '\t' + fileId);
         FactVisitor fv = new FactVisitor(fileId, schema, db);
