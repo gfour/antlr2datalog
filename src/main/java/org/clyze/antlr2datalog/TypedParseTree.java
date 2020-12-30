@@ -12,12 +12,9 @@ class TypedParseTree {
     final ParseTree parseTree;
     /** The companion (super)type. */
     final Class<? extends ParseTree> c;
-    /** The simple name of the type. */
-    final String simpleName;
 
     TypedParseTree(ParseTree parseTree, Class<? extends ParseTree> c) {
         this.parseTree = parseTree;
         this.c = c;
-        this.simpleName = c.getSimpleName();
     }
 }

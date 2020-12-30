@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.tree.*;
  */
 public class FactVisitor {
     private final String fileId;
-    private final Map<Class<?>, Collection<Component>> schema;
+    private final Map<Class<?>, Rule> schema;
     private final Database db;
 
     /**
@@ -18,7 +18,7 @@ public class FactVisitor {
      * @param schema   the database schema to use
      * @param db       the database object to use for writing
      */
-    public FactVisitor(int fileId, Map<Class<?>, Collection<Component>> schema, Database db) {
+    public FactVisitor(int fileId, Map<Class<?>, Rule> schema, Database db) {
         this.fileId = "#" + fileId + "#";
         this.schema = schema;
         this.db = db;
@@ -29,12 +29,12 @@ public class FactVisitor {
     }
 
     public void visitParseTree(TypedParseTree typedParseTree) {
-        String relName = typedParseTree.simpleName;
+        String relName = SchemaFinder.getSimpleName(typedParseTree.c, schema);
         if (Main.debug)
             System.out.println("relName = " + relName);
         String nodeId = getNodeId(relName, typedParseTree.parseTree);
         db.writeRow("is" + relName, nodeId);
-        Collection<Component> rules = schema.get(typedParseTree.c);
+        Collection<Component> rules = schema.get(typedParseTree.c).components;
         if (rules == null) {
             System.out.println("WARNING: schema lacks " + relName);
             return;
@@ -79,7 +79,8 @@ public class FactVisitor {
 
     private void visitPt(String relName, Component comp, String parentNodeId,
                          TypedParseTree typedParseTree, int index, List<TypedParseTree> subTrees) {
-        String compNodeId = getNodeId(comp.type.getSimpleName(), typedParseTree.parseTree);
+        String compSimpleName = SchemaFinder.getSimpleName(comp.type, schema);
+        String compNodeId = getNodeId(compSimpleName, typedParseTree.parseTree);
         StringBuilder sb = new StringBuilder().append(parentNodeId).append('\t').append(compNodeId);
         db.writeRow(BaseSchema.PARENT_OF, sb.toString());
         if (comp.index)

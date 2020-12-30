@@ -9,7 +9,7 @@
 .output Function
 
 Function(name, location) :-
-  FuncdefContext_NAME(fd, _, name, line, _, _, pos),
+  Funcdef_NAME(fd, _, name, line, _, _, pos),
   BASE_ParentOf(rootNode, fd),
   BASE_SourceFileId(path, _, rootNode),
   location = cat(path, cat(":(", cat(to_string(line), cat(",", cat(to_string(pos), ")"))))).

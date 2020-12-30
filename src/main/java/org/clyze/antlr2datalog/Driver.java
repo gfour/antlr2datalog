@@ -37,7 +37,7 @@ public class Driver {
                                               String[] inputs) {
         System.out.println("Discovering schema...");
         SchemaFinder sf = new SchemaFinder(parserConfiguration);
-        Map<Class<?>, Collection<Component>> schema = sf.computeSchema();
+        Map<Class<?>, Rule> schema = sf.computeSchema();
         sf.printSchema(new File(schemaPath));
 
         System.out.println("Recording facts...");
@@ -49,7 +49,7 @@ public class Driver {
         db.writeFacts();
     }
 
-    private void parseFile(Map<Class<?>, Collection<Component>> schema, Database db, AtomicInteger counter, String path) {
+    private void parseFile(Map<Class<?>, Rule> schema, Database db, AtomicInteger counter, String path) {
         File pathFile = new File(path);
         if (pathFile.isDirectory()) {
             if (Main.debug)
@@ -87,12 +87,12 @@ public class Driver {
         }
     }
 
-    private void process(Database db, String path, Map<Class<?>, Collection<Component>> schema, AtomicInteger counter, ParserRuleContext rootNode) {
+    private void process(Database db, String path, Map<Class<?>, Rule> schema, AtomicInteger counter, ParserRuleContext rootNode) {
         int fileId = counter.getAndIncrement();
         FactVisitor fv = new FactVisitor(fileId, schema, db);
         rootNode.accept(new ParseTreeVisitor<Void>() {
             @Override public Void visit(ParseTree parseTree) {
-                String parseTreeRelationName = parseTree.getClass().getSimpleName();
+                String parseTreeRelationName = SchemaFinder.getSimpleName(parseTree.getClass(), schema);
                 db.writeRow(BaseSchema.SOURCE_FILE_ID, path + '\t' + fileId + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
                 fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass()));
                 return null;

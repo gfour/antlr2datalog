@@ -19,7 +19,7 @@ public final class SchemaFinder {
     private final Collection<Class<? extends ParseTree>> visitedRules = new HashSet<>();
     private final ParserConfiguration parserConfiguration;
     /** The computed schema. */
-    public final Map<Class<?>, Collection<Component>> schema = new HashMap<>();
+    public final Map<Class<?>, Rule> schema = new HashMap<>();
 
     public SchemaFinder(ParserConfiguration parserConfiguration) {
         this.parserConfiguration = parserConfiguration;
@@ -51,7 +51,7 @@ public final class SchemaFinder {
         }
         if (Main.debug)
             System.out.println("\\-> Recording " + c.getSimpleName());
-        schema.put(c, cRules);
+        schema.put(c, new Rule(cRules, c.getSimpleName()));
         visitedRules.add(c);
         for (Class<? extends ParseTree> c0 : next)
             discoverSchema(c0);
@@ -91,23 +91,47 @@ public final class SchemaFinder {
     }
 
     /**
+     * Simplify relation names in the schema by removing the "Context" suffix.
+     */
+    private void simplifyNames() {
+        Set<String> originalSimpleNames = new HashSet<>();
+        for (Rule r : schema.values())
+            originalSimpleNames.add(r.simpleName);
+        for (Map.Entry<Class<?>, Rule> entry : schema.entrySet()) {
+            Rule r = entry.getValue();
+            String sn = r.simpleName;
+            final String CONTEXT_SUFFIX = "Context";
+            if (sn.endsWith(CONTEXT_SUFFIX)) {
+                String newName = sn.substring(0, sn.length() - CONTEXT_SUFFIX.length());
+                if (!originalSimpleNames.contains(newName)) {
+                    if (Main.debug)
+                        System.out.println("Renaming relation: " + sn + " -> " + newName);
+                    r.simpleName = newName;
+                }
+            }
+        }
+    }
+
+    /**
      * Writes the schema to a Datalog file.
      * @param schemaFile   the output file
      */
     public void printSchema(File schemaFile) {
+        simplifyNames();
         StringBuilder sbSchema = new StringBuilder();
         for (Class<?> key : schema.keySet()) {
             sbSchema.append(".type ");
-            sbSchema.append(key.getSimpleName());
+            sbSchema.append(getSimpleName(key, schema));
             sbSchema.append(" = symbol\n");
         }
         sbSchema.append(".decl ").append(BaseSchema.SOURCE_FILE_ID).append("(filename: symbol, file_id: symbol, node_id: symbol)\n");
         sbSchema.append(".input ").append(BaseSchema.SOURCE_FILE_ID).append('\n');
         sbSchema.append(".decl ").append(BaseSchema.PARENT_OF).append("(id: symbol, parent_id: symbol)\n");
         sbSchema.append(".input ").append(BaseSchema.PARENT_OF).append('\n');
-        for (Map.Entry<Class<?>, Collection<Component>> relation : schema.entrySet()) {
-            Collection<Component> rules = relation.getValue();
-            String relName = relation.getKey().getSimpleName();
+        for (Map.Entry<Class<?>, Rule> relation : schema.entrySet()) {
+            Rule r = relation.getValue();
+            Collection<Component> rules = r.components;
+            String relName = getSimpleName(relation.getKey(), schema);
             // Relation isX
             String relName0 = "is" + relName;
             sbSchema.append(".decl " );
@@ -122,7 +146,7 @@ public final class SchemaFinder {
                 sbSchema.append(".decl " );
                 sbSchema.append(relNameC);
                 sbSchema.append("(node_id:symbol, ");
-                sbSchema.append(comp.name).append(":").append(comp.type.getSimpleName());
+                sbSchema.append(comp.name).append(":").append(getSimpleName(comp.type, schema));
                 if (comp.index)
                     sbSchema.append(", _comp_index: number");
                 if (comp.isTerminal)
@@ -142,9 +166,14 @@ public final class SchemaFinder {
      * Compute the logic schema from the underlying parser configuration.
      * @return     the logic schema (parser rule class to a collection of sub-rules/terminals)
      */
-    public Map<Class<?>, Collection<Component>> computeSchema() {
+    public Map<Class<?>, Rule> computeSchema() {
         Class<? extends ParseTree> rootNodeClass = (Class<? extends ParseTree>)parserConfiguration.rootNodeMethod.getReturnType();
         discoverSchema(rootNodeClass);
         return schema;
+    }
+
+    public static String getSimpleName(Class<?> c, Map<Class<?>, Rule> schema) {
+        Rule r = schema.get(c);
+        return (r == null) ? c.getSimpleName() : r.simpleName;
     }
 }

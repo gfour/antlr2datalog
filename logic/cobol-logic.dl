@@ -5,4 +5,4 @@
 .output StringConstant
 
 StringConstant(str, line) :-
-  LiteralContext_NONNUMERICLITERAL(_, _, str, line, _, _, _).
+  Literal_NONNUMERICLITERAL(_, _, str, line, _, _, _).

@@ -5,13 +5,13 @@
 .output DeclaredVariable
 
 DeclaredVariable(varName) :-
-  VariableDeclarationContext_simpleIdentifier(_, id),
-  SimpleIdentifierContext_Identifier(id, _, varName, _, _, _, _).
+  VariableDeclaration_simpleIdentifier(_, id),
+  SimpleIdentifier_Identifier(id, _, varName, _, _, _, _).
 
 .decl UsedVariable(varName: symbol)
 .output UsedVariable
 
 UsedVariable(varName) :-
   DeclaredVariable(varName),
-  PrimaryExpressionContext_simpleIdentifier(_, id),
-  SimpleIdentifierContext_Identifier(id, _, varName, _, _, _, _).
+  PrimaryExpression_simpleIdentifier(_, id),
+  SimpleIdentifier_Identifier(id, _, varName, _, _, _, _).
