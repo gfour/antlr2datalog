@@ -25,7 +25,7 @@ function analyze() {
 }
 
 function useKotlin() {
-   ./gradlew run --args="-l kotlin -i grammars-v4/kotlin/kotlin-formal/examples/Test.kt -f out-facts"
+    ./gradlew run --args="-l kotlin -i grammars-v4/kotlin/kotlin-formal/examples/Test.kt -f workspace/out-facts"
     LOGIC=logic/kotlin-logic.dl
 }
 
