@@ -32,11 +32,6 @@ function useCobol() {
     LOGIC=cobol-logic.dl
 }
 
-function useSolidity() {
-    ./gradlew run --args="-l solidity -i grammars-v4/solidity/test.sol -f out-facts"
-    LOGIC=solidity-logic.dl
-}
-
 function usePython3() {
     ./gradlew run --args="-l python3 -i grammars-v4/python/python3/examples/coroutines.py -f out-facts"
     LOGIC=python3-logic.dl
@@ -48,7 +43,6 @@ rm -rf out-facts
 # Only uncomment one of the following.
 # useKotlin
 # useCobol
-# useSolidity
 usePython3
 
 analyze

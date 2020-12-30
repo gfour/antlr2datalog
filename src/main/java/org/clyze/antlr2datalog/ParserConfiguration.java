@@ -13,11 +13,14 @@ import org.antlr.v4.runtime.Parser;
  * The parser configurations to use. This is a sample, extend as needed.
  */
 public enum ParserConfiguration {
+    // Cobol 85, MIT license
     COBOL("Cobol85Lexer", "Cobol85Parser", "startRule", Collections.singletonList(".txt"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar"),
+    // Kotlin, Apache 2.0 license
 //    KOTLIN("org.antlr.grammars.KotlinLexer", "org.antlr.grammars.KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),
     KOTLIN("KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),
+    // Python3, MIT license
     PYTHON3("Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar"),
-    SOLIDITY("SolidityLexer", "SolidityParser", "sourceUnit", Collections.singletonList(".sol"), "Solidity/1.0-SNAPSHOT/Solidity-1.0-SNAPSHOT.jar");
+    ;
 
     /** The (fully qualified) class name of the lexer. */
     private final String lexerClassName;

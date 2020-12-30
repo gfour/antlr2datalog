@@ -1,9 +1,0 @@
-#include "schema.dl"
-
-.decl DeclaredVariable(varName: symbol, line: number, start: number, end: number, pos: number)
-.output DeclaredVariable
-
-DeclaredVariable(varName, line, start, end, pos) :-
-  ( AssemblyIdentifierListContext_identifier(_, id, _)
-  ; IdentifierListContext_identifier(_, id, _)),
-  IdentifierContext_Identifier(id, _, varName, line, start, end, pos).

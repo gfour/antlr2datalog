@@ -9,7 +9,7 @@ The ANTLR parser API is translated into a Datalog schema and the
 parser can then be invoked on source code to populate a "facts"
 directory according to the schema.
 
-Three sample cases are included: COBOL, Kotlin, Python3 and Solidity.
+Three sample cases are included: COBOL, Kotlin, and Python3.
 
 ## Use
 
@@ -32,3 +32,8 @@ mvn install
 2. Add XYZ-logic.dl with your Datalog rules.
 
 3. Edit analyze.sh to add a case for your source file.
+
+## License
+
+For the license of this project, see [LICENSE](LICENSE). Note that
+ANTLR parsers may be covered by different licenses.
