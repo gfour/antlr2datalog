@@ -38,7 +38,7 @@ public class Main {
         factsOpt.setArgName("PATH");
         options.addOption(factsOpt);
 
-        String DEFAULT_SCHEMA_PATH = "schema.dl";
+        String DEFAULT_SCHEMA_PATH = "workspace/schema.dl";
         Option schemaOpt = new Option("s", "schema", true, "Schema output file (default: " + DEFAULT_SCHEMA_PATH + ").");
         schemaOpt.setArgName("FILE");
         options.addOption(schemaOpt);

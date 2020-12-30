@@ -1,5 +1,5 @@
-#include "schema.dl"
-#include "base-logic.dl"
+#include "../workspace/schema.dl"
+#include "../logic/base-logic.dl"
 
 // .output BASE_ParentOf
 // .output BASE_SourceFileId
