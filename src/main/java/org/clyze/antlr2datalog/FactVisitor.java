@@ -24,10 +24,21 @@ public class FactVisitor {
         this.db = db;
     }
 
+    /**
+     * Generates a unique id for an object returned by the parser, so that the
+     * object can be identified in the facts of the whole program.
+     * @param name     the name of the object type
+     * @param obj      the object
+     * @return         the unique id
+     */
     public String getNodeId(String name, Object obj) {
         return obj == null ? "##null" : name + fileId + obj.hashCode();
     }
 
+    /**
+     * Visit a node in the AST.
+     * @param typedParseTree   the node of the tree
+     */
     public void visitParseTree(TypedParseTree typedParseTree) {
         String relName = SchemaFinder.getSimpleName(typedParseTree.c, schema);
         if (Main.debug)

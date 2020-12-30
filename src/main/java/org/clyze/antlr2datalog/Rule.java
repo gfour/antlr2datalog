@@ -7,13 +7,18 @@ import java.util.Collection;
  */
 public class Rule {
     /** The list of rule components (sub-rules/terminals). */
-    final Collection<Component> components;
+    public final Collection<Component> components;
     /**
      * The simple name of the rule (initialized by reflection but may be
      * later optimized/simplified.
      */
-    String simpleName;
+    public String simpleName;
 
+    /**
+     * Create the description of a new parse rule.
+     * @param components    the components of the rule
+     * @param simpleName    the simple name of the rule
+     */
     public Rule(Collection<Component> components, String simpleName) {
         this.components = components;
         this.simpleName = simpleName;

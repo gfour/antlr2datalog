@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
  * return types for reflectively-discovered getters even if the actual returned
  * values have a different subtype.
  */
-class TypedParseTree {
+public class TypedParseTree {
     /** The parse tree object. */
     final ParseTree parseTree;
     /** The companion (super)type. */
