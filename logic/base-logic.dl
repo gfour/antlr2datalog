@@ -1,2 +1,25 @@
 // Recursive case for parent-of relation.
-BASE_ParentOf(a, c) :- BASE_ParentOf(a, b), BASE_ParentOf(b, c).
+.decl RecParentOf(a: symbol, b: symbol)
+
+RecParentOf(a, b) :- BASE_ParentOf(a, b).
+RecParentOf(a, c) :- RecParentOf(a, b), BASE_ParentOf(b, c).
+
+#ifdef DEBUG
+
+.output BASE_ParentOf
+.output BASE_SourceFileId
+.output RecParentOf
+
+.decl Parent3(a1: symbol, a2: symbol, a3: symbol)
+.output Parent3
+Parent3(a1, a2, a3) :- BASE_ParentOf(a1, a2), BASE_ParentOf(a2, a3).
+
+.decl Parent4(a1: symbol, a2: symbol, a3: symbol, a4: symbol)
+.output Parent4
+Parent4(a1, a2, a3, a4) :- BASE_ParentOf(a1, a2), Parent3(a2, a3, a4).
+
+.decl Parent5(a1: symbol, a2: symbol, a3: symbol, a4: symbol, a5: symbol)
+.output Parent5
+Parent5(a1, a2, a3, a4, a5) :- BASE_ParentOf(a1, a2), Parent4(a2, a3, a4, a5).
+
+#endif // DEBUG

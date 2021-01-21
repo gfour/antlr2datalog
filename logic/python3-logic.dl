@@ -1,15 +1,70 @@
 #include "../workspace/schema.dl"
 #include "../logic/base-logic.dl"
 
-// .output BASE_ParentOf
-// .output BASE_SourceFileId
+.type Id = symbol
+.type Loc = symbol
 
 // Function "name" declared at source file "location".
-.decl Function(name: symbol, location: symbol)
+.decl Function(id: Id, name: symbol, location: Loc)
 .output Function
 
-Function(name, location) :-
+#define LOCATION(path, line, pos) cat(path, cat(":(", cat(to_string(line), cat(",", cat(to_string(pos), ")")))))
+
+Function(fd, name, location) :-
   Funcdef_NAME(fd, _, name, line, _, _, pos),
-  BASE_ParentOf(rootNode, fd),
+  RecParentOf(rootNode, fd),
   BASE_SourceFileId(path, _, rootNode),
-  location = cat(path, cat(":(", cat(to_string(line), cat(",", cat(to_string(pos), ")"))))).
+  location = LOCATION(path, line, pos).
+
+.decl isAssign(id: Id, location: Loc)
+isAssign(id, location) :-
+  BASE_SourceFileId(path, _, rootNode),
+  RecParentOf(rootNode, id),
+  Expr_stmt_ASSIGN(id, _, _, "=", line, _, _, pos),
+  location = LOCATION(path, line, pos).
+
+.decl NameInAssignment(id: Id, n: symbol, location: Loc)
+.output NameInAssignment
+
+NameInAssignment(atomId, n, location) :-
+  BASE_SourceFileId(path, _, rootNode),
+  RecParentOf(rootNode, atomId),
+  Atom_NAME(atomId, _, n, line, _, _, pos),
+  RecParentOf(rootNode, exprStmtId),
+  RecParentOf(exprStmtId, atomId),
+  BASE_ParentOf(exprStmtId, assignId),
+  isAssign(assignId, _),
+  location = LOCATION(path, line, pos).
+
+.decl FunctionUsesName(f: symbol, fLocation: Loc, v: symbol, vLocation: Loc)
+.output FunctionUsesName
+
+FunctionUsesName(f, fLocation, n, nLocation) :-
+  Function(fd, f, fLocation),
+  NameInAssignment(id, n, nLocation),
+  RecParentOf(fd, id).
+
+.decl Func_Name(id: Id, name: symbol)
+.output Func_Name
+Func_Name(id, name) :- Funcdef_NAME(id, _, name, _, _, _, _).
+
+.decl NestedFunction(outerName: symbol, outerLoc: Loc, innerName: symbol, innerLoc: Loc)
+.output NestedFunction
+
+NestedFunction(oName, outerLoc, iName, innerLoc) :-
+  BASE_SourceFileId(path, _, rootNode),
+  RecParentOf(rootNode, outer),
+  Funcdef_NAME(outer, _, oName, oLine, _, _, oPos),
+  RecParentOf(outer, inner),
+  Funcdef_NAME(inner, _, iName, iLine, _, _, iPos),
+  outerLoc = LOCATION(path, oLine, oPos),
+  innerLoc = LOCATION(path, iLine, iPos).
+
+.decl Class(id: Id, name: symbol, loc: Loc)
+.output Class
+
+Class(id, name, LOCATION(path, line, pos)) :-
+  BASE_SourceFileId(path, _, rootNode),
+  RecParentOf(rootNode, id),
+  Classdef_NAME(id, _, name, line, _, _, pos).
+
