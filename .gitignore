@@ -7,5 +7,4 @@ build
 *~
 .idea
 schema.dl
-logic
 logic-out.dl
