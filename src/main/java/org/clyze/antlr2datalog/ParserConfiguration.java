@@ -4,8 +4,8 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
+
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 
@@ -69,5 +69,9 @@ public enum ParserConfiguration {
         this.lexerClass = (Class<? extends Lexer>)loader.loadClass(lexerClassName);
         this.parserClass = (Class<? extends Parser>)loader.loadClass(parserClassName);
         this.rootNodeMethod = parserClass.getDeclaredMethod(rootNode);
+    }
+
+    public static String[] valuesLowercase() {
+        return Arrays.stream(values()).map((ParserConfiguration pc) -> pc.name().toLowerCase(Locale.ROOT)).toArray(String[]::new);
     }
 }

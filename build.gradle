@@ -18,17 +18,17 @@ repositories {
     mavenLocal()
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
+//    maven { url 'https://dl.bintray.com/gfour/plast-lab' }
     jcenter()
 }
 
 dependencies {
-    // This dependency is used by the application.
-    implementation "commons-cli:commons-cli:1.2"
-    implementation 'com.google.guava:guava:27.1-jre'
+    implementation 'commons-cli:commons-cli:1.2'
     implementation "org.antlr.grammars:grammarsv4:1.0-SNAPSHOT"
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+    testImplementation 'commons-io:commons-io:2.4'
 }
 
 application {

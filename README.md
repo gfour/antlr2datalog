@@ -11,7 +11,7 @@ directory according to the schema.
 
 Three sample cases are included: COBOL, Kotlin, and Python3.
 
-## Use
+## Installation
 
 * Install the "grammars-v4" parsers:
 
@@ -23,15 +23,31 @@ mvn install
 
 * Install [Souffle](https://github.com/souffle-lang/souffle/).
 
-* Run analyze.sh to see an example run.
+* Build and install the distribution:
+
+```
+./gradlew installDist
+```
+
+## Use
+
+Python3 example:
+
+```
+build/install/antlr2datalog/bin/antlr2datalog -l python3 -i grammars-v4/python/python3/examples/coroutines.py
+```
+
+Kotlin example:
+
+```
+build/install/antlr2datalog/bin/antlr2datalog -l kotlin -i grammars-v4/kotlin/kotlin-formal/examples/Test.kt
+```
 
 ## Adding a language/parser
 
 1. Edit class ParserConfiguration to add a case for your parser.
 
-2. Add XYZ-logic.dl with your Datalog rules.
-
-3. Edit analyze.sh to add a case for your source file.
+2. Add `logic/LANGUAGE-logic.dl` with your Datalog rules.
 
 ## License
 

@@ -8,5 +8,4 @@ build
 .idea
 schema.dl
 logic
-logic.cpp
 logic-out.dl
