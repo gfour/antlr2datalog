@@ -14,7 +14,7 @@ import org.antlr.v4.runtime.Parser;
  */
 public enum ParserConfiguration {
     // Cobol 85, MIT license
-    COBOL("Cobol85Lexer", "Cobol85Parser", "startRule", Collections.singletonList(".txt"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar"),
+    COBOL85("Cobol85Lexer", "Cobol85Parser", "startRule", Arrays.asList(".txt", ".cbl"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar"),
     // Kotlin, Apache 2.0 license
 //    KOTLIN("org.antlr.grammars.KotlinLexer", "org.antlr.grammars.KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),
     KOTLIN("KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),

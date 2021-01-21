@@ -24,9 +24,9 @@ public class MainTest {
         assert((new File(Main.DEFAULT_WORKSPACE, "database/UsedVariable.csv")).exists());
     }
 
-    @Test public void modeCobol() {
+    @Test public void modeCobol85() {
         deleteWorkspace();
-        String[] args = new String[] { "-l", "cobol", "-i", "grammars-v4/cobol85/examples/example1.txt" };
+        String[] args = new String[] { "-l", "cobol85", "-i", "grammars-v4/cobol85/examples/example1.txt" };
         Main.main(args);
         assert((new File(Main.DEFAULT_WORKSPACE, "database/StringConstant.csv")).exists());
     }
