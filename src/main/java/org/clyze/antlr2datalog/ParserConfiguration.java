@@ -14,21 +14,23 @@ import org.antlr.v4.runtime.Parser;
  */
 public enum ParserConfiguration {
     // C (C11), BSD license
-    C("C", "CLexer", "CParser", "compilationUnit", Collections.singletonList(".c"), "C/1.0-SNAPSHOT/C-1.0-SNAPSHOT.jar"),
+    C("C", "CLexer", "CParser", "compilationUnit", Collections.singletonList(".c"), "C/1.0-SNAPSHOT/C-1.0-SNAPSHOT.jar", true),
     // Cobol 85, MIT license
-    COBOL85("Cobol85", "Cobol85Lexer", "Cobol85Parser", "startRule", Arrays.asList(".txt", ".cbl"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar"),
+    COBOL85("Cobol85", "Cobol85Lexer", "Cobol85Parser", "startRule", Arrays.asList(".txt", ".cbl"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar", true),
     // C++, MIT license
-    CPP("C++", "CPP14Lexer", "CPP14Parser", "translationUnit", Collections.singletonList(".cpp"), "CPP14/1.0-SNAPSHOT/CPP14-1.0-SNAPSHOT.jar"),
+    CPP("C++", "CPP14Lexer", "CPP14Parser", "translationUnit", Arrays.asList(".cpp", ".c"), "CPP14/1.0-SNAPSHOT/CPP14-1.0-SNAPSHOT.jar", true),
     // Kotlin, Apache 2.0 license
-//    KOTLIN("org.antlr.grammars.KotlinLexer", "org.antlr.grammars.KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),
-    KOTLIN("Kotlin", "KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),
+    KOTLIN("Kotlin", "KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar", true),
     // Lua, BSD license
-    LUA("Lua", "LuaLexer", "LuaParser", "chunk", Collections.singletonList(".lua"), "Lua/1.0-SNAPSHOT/Lua-1.0-SNAPSHOT.jar"),
+    LUA("Lua", "LuaLexer", "LuaParser", "chunk", Collections.singletonList(".lua"), "Lua/1.0-SNAPSHOT/Lua-1.0-SNAPSHOT.jar", true),
     // Python3, MIT license
-    PYTHON3("Python3", "Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar"),
+    PYTHON3("Python3", "Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar", true),
     // Rust, MIT license
-    RUST("Rust", "RustLexer", "RustParser", "crate", Collections.singletonList(".rs"), "rust/1.0-SNAPSHOT/rust-1.0-SNAPSHOT.jar"),
+    RUST("Rust", "RustLexer", "RustParser", "crate", Collections.singletonList(".rs"), "rust/1.0-SNAPSHOT/rust-1.0-SNAPSHOT.jar", true),
     ;
+
+    /** The path in the local Maven repo for grammars-v4 grammars. */
+    final static String ANTLR_GRAMMARS_PREFIX = "org/antlr/grammars/";
 
     /** The friendly name of the configuration. */
     public final String name;
@@ -41,7 +43,9 @@ public enum ParserConfiguration {
     /** The file extensions recognized by the parser. */
     final Collection<String> extensions;
     /** The parser JAR path in the local Maven repo (suffix). */
-    private final String mavenPath;
+    private final String jarPath;
+    /** If true, use special path prefix in local Maven repo. */
+    private final boolean isAntlrGrammars;
     /** The resolved (by load method) lexer Class. */
     public Class<? extends Lexer> lexerClass = null;
     /** The resolved (by load method) parser Class. */
@@ -56,15 +60,18 @@ public enum ParserConfiguration {
      * @param parserClassName    the (fully qualified) class name of the parser
      * @param rootNode           the name of the root node in the grammar
      * @param extensions         file extensions recognized by the parser
-     * @param mavenPath          the parser JAR path in the local Maven repo (suffix)
+     * @param jarPath            the parser JAR path in the local Maven repo (suffix if isAntlrGrammars is true, full path otherwise)
+     * @param isAntlrGrammars    if true, use the local Maven repo prefix for grammars-v4
      */
-    ParserConfiguration(String name, String lexerClassName, String parserClassName, String rootNode, Collection<String> extensions, String mavenPath) {
+    ParserConfiguration(String name, String lexerClassName, String parserClassName, String rootNode,
+                        Collection<String> extensions, String jarPath, boolean isAntlrGrammars) {
         this.name = name;
         this.lexerClassName = lexerClassName;
         this.parserClassName = parserClassName;
         this.rootNode = rootNode;
         this.extensions = extensions;
-        this.mavenPath = mavenPath;
+        this.jarPath = jarPath;
+        this.isAntlrGrammars = isAntlrGrammars;
     }
 
     /**
@@ -74,7 +81,7 @@ public enum ParserConfiguration {
      */
     public void load() throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
         String homeDir = System.getProperty("user.home");
-        String jarPath = "file://" + homeDir + "/.m2/repository/org/antlr/grammars/" + mavenPath;
+        String jarPath = "file://" + (isAntlrGrammars ? homeDir + "/.m2/repository/" + ANTLR_GRAMMARS_PREFIX : "") + this.jarPath;
         System.out.println("Using JAR: " + jarPath);
         URL[] urls = new URL[] { new URL(jarPath) };
         ClassLoader loader = new URLClassLoader(urls, this.getClass().getClassLoader());
