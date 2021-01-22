@@ -1,25 +1,17 @@
-#include "../workspace/schema.dl"
-#include "../logic/base-logic.dl"
+#include "schema.dl"
+#include "base-logic.dl"
 
-.type Id = symbol
-.type Loc = symbol
-
-// Function "name" declared at source file "location".
-.decl Function(id: Id, name: symbol, location: Loc)
-.output Function
-
-#define LOCATION(path, line, pos) cat(path, cat(":(", cat(to_string(line), cat(",", cat(to_string(pos), ")")))))
-
-Function(fd, name, location) :-
+BASE_FunctionDefinition(fd, name, location) :-
   Funcdef_NAME(fd, _, name, line, _, _, pos),
-  RecParentOf(rootNode, fd),
-  BASE_SourceFileId(path, _, rootNode),
+  ID_PATH(fd, path),
   location = LOCATION(path, line, pos).
+// In Python, function definition = declaration.
+BASE_FunctionDeclaration(fd, name, location) :-
+  BASE_FunctionDefinition(fd, name, location).
 
 .decl isAssign(id: Id, location: Loc)
 isAssign(id, location) :-
-  BASE_SourceFileId(path, _, rootNode),
-  RecParentOf(rootNode, id),
+  ID_PATH(id, path),
   Expr_stmt_ASSIGN(id, _, _, "=", line, _, _, pos),
   location = LOCATION(path, line, pos).
 
@@ -27,11 +19,9 @@ isAssign(id, location) :-
 .output NameInAssignment
 
 NameInAssignment(atomId, n, location) :-
-  BASE_SourceFileId(path, _, rootNode),
-  RecParentOf(rootNode, atomId),
+  ID_PATH(atomId, path),
   Atom_NAME(atomId, _, n, line, _, _, pos),
-  RecParentOf(rootNode, exprStmtId),
-  RecParentOf(exprStmtId, atomId),
+  BASE_RecParentOf(exprStmtId, atomId),
   BASE_ParentOf(exprStmtId, assignId),
   isAssign(assignId, _),
   location = LOCATION(path, line, pos).
@@ -40,9 +30,9 @@ NameInAssignment(atomId, n, location) :-
 .output FunctionUsesName
 
 FunctionUsesName(f, fLocation, n, nLocation) :-
-  Function(fd, f, fLocation),
+  BASE_FunctionDefinition(fd, f, fLocation),
   NameInAssignment(id, n, nLocation),
-  RecParentOf(fd, id).
+  BASE_RecParentOf(fd, id).
 
 .decl Func_Name(id: Id, name: symbol)
 .output Func_Name
@@ -52,10 +42,9 @@ Func_Name(id, name) :- Funcdef_NAME(id, _, name, _, _, _, _).
 .output NestedFunction
 
 NestedFunction(oName, outerLoc, iName, innerLoc) :-
-  BASE_SourceFileId(path, _, rootNode),
-  RecParentOf(rootNode, outer),
+  ID_PATH(outer, path),
   Funcdef_NAME(outer, _, oName, oLine, _, _, oPos),
-  RecParentOf(outer, inner),
+  BASE_RecParentOf(outer, inner),
   Funcdef_NAME(inner, _, iName, iLine, _, _, iPos),
   outerLoc = LOCATION(path, oLine, oPos),
   innerLoc = LOCATION(path, iLine, iPos).
@@ -64,7 +53,9 @@ NestedFunction(oName, outerLoc, iName, innerLoc) :-
 .output Class
 
 Class(id, name, LOCATION(path, line, pos)) :-
-  BASE_SourceFileId(path, _, rootNode),
-  RecParentOf(rootNode, id),
+  ID_PATH(id, path),
   Classdef_NAME(id, _, name, line, _, _, pos).
 
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  Atom_STRING(id, _, _, str, line, _, _, pos),
+  ID_PATH(id, path).

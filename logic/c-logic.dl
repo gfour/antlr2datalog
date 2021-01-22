@@ -1,0 +1,28 @@
+#include "schema.dl"
+#include "base-logic.dl"
+
+// The function-declarator part of both declarations and definitions of functions.
+.decl FunctionDeclarator(id: Id, name: symbol, location: Loc)
+.output FunctionDeclarator
+FunctionDeclarator(dd2_id, name, LOCATION(path, line, pos)) :-
+  DirectDeclarator_Identifier(dd_id, _, name, line, _, _, pos),
+  BASE_ParentOf(dd2_id, dd_id),
+  DirectDeclarator_LeftParen(dd2_id, _, "(", _, _, _, _),
+  DirectDeclarator_RightParen(dd2_id, _, ")", _, _, _, _),
+  ID_PATH(dd2_id, path).
+
+BASE_FunctionDeclaration(extDeclId, name, location) :-
+  FunctionDeclarator(dd2_id, name, location),
+  BASE_RecParentOf(declId, dd2_id),
+  isDeclaration(declId),
+  BASE_ParentOf(extDeclId, declId),
+  isExternalDeclaration(extDeclId).
+
+BASE_FunctionDefinition(fd, name, location) :-
+  FunctionDeclarator(dd2_id, name, location),
+  BASE_RecParentOf(fd, dd2_id),
+  isFunctionDefinition(fd).
+
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  PrimaryExpression_StringLiteral(id, _, _, str, line, _, _, pos),
+  ID_PATH(id, path).

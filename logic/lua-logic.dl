@@ -1,0 +1,16 @@
+#include "schema.dl"
+#include "base-logic.dl"
+
+// Only named function definitions, no lambdas.
+BASE_FunctionDefinition(statId, name, LOCATION(path, line, pos)) :-
+  Stat_funcname(statId, fnId),
+  Funcname_NAME(fnId, _, _, name, line, _, _, pos),
+  ID_PATH(fnId, path).
+
+// No distinction between declarations and definitions.
+BASE_FunctionDeclaration(fd, name, location) :-
+  BASE_FunctionDefinition(fd, name, location).
+
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  String_NORMALSTRING(id, _, str, line, _, _, pos),
+  ID_PATH(id, path).

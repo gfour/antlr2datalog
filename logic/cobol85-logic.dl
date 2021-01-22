@@ -1,8 +1,20 @@
-#include "../workspace/schema.dl"
-#include "../logic/base-logic.dl"
+#include "schema.dl"
+#include "base-logic.dl"
 
-.decl StringConstant(str: symbol, line:number)
-.output StringConstant
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  Literal_NONNUMERICLITERAL(id, _, str, line, _, _, pos),
+  ID_PATH(id, path).
 
-StringConstant(str, line) :-
-  Literal_NONNUMERICLITERAL(_, _, str, line, _, _, _).
+BASE_FunctionDefinition(id, name, LOCATION(path, line, pos)) :-
+  CobolWord_IDENTIFIER(id, _, name, line, _, _, pos),
+  // Grammar causes 4 "hops" to go to the procedure division header.
+  BASE_ParentOf(id1, id),
+  BASE_ParentOf(id2, id1),
+  BASE_ParentOf(id3, id2),
+  BASE_ParentOf(pdb, id3),
+  isProcedureDivisionBody(pdb),
+  ID_PATH(id, path).
+
+// No distinction between declarations and definitions.
+BASE_FunctionDeclaration(fd, name, location) :-
+  BASE_FunctionDefinition(fd, name, location).

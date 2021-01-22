@@ -1,5 +1,5 @@
-#include "../workspace/schema.dl"
-#include "../logic/base-logic.dl"
+#include "schema.dl"
+#include "base-logic.dl"
 
 .decl DeclaredVariable(varName: symbol)
 .output DeclaredVariable
@@ -15,3 +15,8 @@ UsedVariable(varName) :-
   DeclaredVariable(varName),
   PrimaryExpression_simpleIdentifier(_, id),
   SimpleIdentifier_Identifier(id, _, varName, _, _, _, _).
+
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  ( LineStringContent_LineStrText(id, _, str, line, _, _, pos)
+  ; MultiLineStringContent_MultiLineStrText(id, _, str, line, _, _, pos)),
+  ID_PATH(id, path).

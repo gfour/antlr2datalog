@@ -1,14 +1,14 @@
 // Recursive case for parent-of relation.
-.decl RecParentOf(a: symbol, b: symbol)
+.decl BASE_RecParentOf(a: symbol, b: symbol)
 
-RecParentOf(a, b) :- BASE_ParentOf(a, b).
-RecParentOf(a, c) :- RecParentOf(a, b), BASE_ParentOf(b, c).
+BASE_RecParentOf(a, b) :- BASE_ParentOf(a, b).
+BASE_RecParentOf(a, c) :- BASE_RecParentOf(a, b), BASE_ParentOf(b, c).
 
 #ifdef DEBUG
 
 .output BASE_ParentOf
 .output BASE_SourceFileId
-.output RecParentOf
+.output BASE_RecParentOf
 
 .decl Parent3(a1: symbol, a2: symbol, a3: symbol)
 .output Parent3
@@ -16,10 +16,29 @@ Parent3(a1, a2, a3) :- BASE_ParentOf(a1, a2), BASE_ParentOf(a2, a3).
 
 .decl Parent4(a1: symbol, a2: symbol, a3: symbol, a4: symbol)
 .output Parent4
-Parent4(a1, a2, a3, a4) :- BASE_ParentOf(a1, a2), Parent3(a2, a3, a4).
+Parent4(a1, a2, a3, a4) :- Parent3(a1, a2, a3), BASE_ParentOf(a3, a4).
 
 .decl Parent5(a1: symbol, a2: symbol, a3: symbol, a4: symbol, a5: symbol)
 .output Parent5
-Parent5(a1, a2, a3, a4, a5) :- BASE_ParentOf(a1, a2), Parent4(a2, a3, a4, a5).
+Parent5(a1, a2, a3, a4, a5) :- Parent4(a1, a2, a3, a4), BASE_ParentOf(a4, a5).
 
 #endif // DEBUG
+
+.type Id = symbol
+.type Loc = symbol
+
+#define LOCATION(path, line, pos) cat(path, cat(":(", cat(to_string(line), cat(",", cat(to_string(pos), ")")))))
+
+#define ID_PATH(id, path) \
+  BASE_RecParentOf(MACROrootNode, id), \
+  BASE_SourceFileId(path, _, MACROrootNode)
+
+// Function "name" declared at source file "location".
+.decl BASE_FunctionDeclaration(id: Id, func: symbol, loc: Loc)
+.output BASE_FunctionDeclaration
+// Function "name" defined at source file "location".
+.decl BASE_FunctionDefinition(id: Id, func: symbol, loc: Loc)
+.output BASE_FunctionDefinition
+
+.decl BASE_StringConstant(str: symbol, location: Loc)
+.output BASE_StringConstant

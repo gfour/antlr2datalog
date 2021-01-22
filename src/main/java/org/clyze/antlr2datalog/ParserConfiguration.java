@@ -13,19 +13,25 @@ import org.antlr.v4.runtime.Parser;
  * The parser configurations to use. This is a sample, extend as needed.
  */
 public enum ParserConfiguration {
+    // C (C11), BSD license
+    C("C", "CLexer", "CParser", "compilationUnit", Collections.singletonList(".c"), "C/1.0-SNAPSHOT/C-1.0-SNAPSHOT.jar"),
     // Cobol 85, MIT license
-    COBOL85("Cobol85Lexer", "Cobol85Parser", "startRule", Arrays.asList(".txt", ".cbl"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar"),
+    COBOL85("Cobol85", "Cobol85Lexer", "Cobol85Parser", "startRule", Arrays.asList(".txt", ".cbl"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar"),
+    // C++, MIT license
+    CPP("C++", "CPP14Lexer", "CPP14Parser", "translationUnit", Collections.singletonList(".cpp"), "CPP14/1.0-SNAPSHOT/CPP14-1.0-SNAPSHOT.jar"),
     // Kotlin, Apache 2.0 license
 //    KOTLIN("org.antlr.grammars.KotlinLexer", "org.antlr.grammars.KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),
-    KOTLIN("KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),
+    KOTLIN("Kotlin", "KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar"),
     // Lua, BSD license
-    LUA("LuaLexer", "LuaParser", "chunk", Collections.singletonList(".lua"), "Lua/1.0-SNAPSHOT/Lua-1.0-SNAPSHOT.jar"),
+    LUA("Lua", "LuaLexer", "LuaParser", "chunk", Collections.singletonList(".lua"), "Lua/1.0-SNAPSHOT/Lua-1.0-SNAPSHOT.jar"),
     // Python3, MIT license
-    PYTHON3("Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar"),
+    PYTHON3("Python3", "Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar"),
     // Rust, MIT license
-    RUST("RustLexer", "RustParser", "crate", Collections.singletonList(".rs"), "rust/1.0-SNAPSHOT/rust-1.0-SNAPSHOT.jar"),
+    RUST("Rust", "RustLexer", "RustParser", "crate", Collections.singletonList(".rs"), "rust/1.0-SNAPSHOT/rust-1.0-SNAPSHOT.jar"),
     ;
 
+    /** The friendly name of the configuration. */
+    public final String name;
     /** The (fully qualified) class name of the lexer. */
     private final String lexerClassName;
     /** The (fully qualified) class name of the parser. */
@@ -45,13 +51,15 @@ public enum ParserConfiguration {
 
     /**
      * Create a new parser configuration.
+     * @param name               the friendly name of the configuration
      * @param lexerClassName     the (fully qualified) class name of the lexer
      * @param parserClassName    the (fully qualified) class name of the parser
      * @param rootNode           the name of the root node in the grammar
      * @param extensions         file extensions recognized by the parser
      * @param mavenPath          the parser JAR path in the local Maven repo (suffix)
      */
-    ParserConfiguration(String lexerClassName, String parserClassName, String rootNode, Collection<String> extensions, String mavenPath) {
+    ParserConfiguration(String name, String lexerClassName, String parserClassName, String rootNode, Collection<String> extensions, String mavenPath) {
+        this.name = name;
         this.lexerClassName = lexerClassName;
         this.parserClassName = parserClassName;
         this.rootNode = rootNode;

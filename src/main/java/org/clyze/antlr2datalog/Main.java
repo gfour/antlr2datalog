@@ -60,9 +60,9 @@ public class Main {
             inputs = cli.getOptionValues(inputOpt.getOpt());
             if (cli.hasOption(workspaceOpt.getOpt()))
                 workspaceDir = cli.getOptionValue(workspaceOpt.getOpt());
-            System.out.println("Using language: " + lang);
             System.out.println("Using workspace directory: " + workspaceDir);
             parserConfiguration = ParserConfiguration.valueOf(lang.toUpperCase());
+            System.out.println("Using language: " + parserConfiguration.name);
             parserConfiguration.load();
         } catch (ParseException | MalformedURLException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();

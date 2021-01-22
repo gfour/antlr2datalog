@@ -141,11 +141,12 @@ public class Driver {
             throws IOException, InterruptedException {
         File workspaceDir = getWorkspaceDir();
         String language = parserConfiguration.name().toLowerCase(Locale.ROOT);
-        File logic = new File("logic", language + "-logic.dl");
+        File logicDir = new File("logic");
+        File logic = new File(logicDir, language + "-logic.dl");
         if (!logic.exists())
             throw new RuntimeException("ERROR: no logic (" + logic.getCanonicalPath() + ") available for language: " + language);
         String logicOut = (new File(workspaceDir, "logic-out.dl")).getCanonicalPath();
-        List<String> args = new LinkedList<>(Arrays.asList("cpp", "-P", logic.getCanonicalPath(), "-o", logicOut));
+        List<String> args = new LinkedList<>(Arrays.asList("cpp", "-I" + logicDir.getCanonicalPath(), "-I" + workspaceDir.getCanonicalPath(), "-P", logic.getCanonicalPath(), "-o", logicOut));
         if (debug)
             args.add("-DDEBUG");
         ProcessBuilder cpp = new ProcessBuilder(args.toArray(new String[0]));
