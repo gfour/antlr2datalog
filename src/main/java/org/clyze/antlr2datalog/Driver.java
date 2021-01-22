@@ -105,6 +105,26 @@ public class Driver {
             Lexer lexer = parserConfiguration.lexerClass.getConstructor(CharStream.class).newInstance(cs);
             TokenStream tokenStream = new CommonTokenStream(lexer);
             Parser parser = parserConfiguration.parserClass.getConstructor(TokenStream.class).newInstance(tokenStream);
+            if (Main.debug) {
+                parser.addParseListener(new ParseTreeListener() {
+                    @Override
+                    public void visitErrorNode(ErrorNode errorNode) {
+                        System.out.println("ERROR: in node: '" + errorNode.getText() + "'");
+                    }
+
+                    @Override
+                    public void visitTerminal(TerminalNode terminalNode) {
+                    }
+
+                    @Override
+                    public void enterEveryRule(ParserRuleContext parserRuleContext) {
+                    }
+
+                    @Override
+                    public void exitEveryRule(ParserRuleContext parserRuleContext) {
+                    }
+                });
+            }
             ParserRuleContext ruleContext = (ParserRuleContext) parserConfiguration.rootNodeMethod.invoke(parser);
             process(db, path, schema, counter, ruleContext, topPath);
         } catch (UnsupportedParserException ignored) {
