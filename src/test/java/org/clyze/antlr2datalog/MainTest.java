@@ -1,6 +1,8 @@
 package org.clyze.antlr2datalog;
 
 import java.io.File;
+import java.io.IOException;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,8 +36,9 @@ public class MainTest {
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
     }
 
-    @Test public void testRust() {
-        Main.main(new String[] { "-l", "rust", "-i", "grammars-v4/rust/examples/deno_core_runtime.rs" });
+    @Test public void testRust() throws IOException {
+        String topSrcPath = (new File("grammars-v4/rust")).getCanonicalPath();
+        Main.main(new String[] { "-l", "rust", "-i", topSrcPath + "/examples/deno_core_runtime.rs", "--relative-path",  topSrcPath});
         assert((new File(Main.DEFAULT_WORKSPACE, "facts/Identifier_NON_KEYWORD_IDENTIFIER.facts")).exists());
     }
 

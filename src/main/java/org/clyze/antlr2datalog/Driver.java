@@ -54,8 +54,9 @@ public class Driver {
      * Main entry point, generates the logic schema and then populates the
      * facts database.
      * @param inputs       the inputs (source files or directories)
+     * @param topPath      if not null, make paths relative to this path
      */
-    public void generateSchemaAndParseSources(String[] inputs) {
+    public void generateSchemaAndParseSources(String[] inputs, String topPath) {
         System.out.println("Discovering schema...");
         SchemaFinder sf = new SchemaFinder(parserConfiguration);
         Map<Class<?>, Rule> schema = sf.computeSchema();
@@ -66,11 +67,12 @@ public class Driver {
         Database db = new Database(tables, getFactsDir());
         AtomicInteger counter = new AtomicInteger(0);
         for (String path : inputs)
-            parseFile(schema, db, counter, path);
+            parseFile(schema, db, counter, path, topPath);
         db.writeFacts();
     }
 
-    private void parseFile(Map<Class<?>, Rule> schema, Database db, AtomicInteger counter, String path) {
+    private void parseFile(Map<Class<?>, Rule> schema, Database db,
+                           AtomicInteger counter, String path, String topPath) {
         File pathFile = new File(path);
         if (pathFile.isDirectory()) {
             if (Main.debug)
@@ -79,7 +81,7 @@ public class Driver {
             if (files != null)
                 for (File f : files)
                     try {
-                        parseFile(schema, db, counter, f.getCanonicalPath());
+                        parseFile(schema, db, counter, f.getCanonicalPath(), topPath);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -102,19 +104,21 @@ public class Driver {
             TokenStream tokenStream = new CommonTokenStream(lexer);
             Parser parser = parserConfiguration.parserClass.getConstructor(TokenStream.class).newInstance(tokenStream);
             ParserRuleContext ruleContext = (ParserRuleContext) parserConfiguration.rootNodeMethod.invoke(parser);
-            process(db, path, schema, counter, ruleContext);
+            process(db, path, schema, counter, ruleContext, topPath);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private void process(Database db, String path, Map<Class<?>, Rule> schema, AtomicInteger counter, ParserRuleContext rootNode) {
+    private void process(Database db, String path, Map<Class<?>, Rule> schema,
+                         AtomicInteger counter, ParserRuleContext rootNode, String topPath) {
         int fileId = counter.getAndIncrement();
         FactVisitor fv = new FactVisitor(fileId, schema, db);
         rootNode.accept(new ParseTreeVisitor<Void>() {
             @Override public Void visit(ParseTree parseTree) {
                 String parseTreeRelationName = SchemaFinder.getSimpleName(parseTree.getClass(), schema);
-                db.writeRow(BaseSchema.SOURCE_FILE_ID, path + '\t' + fileId + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
+                String srcPath = getRelativePath(path, topPath);
+                db.writeRow(BaseSchema.SOURCE_FILE_ID, srcPath + '\t' + fileId + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
                 fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass()));
                 return null;
             }
@@ -122,6 +126,14 @@ public class Driver {
             @Override public Void visitTerminal(TerminalNode terminalNode) { return null; }
             @Override public Void visitErrorNode(ErrorNode errorNode) { return null; }
         });
+    }
+
+    public static String getRelativePath(String path, String topPath) {
+        if (topPath == null || !path.startsWith(topPath))
+            return path;
+        String r = path.substring(topPath.length());
+        String sep = File.separator;
+        return (r.length() > 0 && r.startsWith(sep)) ? r.substring(sep.length()) : r;
     }
 
     private static void createDir(File dir) {

@@ -42,6 +42,10 @@ public class Main {
         Option compileOpt = new Option("c", "compile", false, "Compile logic.");
         options.addOption(compileOpt);
 
+        Option relPathOpt = new Option(null, "relative-path", true, "Make source file paths in element locations relative to given path.");
+        relPathOpt.setArgName("PATH");
+        options.addOption(relPathOpt);
+
         if (args.length == 0 || Arrays.asList(args).contains("--help")) {
             printUsage(options);
             return;
@@ -50,6 +54,7 @@ public class Main {
         ParserConfiguration parserConfiguration;
         String workspaceDir = DEFAULT_WORKSPACE;
         boolean compile;
+        String relativePath;
         String[] inputs;
         CommandLineParser parser = new GnuParser();
         try {
@@ -58,6 +63,9 @@ public class Main {
             compile = cli.hasOption(compileOpt.getOpt());
             String lang = cli.getOptionValue(langOpt.getOpt());
             inputs = cli.getOptionValues(inputOpt.getOpt());
+            relativePath = cli.getOptionValue(relPathOpt.getLongOpt());
+            if (relativePath != null && inputs.length > 1)
+                System.out.println("Making all paths relative to " + relativePath + ", ensure that no duplicate paths appear in the sources.");
             if (cli.hasOption(workspaceOpt.getOpt()))
                 workspaceDir = cli.getOptionValue(workspaceOpt.getOpt());
             System.out.println("Using workspace directory: " + workspaceDir);
@@ -71,7 +79,7 @@ public class Main {
         }
 
         Driver driver = new Driver(parserConfiguration, new File(workspaceDir));
-        driver.generateSchemaAndParseSources(inputs);
+        driver.generateSchemaAndParseSources(inputs, relativePath);
         try {
             driver.runLogic(compile, debug);
         } catch (Exception ex) {
