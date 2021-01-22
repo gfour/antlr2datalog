@@ -14,19 +14,21 @@ import org.antlr.v4.runtime.Parser;
  */
 public enum ParserConfiguration {
     // C (C11), BSD license
-    C("C", "CLexer", "CParser", "compilationUnit", Collections.singletonList(".c"), "C/1.0-SNAPSHOT/C-1.0-SNAPSHOT.jar", true),
+    C("C", "CLexer", "CParser", "compilationUnit", Collections.singletonList(".c"), "C/1.0-SNAPSHOT/C-1.0-SNAPSHOT.jar", true, false),
     // Cobol 85, MIT license
-    COBOL85("Cobol85", "Cobol85Lexer", "Cobol85Parser", "startRule", Arrays.asList(".txt", ".cbl"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar", true),
+    COBOL85("Cobol85", "Cobol85Lexer", "Cobol85Parser", "startRule", Arrays.asList(".txt", ".cbl"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar", true, false),
     // C++, MIT license
-    CPP("C++", "CPP14Lexer", "CPP14Parser", "translationUnit", Arrays.asList(".cpp", ".c"), "CPP14/1.0-SNAPSHOT/CPP14-1.0-SNAPSHOT.jar", true),
+    CPP("C++", "CPP14Lexer", "CPP14Parser", "translationUnit", Arrays.asList(".cpp", ".c"), "CPP14/1.0-SNAPSHOT/CPP14-1.0-SNAPSHOT.jar", true, false),
     // Kotlin, Apache 2.0 license
-    KOTLIN("Kotlin", "KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar", true),
+    KOTLIN("Kotlin", "KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar", true, false),
     // Lua, BSD license
-    LUA("Lua", "LuaLexer", "LuaParser", "chunk", Collections.singletonList(".lua"), "Lua/1.0-SNAPSHOT/Lua-1.0-SNAPSHOT.jar", true),
+    LUA("Lua", "LuaLexer", "LuaParser", "chunk", Collections.singletonList(".lua"), "Lua/1.0-SNAPSHOT/Lua-1.0-SNAPSHOT.jar", true, false),
+    // PHP, MIT license
+    PHP("PHP", "PhpLexer", "PhpParser", "htmlDocument", Collections.singletonList(".php"), "php/1.0-SNAPSHOT/php-1.0-SNAPSHOT.jar", true, true),
     // Python3, MIT license
-    PYTHON3("Python3", "Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar", true),
+    PYTHON3("Python3", "Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar", true, false),
     // Rust, MIT license
-    RUST("Rust", "RustLexer", "RustParser", "crate", Collections.singletonList(".rs"), "rust/1.0-SNAPSHOT/rust-1.0-SNAPSHOT.jar", true),
+    RUST("Rust", "RustLexer", "RustParser", "crate", Collections.singletonList(".rs"), "rust/1.0-SNAPSHOT/rust-1.0-SNAPSHOT.jar", true, false),
     ;
 
     /** The path in the local Maven repo for grammars-v4 grammars. */
@@ -46,6 +48,8 @@ public enum ParserConfiguration {
     private final String jarPath;
     /** If true, use special path prefix in local Maven repo. */
     private final boolean isAntlrGrammars;
+    /** If true, use lowercase character stream (for case-insensitive languages such as PHP). */
+    public final boolean lowerCase;
     /** The resolved (by load method) lexer Class. */
     public Class<? extends Lexer> lexerClass = null;
     /** The resolved (by load method) parser Class. */
@@ -62,9 +66,10 @@ public enum ParserConfiguration {
      * @param extensions         file extensions recognized by the parser
      * @param jarPath            the parser JAR path in the local Maven repo (suffix if isAntlrGrammars is true, full path otherwise)
      * @param isAntlrGrammars    if true, use the local Maven repo prefix for grammars-v4
+     * @param lowerCase
      */
     ParserConfiguration(String name, String lexerClassName, String parserClassName, String rootNode,
-                        Collection<String> extensions, String jarPath, boolean isAntlrGrammars) {
+                        Collection<String> extensions, String jarPath, boolean isAntlrGrammars, boolean lowerCase) {
         this.name = name;
         this.lexerClassName = lexerClassName;
         this.parserClassName = parserClassName;
@@ -72,6 +77,7 @@ public enum ParserConfiguration {
         this.extensions = extensions;
         this.jarPath = jarPath;
         this.isAntlrGrammars = isAntlrGrammars;
+        this.lowerCase = lowerCase;
     }
 
     /**

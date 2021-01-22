@@ -1,6 +1,8 @@
 package org.clyze.antlr2datalog;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.antlr.v4.runtime.*;
@@ -99,14 +101,35 @@ public class Driver {
             return;
         }
         try (InputStream inputStream = new FileInputStream(path)) {
-            Lexer lexer = parserConfiguration.lexerClass.getConstructor(CharStream.class).newInstance(CharStreams.fromStream(inputStream));
+            CharStream cs = getCharStream(path, inputStream);
+            Lexer lexer = parserConfiguration.lexerClass.getConstructor(CharStream.class).newInstance(cs);
             TokenStream tokenStream = new CommonTokenStream(lexer);
             Parser parser = parserConfiguration.parserClass.getConstructor(TokenStream.class).newInstance(tokenStream);
             ParserRuleContext ruleContext = (ParserRuleContext) parserConfiguration.rootNodeMethod.invoke(parser);
             process(db, path, schema, counter, ruleContext, topPath);
+        } catch (UnsupportedParserException ignored) {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private CharStream getCharStream(String path, InputStream inputStream) throws IOException, UnsupportedParserException {
+        if (parserConfiguration.lowerCase) {
+            // The required class is not compatible with Java 8. We use reflection below
+            // to break compile dependency.
+            try {
+                Class<? extends CharStream> c = (Class<? extends CharStream>) Class.forName("com.khubla.antlr.antlr4test.filestream.AntlrCaseInsensitiveFileStream");
+                Class<?> ciType = Class.forName("com.khubla.antlr.antlr4test.CaseInsensitiveType");
+                Constructor<? extends CharStream> constr = c.getConstructor(String.class, String.class, ciType);
+                return constr.newInstance(path, "UTF-8", ciType.cast(ciType.getDeclaredField("lower").get(null)));
+            } catch (InstantiationException | ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
+                System.out.println("ERROR: " + e.getMessage());
+                System.out.println("This parser seems to require lowercase char streams. Uncomment dependency 'antlr4test-maven-plugin'");
+                System.out.println("and rebuild. Enabling this feature may not support Java 8.");
+                throw new UnsupportedParserException();
+            }
+        } else
+            return CharStreams.fromStream(inputStream);
     }
 
     private void process(Database db, String path, Map<Class<?>, Rule> schema,
@@ -203,3 +226,5 @@ public class Driver {
         stdError.lines().forEach(System.out::println);
     }
 }
+
+class UnsupportedParserException extends Exception {}

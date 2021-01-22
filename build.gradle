@@ -25,6 +25,8 @@ repositories {
 dependencies {
     implementation 'commons-cli:commons-cli:1.2'
     implementation "org.antlr.grammars:grammarsv4:1.0-SNAPSHOT"
+    // Uncomment to support parsers with lowercase requirement (such as PHP).
+    // implementation "com.khubla.antlr:antlr4test-maven-plugin:1.17"
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
