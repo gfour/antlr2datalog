@@ -1,3 +1,28 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "patterns.dl"
 
+.decl Functionlike(id: Id, name: symbol, location: Loc)
+.output Functionlike
+
+Functionlike(uid, name, LOCATION(path, line, pos)) :-
+  UnqualifiedId_Identifier(uid, _, name, line, _, _, pos),
+  UP_PATH4(uid, IdExpression, Declaratorid, NoPointerDeclarator, NoPointerDeclarator, npDecl),
+  BASE_ParentOf(npDecl, paqId),
+  ParametersAndQualifiers_LeftParen(paqId, _, "(", _, _, _, _),
+  ParametersAndQualifiers_RightParen(paqId, _, ")", _, _, _, _),
+  ID_PATH(uid, path).
+
+BASE_FunctionDeclaration(id, name, loc) :-
+  Functionlike(id, name, loc),
+  BASE_RecParentOf(blockDecl, id),
+  isBlockDeclaration(blockDecl).
+
+BASE_FunctionDefinition(id, name, loc) :-
+  Functionlike(id, name, loc),
+  BASE_RecParentOf(funcDef, id),
+  isFunctionDefinition(funcDef).
+
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  Literal_StringLiteral(id, _, str, line, _, _, pos),
+  ID_PATH(id, path).

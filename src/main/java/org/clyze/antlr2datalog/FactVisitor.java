@@ -98,7 +98,10 @@ public class FactVisitor {
             sb.append("\t").append(index);
         if (comp.isTerminal) {
             Token token = ((TerminalNode) typedParseTree.parseTree).getSymbol();
-            sb.append("\t").append(token.getText().replace('\t', ' ').replace('\n', ' '))
+            String text = token.getText();
+            if (Main.debug)
+                System.out.println("Token: " + text);
+            sb.append("\t").append(text.replace('\t', ' ').replace('\n', ' '))
                     .append("\t").append(token.getLine())
                     .append("\t").append(token.getStartIndex())
                     .append("\t").append(token.getStopIndex())

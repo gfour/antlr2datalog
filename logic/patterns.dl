@@ -1,0 +1,37 @@
+// This is a collection of preprocessor macros for pattern matching on paths. */
+
+// Macros UP_PATHx match upward paths of length x from node leaf to node
+// root, where each encountered parent matches a given type.
+
+#define UP_PATH1(leaf, typeA, root)                                 \
+  BASE_ParentOf(root, leaf), is##typeA(root)
+
+#define UP_PATH2(leaf, typeA, typeB, root)                          \
+  BASE_ParentOf(MACROnode1, leaf), is##typeA(MACROnode1),           \
+  BASE_ParentOf(root, MACROnode1), is##typeB(root)
+
+#define UP_PATH3(leaf, typeA, typeB, typeC, root)                   \
+  BASE_ParentOf(MACROnode1, leaf), is##typeA(MACROnode1),           \
+  BASE_ParentOf(MACROnode2, MACROnode1), is##typeB(MACROnode2),     \
+  BASE_ParentOf(root, MACROnode2), is##typeC(root)
+
+#define UP_PATH4(leaf, typeA, typeB, typeC, typeD, root)            \
+  BASE_ParentOf(MACROnode1, leaf), is##typeA(MACROnode1),           \
+  BASE_ParentOf(MACROnode2, MACROnode1), is##typeB(MACROnode2),     \
+  BASE_ParentOf(MACROnode3, MACROnode2), is##typeC(MACROnode3),     \
+  BASE_ParentOf(root, MACROnode3), is##typeD(root)
+
+#define UP_PATH5(leaf, typeA, typeB, typeC, typeD, typeE, root)     \
+  BASE_ParentOf(MACROnode1, leaf), is##typeA(MACROnode1),           \
+  BASE_ParentOf(MACROnode2, MACROnode1), is##typeB(MACROnode2),     \
+  BASE_ParentOf(MACROnode3, MACROnode2), is##typeC(MACROnode3),     \
+  BASE_ParentOf(MACROnode4, MACROnode3), is##typeD(MACROnode4),     \
+  BASE_ParentOf(root, MACROnode4), is##typeE(root)
+
+#define UP_PATH6(leaf, typeA, typeB, typeC, typeD, typeE, typeF, root) \
+  BASE_ParentOf(MACROnode1, leaf), is##typeA(MACROnode1),           \
+  BASE_ParentOf(MACROnode2, MACROnode1), is##typeB(MACROnode2),     \
+  BASE_ParentOf(MACROnode3, MACROnode2), is##typeC(MACROnode3),     \
+  BASE_ParentOf(MACROnode4, MACROnode3), is##typeD(MACROnode4),     \
+  BASE_ParentOf(MACROnode5, MACROnode4), is##typeE(MACROnode5),     \
+  BASE_ParentOf(root, MACROnode4), is##typeF(root)
