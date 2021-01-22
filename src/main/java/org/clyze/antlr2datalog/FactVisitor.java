@@ -101,6 +101,10 @@ public class FactVisitor {
             String text = token.getText();
             if (Main.debug)
                 System.out.println("Token: " + text);
+            if (text == null) {
+                System.out.println("WARNING: null token.");
+                text = "";
+            }
             sb.append("\t").append(text.replace('\t', ' ').replace('\n', ' '))
                     .append("\t").append(token.getLine())
                     .append("\t").append(token.getStartIndex())
