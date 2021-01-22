@@ -115,8 +115,11 @@ public final class SchemaFinder {
     /**
      * Writes the schema to a Datalog file.
      * @param schemaFile   the output file
+     * @return the list of all relations (so that they can be later initialized)
      */
-    public void printSchema(File schemaFile) {
+    public List<String> generateSchema(File schemaFile) {
+        List<String> relationNames = new LinkedList<>();
+
         simplifyNames();
         StringBuilder sbSchema = new StringBuilder();
         for (Class<?> key : schema.keySet()) {
@@ -126,8 +129,10 @@ public final class SchemaFinder {
         }
         sbSchema.append(".decl ").append(BaseSchema.SOURCE_FILE_ID).append("(filename: symbol, file_id: symbol, node_id: symbol)\n");
         sbSchema.append(".input ").append(BaseSchema.SOURCE_FILE_ID).append('\n');
+        relationNames.add(BaseSchema.SOURCE_FILE_ID);
         sbSchema.append(".decl ").append(BaseSchema.PARENT_OF).append("(id: symbol, parent_id: symbol)\n");
         sbSchema.append(".input ").append(BaseSchema.PARENT_OF).append('\n');
+        relationNames.add(BaseSchema.PARENT_OF);
         for (Map.Entry<Class<?>, Rule> relation : schema.entrySet()) {
             Rule r = relation.getValue();
             Collection<Component> rules = r.components;
@@ -140,6 +145,7 @@ public final class SchemaFinder {
             sbSchema.append(".input ");
             sbSchema.append(relName0);
             sbSchema.append('\n');
+            relationNames.add(relName0);
             // Relations X_component
             for (Component comp : rules) {
                 String relNameC = relName + "_" + comp.name;
@@ -153,6 +159,7 @@ public final class SchemaFinder {
                     sbSchema.append(", _comp_text: symbol, line: number, startIndex: number, stopIndex: number, charPos: number");
                 sbSchema.append(")\n");
                 sbSchema.append(".input ").append(relNameC).append('\n');
+                relationNames.add(relNameC);
             }
         }
         try (FileWriter fw = new FileWriter(schemaFile)) {
@@ -160,6 +167,8 @@ public final class SchemaFinder {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+
+        return relationNames;
     }
 
     /**

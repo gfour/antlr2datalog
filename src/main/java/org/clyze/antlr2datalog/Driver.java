@@ -60,11 +60,10 @@ public class Driver {
         System.out.println("Discovering schema...");
         SchemaFinder sf = new SchemaFinder(parserConfiguration);
         Map<Class<?>, Rule> schema = sf.computeSchema();
-        sf.printSchema(getSchemaFile());
+        List<String> relations = sf.generateSchema(getSchemaFile());
 
         System.out.println("Recording facts...");
-        Map<String, Collection<String>> tables = new HashMap<>();
-        Database db = new Database(tables, getFactsDir());
+        Database db = new Database(relations, getFactsDir());
         AtomicInteger counter = new AtomicInteger(0);
         for (String path : inputs)
             parseFile(schema, db, counter, path, topPath);
