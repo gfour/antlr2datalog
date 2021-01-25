@@ -3,10 +3,13 @@ package org.clyze.antlr2datalog;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
+import org.zeroturnaround.zip.ZipUtil;
+import org.zeroturnaround.zip.commons.FileUtils;
 
 /**
  * The main driver that guides schema detection and source code parsing.
@@ -185,6 +188,22 @@ public class Driver {
     }
 
     /**
+     * Returns the directory contain the Datalog analysis logic. This works
+     * for both local logic (running inside in the repo) and for bundled logic.
+     * @param debug         if true, print diagnistic messages
+     * @return              the directory object
+     * @throws IOException  on logic I/O error
+     */
+    private File getLogicDir(boolean debug) throws IOException {
+        final String LOGIC_DIR_NAME = "logic";
+        File logicDir = new File(LOGIC_DIR_NAME);
+        if (logicDir.exists())
+            return logicDir;
+        else
+            return Resources.extractResourceDir(getClass().getClassLoader(), LOGIC_DIR_NAME, debug);
+    }
+
+    /**
      * Run the analysis logic.
      * @param compile                if true, logic is compiled to a binary
      * @param debug                  if true, enable debugging logic
@@ -195,7 +214,8 @@ public class Driver {
             throws IOException, InterruptedException {
         File workspaceDir = getWorkspaceDir();
         String language = parserConfiguration.name().toLowerCase(Locale.ROOT);
-        File logicDir = new File("logic");
+        File logicDir = getLogicDir(debug);
+        System.out.println("Using logic: " + logicDir);
         File logic = new File(logicDir, language + "-logic.dl");
         if (!logic.exists())
             throw new RuntimeException("ERROR: no logic (" + logic.getCanonicalPath() + ") available for language: " + language);

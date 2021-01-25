@@ -1,5 +1,7 @@
 package org.clyze.antlr2datalog;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,6 +10,7 @@ import java.util.*;
 
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
+import org.apache.commons.io.FileUtils;
 
 /**
  * The parser configurations to use. This is a sample, extend as needed.
@@ -82,15 +85,14 @@ public enum ParserConfiguration {
 
     /**
      * Loads the lexer/parser JAR and resolves their Class objects.
+     * @param debug                    debug mode
      * @throws MalformedURLException   on bad local paths
      * @throws ClassNotFoundException  on bad JAR contents
      */
-    public void load() throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
-        String homeDir = System.getProperty("user.home");
-        String jarPath = "file://" + (isAntlrGrammars ? homeDir + "/.m2/repository/" + ANTLR_GRAMMARS_PREFIX : "") + this.jarPath;
+    public void load(boolean debug) throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
+        String jarPath = getJarPath(debug);
         System.out.println("Using JAR: " + jarPath);
-        URL[] urls = new URL[] { new URL(jarPath) };
-        ClassLoader loader = new URLClassLoader(urls, this.getClass().getClassLoader());
+        ClassLoader loader = new URLClassLoader(new URL[] { new URL("file://" + jarPath) }, this.getClass().getClassLoader());
         this.lexerClass = (Class<? extends Lexer>)loader.loadClass(lexerClassName);
         this.parserClass = (Class<? extends Parser>)loader.loadClass(parserClassName);
         this.rootNodeMethod = parserClass.getDeclaredMethod(rootNode);
@@ -98,5 +100,23 @@ public enum ParserConfiguration {
 
     public static String[] valuesLowercase() {
         return Arrays.stream(values()).map((ParserConfiguration pc) -> pc.name().toLowerCase(Locale.ROOT)).toArray(String[]::new);
+    }
+
+    /**
+     * This method resolves the parser JAR. It may look into the bundled
+     * resources, the local Maven repository, or some custom path.
+     * @param debug                    debug mode
+     * @return the path of the parser JAR
+     * @throws MalformedURLException   on bad local paths
+     */
+    private String getJarPath(boolean debug) throws MalformedURLException {
+        try {
+            return Resources.extractResourceFile(getClass().getClassLoader(), "parsers/" + jarPath);
+        } catch (Exception ignored) {
+            if (debug)
+                System.out.println("No bundled parser, attempting resolution via file system...");
+        }
+        String homeDir = System.getProperty("user.home");
+        return (isAntlrGrammars ? homeDir + "/.m2/repository/" + ANTLR_GRAMMARS_PREFIX : "") + this.jarPath;
     }
 }

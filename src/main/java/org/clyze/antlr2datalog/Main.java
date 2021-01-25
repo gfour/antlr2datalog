@@ -71,7 +71,7 @@ public class Main {
             System.out.println("Using workspace directory: " + workspaceDir);
             parserConfiguration = ParserConfiguration.valueOf(lang.toUpperCase());
             System.out.println("Using language: " + parserConfiguration.name);
-            parserConfiguration.load();
+            parserConfiguration.load(debug);
         } catch (ParseException | MalformedURLException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
             printUsage(options);
