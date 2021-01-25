@@ -27,7 +27,7 @@ Parent5(a1, a2, a3, a4, a5) :- Parent4(a1, a2, a3, a4), BASE_ParentOf(a4, a5).
 .type Id = symbol
 .type Loc = symbol
 
-#define LOCATION(path, line, pos) cat(path, cat(":(", cat(to_string(line), cat(",", cat(to_string(pos), ")")))))
+#define LOCATION(path, line, pos) cat(path, cat(":", cat(to_string(line), cat(":", to_string(pos)))))
 
 #define ID_PATH(id, path) \
   BASE_RecParentOf(MACROrootNode, id), \
