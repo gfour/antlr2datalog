@@ -3,13 +3,10 @@ package org.clyze.antlr2datalog;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
-import org.zeroturnaround.zip.ZipUtil;
-import org.zeroturnaround.zip.commons.FileUtils;
 
 /**
  * The main driver that guides schema detection and source code parsing.
@@ -200,7 +197,7 @@ public class Driver {
         if (logicDir.exists())
             return logicDir;
         else
-            return Resources.extractResourceDir(getClass().getClassLoader(), LOGIC_DIR_NAME, debug);
+            return Resources.extractResourceArchive(getClass().getClassLoader(), LOGIC_DIR_NAME, "logic.zip", debug);
     }
 
     /**

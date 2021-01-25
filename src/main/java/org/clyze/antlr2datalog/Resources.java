@@ -7,17 +7,35 @@ import java.nio.file.Files;
 import org.zeroturnaround.zip.ZipUtil;
 import org.zeroturnaround.zip.commons.FileUtils;
 
+/** This class gathers functionality for bundled resources. */
 public class Resources {
-    public static File extractResourceDir(ClassLoader loader, String dirName, boolean debug) throws IOException {
-        InputStream is = loader.getResourceAsStream(dirName);
+    /**
+     * Extract a bundled archive to a temporary directory.
+     * @param loader       the class loader to use
+     * @param tmpName      the prefix of the temporary directory to create
+     * @param archiveName  the name of the bundled archive
+     * @param debug        debug mode
+     * @return             the temporary directory (to be deleted on VM exit)
+     * @throws IOException
+     */
+    public static File extractResourceArchive(ClassLoader loader, String tmpName,
+                                              String archiveName, boolean debug) throws IOException {
+        InputStream is = loader.getResourceAsStream(archiveName);
         if (is == null)
-            throw new IOException("Error: could not find directory '" + dirName + "'");
-        File tmpDir = Files.createTempDirectory(dirName).toFile();
+            throw new IOException("Error: could not find directory '" + archiveName + "'");
+        File tmpDir = Files.createTempDirectory(tmpName).toFile();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtils.deleteQuietly(tmpDir)));
         ZipUtil.unpack(is, tmpDir);
         return tmpDir;
     }
 
+    /**
+     * Extract a bundled file.
+     * @param loader       the class loader to use
+     * @param filePath     the resource path
+     * @return             the local filesystem path of the extracted file
+     * @throws IOException on I/O error when handling the resource
+     */
     public static String extractResourceFile(ClassLoader loader, String filePath) throws IOException {
         InputStream is = loader.getResourceAsStream(filePath);
         int slashPos = filePath.lastIndexOf(File.separator);

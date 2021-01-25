@@ -42,6 +42,12 @@ java {
     withJavadocJar()
 }
 
+task bundleLogic(type: Zip) {
+    archiveFileName = 'logic.zip'
+    destinationDirectory = file('src/main/resources')
+    from file('logic')
+}
+
 task copyParsers(type: Copy) {
     println "Copying parsers..."
     String homeDir = System.getProperty("user.home")
@@ -50,12 +56,6 @@ task copyParsers(type: Copy) {
     ['C', 'cobol85', 'CPP14', 'kotlin-formal', 'Lua', 'php', 'python3', 'rust'].each { String lang ->
         include "${lang}/**/*.jar"
     }
-}
-task copyLogic(type: Copy) {
-    println "Copying logic..."
-    from project.files("logic")
-    into "src/main/resources/logic"
-    include "**/*.dl"
 }
 
 task cleanResources() {
@@ -74,7 +74,7 @@ task fatJar(type: Jar) {
     from project.file('src/main/resources')
     with jar
 }
-fatJar.dependsOn copyParsers, copyLogic
+fatJar.dependsOn copyParsers, bundleLogic
 
 artifacts {
     fatJar
