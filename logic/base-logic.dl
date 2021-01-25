@@ -39,6 +39,6 @@ Parent5(a1, a2, a3, a4, a5) :- Parent4(a1, a2, a3, a4), BASE_ParentOf(a4, a5).
 // Function "name" defined at source file "location".
 .decl BASE_FunctionDefinition(id: Id, func: symbol, loc: Loc)
 .output BASE_FunctionDefinition
-
+// String constant "str" appears at source file "location".
 .decl BASE_StringConstant(str: symbol, location: Loc)
 .output BASE_StringConstant

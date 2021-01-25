@@ -1,5 +1,6 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "oo-logic.dl"
 
 .decl DeclaredVariable(varName: symbol)
 .output DeclaredVariable
@@ -20,3 +21,23 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   ( LineStringContent_LineStrText(id, _, str, line, _, _, pos)
   ; MultiLineStringContent_MultiLineStrText(id, _, str, line, _, _, pos)),
   ID_PATH(id, path).
+
+OO_Class(classDecl, name, LOCATION(path, line, pos)) :-
+  ClassDeclaration_simpleIdentifier(classDecl, identId),
+  SimpleIdentifier_Identifier(identId, _, name, line, _, _, pos),
+  ID_PATH(classDecl, path).
+
+.decl FuncDefOrDecl(id: Id, name: symbol, location: Loc)
+
+FuncDefOrDecl(fd, name, LOCATION(path, line, pos)) :-
+  FunctionDeclaration_simpleIdentifier(fd, identId),
+  SimpleIdentifier_Identifier(identId, _, name, line, _, _, pos),
+  ID_PATH(fd, path).
+
+BASE_FunctionDefinition(fd, name, location) :-
+  FuncDefOrDecl(fd, name, location),
+  FunctionDeclaration_functionBody(fd, _).
+
+BASE_FunctionDeclaration(fd, name, location) :-
+  FuncDefOrDecl(fd, name, location),
+  !FunctionDeclaration_functionBody(fd, _).

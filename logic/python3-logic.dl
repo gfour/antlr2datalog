@@ -1,5 +1,6 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "oo-logic.dl"
 
 BASE_FunctionDefinition(fd, name, location) :-
   Funcdef_NAME(fd, _, name, line, _, _, pos),
@@ -49,10 +50,7 @@ NestedFunction(oName, outerLoc, iName, innerLoc) :-
   outerLoc = LOCATION(path, oLine, oPos),
   innerLoc = LOCATION(path, iLine, iPos).
 
-.decl Class(id: Id, name: symbol, loc: Loc)
-.output Class
-
-Class(id, name, LOCATION(path, line, pos)) :-
+OO_Class(id, name, LOCATION(path, line, pos)) :-
   ID_PATH(id, path),
   Classdef_NAME(id, _, name, line, _, _, pos).
 
