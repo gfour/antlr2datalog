@@ -32,14 +32,14 @@ public class MainTest {
 
     @Test public void testLua() {
         Main.main(new String[] { "-l", "lua", "-i", "grammars-v4/lua/examples/factorial.lua" });
-        assert((new File(Main.DEFAULT_WORKSPACE, "facts/Var_NAME.facts")).exists());
+        assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_LUA_Var_NAME.facts")).exists());
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
     }
 
     @Test public void testRust() throws IOException {
         String topSrcPath = (new File("grammars-v4/rust")).getCanonicalPath();
         Main.main(new String[] { "-l", "rust", "-i", topSrcPath + "/examples/deno_core_runtime.rs", "--relative-path",  topSrcPath});
-        assert((new File(Main.DEFAULT_WORKSPACE, "facts/Identifier_NON_KEYWORD_IDENTIFIER.facts")).exists());
+        assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_RUST_Identifier_NON_KEYWORD_IDENTIFIER.facts")).exists());
     }
 
     @Test public void testC() {

@@ -2,8 +2,8 @@
 #include "base-logic.dl"
 
 BASE_FunctionDefinition(fd, name, LOCATION(path, line, pos)) :-
-  Function_identifier(fd, ident),
-  Identifier_NON_KEYWORD_IDENTIFIER(ident, _, name, line, _, _, pos),
+  db_RUST.Function_identifier(fd, ident),
+  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(ident, _, name, line, _, _, pos),
   ID_PATH(fd, path).
 
 // In Rust, function definition = declaration.
@@ -11,5 +11,5 @@ BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
 
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
-  LiteralExpression_STRING_LITERAL(id, _, str, line, _, _, pos),
+  db_RUST.LiteralExpression_STRING_LITERAL(id, _, str, line, _, _, pos),
   ID_PATH(id, path).

@@ -9,7 +9,7 @@ public class Main {
     /** Global debug flag. */
     public static boolean debug = false;
     /** The name of the default workspace directory. */
-    public static String DEFAULT_WORKSPACE = "workspace";
+    public static final String DEFAULT_WORKSPACE = "workspace";
 
     /**
      * The main entry point.
@@ -30,6 +30,7 @@ public class Main {
         Option langOpt = new Option("l", "language", true, "Parser language (available values: " + Arrays.toString(ParserConfiguration.valuesLowercase()) + ").");
         langOpt.setRequired(true);
         langOpt.setArgName("LANGUAGE");
+        inputOpt.setArgs(Option.UNLIMITED_VALUES);
         options.addOption(langOpt);
 
         Option workspaceOpt = new Option("w", "workspace", true, "Workspace directory (default: " + DEFAULT_WORKSPACE + ").");
@@ -51,7 +52,7 @@ public class Main {
             return;
         }
 
-        ParserConfiguration parserConfiguration;
+        List<ParserConfiguration> parserConfigurations = new ArrayList<>();
         String workspaceDir = DEFAULT_WORKSPACE;
         boolean compile;
         String relativePath;
@@ -61,7 +62,7 @@ public class Main {
             CommandLine cli = parser.parse(options, args);
             debug = cli.hasOption(debugOpt.getOpt());
             compile = cli.hasOption(compileOpt.getOpt());
-            String lang = cli.getOptionValue(langOpt.getOpt());
+            String[] langs = cli.getOptionValues(langOpt.getOpt());
             inputs = cli.getOptionValues(inputOpt.getOpt());
             relativePath = cli.getOptionValue(relPathOpt.getLongOpt());
             if (relativePath != null && inputs.length > 1)
@@ -69,19 +70,23 @@ public class Main {
             if (cli.hasOption(workspaceOpt.getOpt()))
                 workspaceDir = cli.getOptionValue(workspaceOpt.getOpt());
             System.out.println("Using workspace directory: " + workspaceDir);
-            parserConfiguration = ParserConfiguration.valueOf(lang.toUpperCase());
-            System.out.println("Using language: " + parserConfiguration.name);
-            parserConfiguration.load(debug);
+            for (String lang : langs) {
+                ParserConfiguration pc = ParserConfiguration.valueOf(lang.toUpperCase());
+                parserConfigurations.add(pc);
+                pc.load(debug);
+                System.out.println("Using language: " + pc.name);
+            }
         } catch (ParseException | MalformedURLException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
             printUsage(options);
             return;
         }
 
-        Driver driver = new Driver(parserConfiguration, new File(workspaceDir));
-        driver.generateSchemaAndParseSources(inputs, relativePath);
         try {
-            driver.runLogic(compile, debug);
+            Driver driver = new Driver(parserConfigurations, new File(workspaceDir), debug);
+            driver.initWorkspaceDir();
+            driver.generateSchemaAndParseSources(inputs, relativePath);
+            driver.runLogic(compile);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

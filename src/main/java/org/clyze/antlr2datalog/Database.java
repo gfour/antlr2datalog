@@ -7,19 +7,23 @@ import java.util.*;
 
 /** The database to use for writing source code facts. */
 public class Database {
+    public final Schema schema;
     private final Map<String, Collection<String>> tables;
     private final File outDir;
+    private final String relationPrefix;
 
     /**
      * Create a new database.
-     * @param relations   the names of all the relations
+     * @param schema      the schema of the database
      * @param outDir      the output directory path
      */
-    public Database(List<String> relations, File outDir) {
-        this.tables = new HashMap<>();
-        for (String relation : relations)
-            tables.put(relation, new LinkedList<>());
+    public Database(Schema schema, File outDir) {
+        this.schema = schema;
         this.outDir = outDir;
+        this.tables = new HashMap<>();
+        for (String relation : schema.relations)
+            tables.put(relation, new LinkedList<>());
+        this.relationPrefix = schema.relationPrefix;
     }
 
     /**
@@ -30,7 +34,7 @@ public class Database {
     public void writeRow(String relName, String line) {
         Collection<String> relLines = tables.get(relName);
         if (relLines == null) {
-            System.out.println("WARNING: input relation not initialized properly, it may be missing for other inputs.");
+            System.out.println("WARNING: input relation '" + relName + "' not initialized properly, it may be missing for other inputs.");
             relLines = new LinkedList<>();
         }
         relLines.add(line);
@@ -39,13 +43,14 @@ public class Database {
 
     /**
      * Call this method when all facts have been gathered.
+     * @param debug    debugging mode (diagnostics)
      */
-    public void writeFacts() {
-        if (!outDir.mkdirs())
+    public void writeFacts(boolean debug) {
+        if (!outDir.mkdirs() && debug)
             System.out.println("WARNING: directory already exists: " + outDir);
         for (Map.Entry<String, Collection<String>> entry : tables.entrySet()) {
             String relName = entry.getKey();
-            try (FileWriter fw = new FileWriter(new File(outDir, relName + ".facts"))) {
+            try (FileWriter fw = new FileWriter(new File(outDir, relationPrefix + relName + ".facts"))) {
                 Collection<String> lines = tables.get(relName);
                 if (lines.isEmpty()) {
                     if (Main.debug)

@@ -6,23 +6,23 @@
 .output Functionlike
 
 Functionlike(uid, name, LOCATION(path, line, pos)) :-
-  UnqualifiedId_Identifier(uid, _, name, line, _, _, pos),
-  UP_PATH4(uid, IdExpression, Declaratorid, NoPointerDeclarator, NoPointerDeclarator, npDecl),
+  db_CPP.UnqualifiedId_Identifier(uid, _, name, line, _, _, pos),
+  UP_PATH4(uid, db_CPP.isIdExpression, db_CPP.isDeclaratorid, db_CPP.isNoPointerDeclarator, db_CPP.isNoPointerDeclarator, npDecl),
   BASE_ParentOf(npDecl, paqId),
-  ParametersAndQualifiers_LeftParen(paqId, _, "(", _, _, _, _),
-  ParametersAndQualifiers_RightParen(paqId, _, ")", _, _, _, _),
+  db_CPP.ParametersAndQualifiers_LeftParen(paqId, _, "(", _, _, _, _),
+  db_CPP.ParametersAndQualifiers_RightParen(paqId, _, ")", _, _, _, _),
   ID_PATH(uid, path).
 
 BASE_FunctionDeclaration(id, name, loc) :-
   Functionlike(id, name, loc),
   BASE_RecParentOf(blockDecl, id),
-  isBlockDeclaration(blockDecl).
+  db_CPP.isBlockDeclaration(blockDecl).
 
 BASE_FunctionDefinition(id, name, loc) :-
   Functionlike(id, name, loc),
   BASE_RecParentOf(funcDef, id),
-  isFunctionDefinition(funcDef).
+  db_CPP.isFunctionDefinition(funcDef).
 
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
-  Literal_StringLiteral(id, _, str, line, _, _, pos),
+  db_CPP.Literal_StringLiteral(id, _, str, line, _, _, pos),
   ID_PATH(id, path).

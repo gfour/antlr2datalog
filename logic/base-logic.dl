@@ -1,3 +1,5 @@
+#pragma once
+
 // Recursive case for parent-of relation.
 .decl BASE_RecParentOf(a: symbol, b: symbol)
 

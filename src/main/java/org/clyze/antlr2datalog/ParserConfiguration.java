@@ -2,15 +2,18 @@ package org.clyze.antlr2datalog;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
-import org.apache.commons.io.FileUtils;
 
 /**
  * The parser configurations to use. This is a sample, extend as needed.
@@ -69,7 +72,7 @@ public enum ParserConfiguration {
      * @param extensions         file extensions recognized by the parser
      * @param jarPath            the parser JAR path in the local Maven repo (suffix if isAntlrGrammars is true, full path otherwise)
      * @param isAntlrGrammars    if true, use the local Maven repo prefix for grammars-v4
-     * @param lowerCase
+     * @param lowerCase          if true, a lower-case character stream is used
      */
     ParserConfiguration(String name, String lexerClassName, String parserClassName, String rootNode,
                         Collection<String> extensions, String jarPath, boolean isAntlrGrammars, boolean lowerCase) {
@@ -107,9 +110,8 @@ public enum ParserConfiguration {
      * resources, the local Maven repository, or some custom path.
      * @param debug                    debug mode
      * @return the path of the parser JAR
-     * @throws MalformedURLException   on bad local paths
      */
-    private String getJarPath(boolean debug) throws MalformedURLException {
+    private String getJarPath(boolean debug) {
         try {
             return Resources.extractResourceFile(getClass().getClassLoader(), "parsers/" + jarPath);
         } catch (Exception ignored) {
@@ -119,4 +121,24 @@ public enum ParserConfiguration {
         String homeDir = System.getProperty("user.home");
         return (isAntlrGrammars ? homeDir + "/.m2/repository/" + ANTLR_GRAMMARS_PREFIX : "") + this.jarPath;
     }
+
+    public CharStream getCharStream(String path, InputStream inputStream) throws IOException, UnsupportedParserException {
+        if (this.lowerCase) {
+            // The required class is not compatible with Java 8. We use reflection below
+            // to break compile dependency.
+            try {
+                Class<? extends CharStream> c = (Class<? extends CharStream>) Class.forName("com.khubla.antlr.antlr4test.filestream.AntlrCaseInsensitiveFileStream");
+                Class<?> ciType = Class.forName("com.khubla.antlr.antlr4test.CaseInsensitiveType");
+                Constructor<? extends CharStream> constr = c.getConstructor(String.class, String.class, ciType);
+                return constr.newInstance(path, "UTF-8", ciType.cast(ciType.getDeclaredField("lower").get(null)));
+            } catch (InstantiationException | ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
+                System.out.println("ERROR: " + e.getMessage());
+                System.out.println("This parser seems to require lowercase char streams. Uncomment dependency 'antlr4test-maven-plugin'");
+                System.out.println("and rebuild. Enabling this feature may not support Java 8.");
+                throw new UnsupportedParserException();
+            }
+        } else
+            return CharStreams.fromStream(inputStream);
+    }
+
 }

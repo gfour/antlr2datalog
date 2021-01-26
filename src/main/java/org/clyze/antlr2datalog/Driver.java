@@ -1,8 +1,6 @@
 package org.clyze.antlr2datalog;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.antlr.v4.runtime.*;
@@ -12,17 +10,20 @@ import org.antlr.v4.runtime.tree.*;
  * The main driver that guides schema detection and source code parsing.
  */
 public class Driver {
-    private final ParserConfiguration parserConfiguration;
+    private final List<ParserConfiguration> parserConfigurations;
     private final File workspaceDir;
+    private final boolean debug;
 
     /**
      * Create a new driver to generate the schema and parse the sources.
-     * @param parserConfiguration    the parser configuration to use
+     * @param parserConfigurations   the parser configurations to use
      * @param workspaceDir           the workspace directory to use
+     * @param debug                  debug mode
      */
-    public Driver(ParserConfiguration parserConfiguration, File workspaceDir) {
-        this.parserConfiguration = parserConfiguration;
+    public Driver(List<ParserConfiguration> parserConfigurations, File workspaceDir, boolean debug) {
+        this.parserConfigurations = parserConfigurations;
         this.workspaceDir = workspaceDir;
+        this.debug = debug;
     }
 
     /**
@@ -30,7 +31,7 @@ public class Driver {
      * @return  the file path to use to write the schema (example: "schema.dl")
      */
     private File getSchemaFile() {
-       return new File(getWorkspaceDir(), "schema.dl");
+       return new File(workspaceDir, "schema.dl");
     }
 
     /**
@@ -38,51 +39,57 @@ public class Driver {
      * @return  the directory path to use for writing the facts
      */
     private File getFactsDir() {
-        return new File(getWorkspaceDir(), "facts");
+        return new File(workspaceDir, "facts");
     }
 
     /**
-     * Returns the workspace directory.
-     * @return the workspace directory to use
+     * Initializes the workspace directory.
      */
-    private File getWorkspaceDir() {
-        if (!workspaceDir.exists()) {
-            if (!workspaceDir.mkdirs())
-                System.out.println("WARNING: workspace directory already exists: " + workspaceDir);
-        }
-        return workspaceDir;
+    public void initWorkspaceDir() {
+        if (workspaceDir.exists() || !workspaceDir.mkdirs())
+            System.out.println("WARNING: workspace directory already exists: " + workspaceDir);
     }
+
     /**
      * Main entry point, generates the logic schema and then populates the
      * facts database.
      * @param inputs       the inputs (source files or directories)
      * @param topPath      if not null, make paths relative to this path
+     * @throws IOException on schema writing failure
      */
-    public void generateSchemaAndParseSources(String[] inputs, String topPath) {
-        System.out.println("Discovering schema...");
-        SchemaFinder sf = new SchemaFinder(parserConfiguration);
-        Map<Class<?>, Rule> schema = sf.computeSchema();
-        List<String> relations = sf.generateSchema(getSchemaFile());
+    public void generateSchemaAndParseSources(String[] inputs, String topPath)
+    throws IOException {
+        List<Schema> langSchemas = new ArrayList<>();
+        Database baseDb = new Database(BaseSchema.create(), getFactsDir());
+        for (ParserConfiguration parserConfiguration : parserConfigurations) {
+            System.out.println("Discovering " + parserConfiguration.name + " schema...");
+            SchemaFinder sf = new SchemaFinder(parserConfiguration);
+            Schema langSchema = sf.generateLanguageSchema();
+            langSchemas.add(langSchema);
 
-        System.out.println("Recording facts...");
-        Database db = new Database(relations, getFactsDir());
-        AtomicInteger counter = new AtomicInteger(0);
-        for (String path : inputs)
-            parseFile(schema, db, counter, path, topPath);
-        db.writeFacts();
+            System.out.println("Recording " + parserConfiguration.name + " facts...");
+            Database db = new Database(langSchema, getFactsDir());
+            AtomicInteger counter = new AtomicInteger(0);
+            for (String path : inputs)
+                parseFile(parserConfiguration, db, baseDb, counter, path, topPath);
+            db.writeFacts(debug);
+        }
+        baseDb.writeFacts(debug);
+        Schema.write(baseDb.schema, langSchemas, getSchemaFile());
     }
 
-    private void parseFile(Map<Class<?>, Rule> schema, Database db,
+    private void parseFile(ParserConfiguration parserConfiguration,
+                           Database langDb, Database baseDb,
                            AtomicInteger counter, String path, String topPath) {
         File pathFile = new File(path);
         if (pathFile.isDirectory()) {
-            if (Main.debug)
-                System.out.println("Processing directory: " + path);
+            if (debug)
+                System.out.println("[" + parserConfiguration.name + "] Processing directory: " + path);
             File[] files = pathFile.listFiles();
             if (files != null)
                 for (File f : files)
                     try {
-                        parseFile(schema, db, counter, f.getCanonicalPath(), topPath);
+                        parseFile(parserConfiguration, langDb, baseDb, counter, f.getCanonicalPath(), topPath);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -96,16 +103,16 @@ public class Driver {
                 break;
             }
         if (ignore) {
-            if (Main.debug)
-                System.out.println("Ignoring: " + path);
+            if (debug)
+                System.out.println("[" + parserConfiguration.name + "] Ignoring: " + path);
             return;
         }
         try (InputStream inputStream = new FileInputStream(path)) {
-            CharStream cs = getCharStream(path, inputStream);
+            CharStream cs = parserConfiguration.getCharStream(path, inputStream);
             Lexer lexer = parserConfiguration.lexerClass.getConstructor(CharStream.class).newInstance(cs);
             TokenStream tokenStream = new CommonTokenStream(lexer);
             Parser parser = parserConfiguration.parserClass.getConstructor(TokenStream.class).newInstance(tokenStream);
-            if (Main.debug) {
+            if (debug) {
                 parser.addParseListener(new ParseTreeListener() {
                     @Override
                     public void visitErrorNode(ErrorNode errorNode) {
@@ -126,41 +133,22 @@ public class Driver {
                 });
             }
             ParserRuleContext ruleContext = (ParserRuleContext) parserConfiguration.rootNodeMethod.invoke(parser);
-            process(db, path, schema, counter, ruleContext, topPath);
+            process(langDb, baseDb, path, counter, ruleContext, topPath);
         } catch (UnsupportedParserException ignored) {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private CharStream getCharStream(String path, InputStream inputStream) throws IOException, UnsupportedParserException {
-        if (parserConfiguration.lowerCase) {
-            // The required class is not compatible with Java 8. We use reflection below
-            // to break compile dependency.
-            try {
-                Class<? extends CharStream> c = (Class<? extends CharStream>) Class.forName("com.khubla.antlr.antlr4test.filestream.AntlrCaseInsensitiveFileStream");
-                Class<?> ciType = Class.forName("com.khubla.antlr.antlr4test.CaseInsensitiveType");
-                Constructor<? extends CharStream> constr = c.getConstructor(String.class, String.class, ciType);
-                return constr.newInstance(path, "UTF-8", ciType.cast(ciType.getDeclaredField("lower").get(null)));
-            } catch (InstantiationException | ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
-                System.out.println("ERROR: " + e.getMessage());
-                System.out.println("This parser seems to require lowercase char streams. Uncomment dependency 'antlr4test-maven-plugin'");
-                System.out.println("and rebuild. Enabling this feature may not support Java 8.");
-                throw new UnsupportedParserException();
-            }
-        } else
-            return CharStreams.fromStream(inputStream);
-    }
-
-    private void process(Database db, String path, Map<Class<?>, Rule> schema,
+    private void process(Database langDb, Database baseDb, String path,
                          AtomicInteger counter, ParserRuleContext rootNode, String topPath) {
         int fileId = counter.getAndIncrement();
-        FactVisitor fv = new FactVisitor(fileId, schema, db);
+        FactVisitor fv = new FactVisitor(fileId, langDb, baseDb);
         rootNode.accept(new ParseTreeVisitor<Void>() {
             @Override public Void visit(ParseTree parseTree) {
-                String parseTreeRelationName = SchemaFinder.getSimpleName(parseTree.getClass(), schema);
+                String parseTreeRelationName = SchemaFinder.getSimpleName(parseTree.getClass(), langDb.schema.rules);
                 String srcPath = getRelativePath(path, topPath);
-                db.writeRow(BaseSchema.SOURCE_FILE_ID, srcPath + '\t' + fileId + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
+                BaseSchema.writeSourceFileId(baseDb, srcPath + '\t' + fileId + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
                 fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass()));
                 return null;
             }
@@ -187,37 +175,41 @@ public class Driver {
     /**
      * Returns the directory contain the Datalog analysis logic. This works
      * for both local logic (running inside in the repo) and for bundled logic.
-     * @param debug         if true, print diagnistic messages
      * @return              the directory object
      * @throws IOException  on logic I/O error
      */
-    private File getLogicDir(boolean debug) throws IOException {
+    private File getLogicDir() throws IOException {
         final String LOGIC_DIR_NAME = "logic";
         File logicDir = new File(LOGIC_DIR_NAME);
         if (logicDir.exists())
             return logicDir;
         else
-            return Resources.extractResourceArchive(getClass().getClassLoader(), LOGIC_DIR_NAME, "logic.zip", debug);
+            return Resources.extractResourceArchive(getClass().getClassLoader(), LOGIC_DIR_NAME, "logic.zip");
     }
 
     /**
      * Run the analysis logic.
      * @param compile                if true, logic is compiled to a binary
-     * @param debug                  if true, enable debugging logic
      * @throws IOException           on file handling error
      * @throws InterruptedException  on command execution error
      */
-    public void runLogic(boolean compile, boolean debug)
+    public void runLogic(boolean compile)
             throws IOException, InterruptedException {
-        File workspaceDir = getWorkspaceDir();
-        String language = parserConfiguration.name().toLowerCase(Locale.ROOT);
-        File logicDir = getLogicDir(debug);
-        System.out.println("Using logic: " + logicDir);
-        File logic = new File(logicDir, language + "-logic.dl");
-        if (!logic.exists())
-            throw new RuntimeException("ERROR: no logic (" + logic.getCanonicalPath() + ") available for language: " + language);
+        File logicDir = getLogicDir();
+        System.out.println("Using logic directory: " + logicDir);
+        File logicIn = new File(workspaceDir, "logic-pre.dl");
+        try (FileWriter fw = new FileWriter(logicIn)) {
+            for (ParserConfiguration parserConfiguration : parserConfigurations) {
+                String language = parserConfiguration.name().toLowerCase(Locale.ROOT);
+                String logicName = language + "-logic.dl";
+                File logic = new File(logicDir, logicName);
+                if (!logic.exists())
+                    throw new RuntimeException("ERROR: no logic (" + logic.getCanonicalPath() + ") available for language: " + language);
+                fw.write("#include \"" + logicName + "\"\n");
+            }
+        }
         String logicOut = (new File(workspaceDir, "logic-out.dl")).getCanonicalPath();
-        List<String> args = new LinkedList<>(Arrays.asList("cpp", "-I" + logicDir.getCanonicalPath(), "-I" + workspaceDir.getCanonicalPath(), "-P", logic.getCanonicalPath(), "-o", logicOut));
+        List<String> args = new LinkedList<>(Arrays.asList("cpp", "-I" + logicDir.getCanonicalPath(), "-I" + workspaceDir.getCanonicalPath(), "-P", logicIn.getCanonicalPath(), "-o", logicOut));
         if (debug)
             args.add("-DDEBUG");
         ProcessBuilder cpp = new ProcessBuilder(args.toArray(new String[0]));

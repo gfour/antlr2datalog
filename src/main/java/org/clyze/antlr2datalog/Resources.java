@@ -14,12 +14,11 @@ public class Resources {
      * @param loader       the class loader to use
      * @param tmpName      the prefix of the temporary directory to create
      * @param archiveName  the name of the bundled archive
-     * @param debug        debug mode
      * @return             the temporary directory (to be deleted on VM exit)
-     * @throws IOException
+     * @throws IOException on extraction error
      */
     public static File extractResourceArchive(ClassLoader loader, String tmpName,
-                                              String archiveName, boolean debug) throws IOException {
+                                              String archiveName) throws IOException {
         InputStream is = loader.getResourceAsStream(archiveName);
         if (is == null)
             throw new IOException("Error: could not find directory '" + archiveName + "'");
@@ -38,6 +37,8 @@ public class Resources {
      */
     public static String extractResourceFile(ClassLoader loader, String filePath) throws IOException {
         InputStream is = loader.getResourceAsStream(filePath);
+        if (is == null)
+            throw new RuntimeException("Cannot find resource: " + filePath);
         int slashPos = filePath.lastIndexOf(File.separator);
         String tmpSuffix = slashPos >= 0 ? filePath.substring(slashPos + File.separator.length()) : ".tmp";
         File tmpFile = File.createTempFile("tmp", tmpSuffix);

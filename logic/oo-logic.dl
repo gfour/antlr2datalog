@@ -1,3 +1,5 @@
+#pragma once
+
 // Class "name" defined at source file "location".
 .decl OO_Class(id: Id, name: symbol, location: Loc)
 .output OO_Class

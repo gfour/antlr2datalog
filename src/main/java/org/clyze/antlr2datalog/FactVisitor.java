@@ -9,19 +9,21 @@ import org.antlr.v4.runtime.tree.*;
  */
 public class FactVisitor {
     private final String fileId;
-    private final Map<Class<?>, Rule> schema;
-    private final Database db;
+    private final Map<Class<?>, Rule> schemaRules;
+    private final Database langDb;
+    private final Database baseDb;
 
     /**
      * Create a new visitor to generate facts.
      * @param fileId   the source file id (unique per file)
-     * @param schema   the database schema to use
-     * @param db       the database object to use for writing
+     * @param langDb   the database object to use for writing language facts
+     * @param baseDb the database object to use for writing facts across languages
      */
-    public FactVisitor(int fileId, Map<Class<?>, Rule> schema, Database db) {
+    public FactVisitor(int fileId, Database langDb, Database baseDb) {
         this.fileId = "#" + fileId + "#";
-        this.schema = schema;
-        this.db = db;
+        this.schemaRules = langDb.schema.rules;
+        this.langDb = langDb;
+        this.baseDb = baseDb;
     }
 
     /**
@@ -40,12 +42,12 @@ public class FactVisitor {
      * @param typedParseTree   the node of the tree
      */
     public void visitParseTree(TypedParseTree typedParseTree) {
-        String relName = SchemaFinder.getSimpleName(typedParseTree.c, schema);
+        String relName = SchemaFinder.getSimpleName(typedParseTree.c, schemaRules);
         if (Main.debug)
             System.out.println("relName = " + relName);
         String nodeId = getNodeId(relName, typedParseTree.parseTree);
-        db.writeRow("is" + relName, nodeId);
-        Collection<Component> rules = schema.get(typedParseTree.c).components;
+        langDb.writeRow("is" + relName, nodeId);
+        Collection<Component> rules = schemaRules.get(typedParseTree.c).components;
         if (rules == null) {
             System.out.println("WARNING: schema lacks " + relName);
             return;
@@ -90,10 +92,10 @@ public class FactVisitor {
 
     private void visitPt(String relName, Component comp, String parentNodeId,
                          TypedParseTree typedParseTree, int index, List<TypedParseTree> subTrees) {
-        String compSimpleName = SchemaFinder.getSimpleName(comp.type, schema);
+        String compSimpleName = SchemaFinder.getSimpleName(comp.type, schemaRules);
         String compNodeId = getNodeId(compSimpleName, typedParseTree.parseTree);
         StringBuilder sb = new StringBuilder().append(parentNodeId).append('\t').append(compNodeId);
-        db.writeRow(BaseSchema.PARENT_OF, sb.toString());
+        BaseSchema.writeParentOf(baseDb, sb.toString());
         if (comp.index)
             sb.append("\t").append(index);
         if (comp.isTerminal) {
@@ -111,7 +113,7 @@ public class FactVisitor {
                     .append("\t").append(token.getStopIndex())
                     .append("\t").append(token.getCharPositionInLine());
         }
-        db.writeRow(relName + "_" + comp.name, sb.toString());
+        langDb.writeRow(relName + "_" + comp.name, sb.toString());
         subTrees.add(typedParseTree);
     }
 }
