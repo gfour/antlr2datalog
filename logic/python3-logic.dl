@@ -57,3 +57,5 @@ OO_Class(id, name, LOCATION(path, line, pos)) :-
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_PYTHON3.Atom_STRING(id, _, _, str, line, _, _, pos),
   ID_PATH(id, path).
+
+BASE_Scope(id) :- db_PYTHON3.isSuite(id).

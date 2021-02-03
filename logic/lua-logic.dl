@@ -14,3 +14,6 @@ BASE_FunctionDeclaration(fd, name, location) :-
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_LUA.String_NORMALSTRING(id, _, str, line, _, _, pos),
   ID_PATH(id, path).
+
+BASE_Scope(id) :- db_LUA.isFuncbody(id).
+BASE_Scope(id) :- db_LUA.isBlock(id).

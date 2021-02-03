@@ -26,3 +26,6 @@ BASE_FunctionDefinition(id, name, loc) :-
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_CPP.Literal_StringLiteral(id, _, str, line, _, _, pos),
   ID_PATH(id, path).
+
+BASE_Scope(id) :- db_CPP.isLambdaIntroducer(id).
+BASE_Scope(id) :- db_CPP.isCompoundStatement(id).

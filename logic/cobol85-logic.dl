@@ -18,3 +18,5 @@ BASE_FunctionDefinition(id, name, LOCATION(path, line, pos)) :-
 // No distinction between declarations and definitions.
 BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
+
+BASE_Scope(id) :- BASE_SourceFileId(_, _, id).

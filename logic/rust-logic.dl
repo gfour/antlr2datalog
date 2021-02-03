@@ -13,3 +13,5 @@ BASE_FunctionDeclaration(fd, name, location) :-
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_RUST.LiteralExpression_STRING_LITERAL(id, _, str, line, _, _, pos),
   ID_PATH(id, path).
+
+BASE_Scope(id) :- db_RUST.isBlockExpression(id).

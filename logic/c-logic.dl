@@ -26,3 +26,6 @@ BASE_FunctionDefinition(fd, name, location) :-
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_C.PrimaryExpression_StringLiteral(id, _, _, str, line, _, _, pos),
   ID_PATH(id, path).
+
+BASE_Scope(id) :- db_C.isCompoundStatement(id).
+BASE_Scope(id) :- db_C.isStructDeclarationList(id).
