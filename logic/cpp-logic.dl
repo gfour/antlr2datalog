@@ -2,10 +2,10 @@
 #include "base-logic.dl"
 #include "patterns.dl"
 
-.decl Functionlike(id: Id, name: symbol, location: Loc)
+.decl Functionlike(id: Id, name: symbol, location: Loc, paramsAndQuals: Id)
 .output Functionlike
 
-Functionlike(uid, name, LOCATION(path, line, pos)) :-
+Functionlike(uid, name, LOCATION(path, line, pos), paqId) :-
   db_CPP.UnqualifiedId_Identifier(uid, _, name, line, _, _, pos),
   UP_PATH4(uid, db_CPP.isIdExpression, db_CPP.isDeclaratorid, db_CPP.isNoPointerDeclarator, db_CPP.isNoPointerDeclarator, npDecl),
   BASE_ParentOf(npDecl, paqId),
@@ -14,12 +14,12 @@ Functionlike(uid, name, LOCATION(path, line, pos)) :-
   ID_PATH(uid, path).
 
 BASE_FunctionDeclaration(id, name, loc) :-
-  Functionlike(id, name, loc),
+  Functionlike(id, name, loc, _),
   BASE_RecParentOf(blockDecl, id),
   db_CPP.isBlockDeclaration(blockDecl).
 
 BASE_FunctionDefinition(id, name, loc) :-
-  Functionlike(id, name, loc),
+  Functionlike(id, name, loc, _),
   BASE_RecParentOf(funcDef, id),
   db_CPP.isFunctionDefinition(funcDef).
 
@@ -27,5 +27,17 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_CPP.Literal_StringLiteral(id, _, str, line, _, _, pos),
   ID_PATH(id, path).
 
-BASE_Scope(id) :- db_CPP.isLambdaIntroducer(id).
-BASE_Scope(id) :- db_CPP.isCompoundStatement(id).
+BASE_isScope(id) :- db_CPP.isLambdaIntroducer(id).
+BASE_isScope(id) :- db_CPP.isCompoundStatement(id).
+
+// Variable declarations from function parameters.
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  Functionlike(func, _, _, paqId),
+  db_CPP.ClassName_Identifier(_, id, v, line, _, _, pos),
+  BASE_RecParentOf(paqId, id),
+  ID_PATH(func, path).
+// Local variable declarations.
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  db_CPP.UnqualifiedId_Identifier(uId, id, v, line, _, _, pos),
+  UP_PATH6(uId, db_CPP.isIdExpression, db_CPP.isDeclaratorid, db_CPP.isNoPointerDeclarator, db_CPP.isPointerDeclarator, db_CPP.isDeclarator, db_CPP.isInitDeclarator, di),
+  ID_PATH(di, path).

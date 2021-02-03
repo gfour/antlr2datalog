@@ -14,4 +14,9 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_RUST.LiteralExpression_STRING_LITERAL(id, _, str, line, _, _, pos),
   ID_PATH(id, path).
 
-BASE_Scope(id) :- db_RUST.isBlockExpression(id).
+BASE_isScope(id) :- db_RUST.isBlockExpression(id).
+
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  db_RUST.IdentifierPattern_identifier(_, id),
+  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(id, _, v, line, _, _, pos),
+  ID_PATH(id, path).

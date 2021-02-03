@@ -46,5 +46,27 @@ Parent5(a1, a2, a3, a4, a5) :- Parent4(a1, a2, a3, a4), BASE_ParentOf(a4, a5).
 .output BASE_StringConstant
 
 // A code scope (e.g. a block or a class declaration body).
-.decl BASE_Scope(id: Id)
-.output BASE_Scope
+.decl BASE_isScope(id: Id)
+.output BASE_isScope
+
+.decl BASE_ScopesOverlap(b1: Id, b2: Id)
+.output BASE_ScopesOverlap
+BASE_ScopesOverlap(b1, b2) :-
+  BASE_isScope(b1),
+  BASE_isScope(b2),
+  b1 != b2,
+  (BASE_RecParentOf(b1, b2) ; BASE_RecParentOf(b2, b1)).
+
+.decl BASE_VariableDeclaration(id: Id, v: symbol, loc: Loc)
+.output BASE_VariableDeclaration
+
+.decl BASE_VariableMayShadow(id1: Id, id2: Id, v: symbol)
+.output BASE_VariableMayShadow
+
+BASE_VariableMayShadow(id1, id2, v) :-
+  BASE_VariableDeclaration(id1, v, _),
+  BASE_VariableDeclaration(id2, v, _),
+  id1 != id2,
+  BASE_RecParentOf(id1, b1),
+  BASE_RecParentOf(id2, b2),
+  BASE_ScopesOverlap(b1, b2).

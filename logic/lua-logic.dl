@@ -15,5 +15,18 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_LUA.String_NORMALSTRING(id, _, str, line, _, _, pos),
   ID_PATH(id, path).
 
-BASE_Scope(id) :- db_LUA.isFuncbody(id).
-BASE_Scope(id) :- db_LUA.isBlock(id).
+BASE_isScope(id) :- db_LUA.isFuncbody(id).
+BASE_isScope(id) :- db_LUA.isBlock(id).
+
+// Variable declarations from function parameters.
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  db_LUA.Funcbody_parlist(funcBody, pl),
+  db_LUA.Parlist_namelist(pl, nl),
+  db_LUA.Namelist_NAME(nl, id, _, v, line, _, _, pos),
+  ID_PATH(funcBody, path).
+// Local variable assignments.
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  db_LUA.Stat_varlist(stat, vl),
+  db_LUA.Varlist_var(vl, var, _),
+  db_LUA.Var_NAME(var, id, v, line, _, _, pos),
+  ID_PATH(stat, path).

@@ -42,7 +42,7 @@ BASE_FunctionDeclaration(fd, name, location) :-
   FuncDefOrDecl(fd, name, location),
   !db_KOTLIN.FunctionDeclaration_functionBody(fd, _).
 
-BASE_Scope(id) :- db_KOTLIN.isClassBody(id).
-BASE_Scope(id) :- db_KOTLIN.isEnumClassBody(id).
-BASE_Scope(id) :- db_KOTLIN.isBlock(id).
-BASE_Scope(id) :- db_KOTLIN.isWhenEntry(id).
+BASE_isScope(id) :- db_KOTLIN.isClassBody(id).
+BASE_isScope(id) :- db_KOTLIN.isEnumClassBody(id).
+BASE_isScope(id) :- db_KOTLIN.isBlock(id).
+BASE_isScope(id) :- db_KOTLIN.isWhenEntry(id).

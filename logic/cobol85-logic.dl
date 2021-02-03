@@ -19,4 +19,12 @@ BASE_FunctionDefinition(id, name, LOCATION(path, line, pos)) :-
 BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
 
-BASE_Scope(id) :- BASE_SourceFileId(_, _, id).
+BASE_isScope(id) :- BASE_SourceFileId(_, _, id).
+
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  db_COBOL85.CobolWord_IDENTIFIER(word, id, v, line, _, _, pos),
+  BASE_RecParentOf(ddEntry, word),
+  db_COBOL85.isDataDescriptionEntry(ddEntry),
+  BASE_RecParentOf(section, ddEntry),
+  db_COBOL85.isDataDivisionSection(section),
+  ID_PATH(section, path).

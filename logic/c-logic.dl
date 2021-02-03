@@ -1,5 +1,6 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "patterns.dl"
 
 // The function-declarator part of both declarations and definitions of functions.
 .decl FunctionDeclarator(id: Id, name: symbol, location: Loc)
@@ -27,5 +28,16 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_C.PrimaryExpression_StringLiteral(id, _, _, str, line, _, _, pos),
   ID_PATH(id, path).
 
-BASE_Scope(id) :- db_C.isCompoundStatement(id).
-BASE_Scope(id) :- db_C.isStructDeclarationList(id).
+BASE_isScope(id) :- db_C.isCompoundStatement(id).
+BASE_isScope(id) :- db_C.isStructDeclarationList(id).
+
+// Variable declarations from function parameters.
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  db_C.DirectDeclarator_Identifier(dd, id, v, line, _, _, pos),
+  UP_PATH2(dd, db_C.isDeclarator, db_C.isParameterDeclaration, pd),
+  ID_PATH(pd, path).
+// Local variable declarations.
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  db_C.DirectDeclarator_Identifier(dd, id, v, line, _, _, pos),
+  UP_PATH2(dd, db_C.isDeclarator, db_C.isInitDeclarator, idecl),
+  ID_PATH(idecl, path).

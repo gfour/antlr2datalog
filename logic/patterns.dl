@@ -36,4 +36,4 @@
   BASE_ParentOf(MACROnode3, MACROnode2), predC(MACROnode3),     \
   BASE_ParentOf(MACROnode4, MACROnode3), predD(MACROnode4),     \
   BASE_ParentOf(MACROnode5, MACROnode4), predE(MACROnode5),     \
-  BASE_ParentOf(root, MACROnode4), predF(root)
+  BASE_ParentOf(root, MACROnode5), predF(root)
