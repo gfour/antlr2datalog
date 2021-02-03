@@ -26,7 +26,7 @@ public enum ParserConfiguration {
     // C++, MIT license
     CPP("C++", "CPP14Lexer", "CPP14Parser", "translationUnit", Arrays.asList(".cpp", ".c"), "CPP14/1.0-SNAPSHOT/CPP14-1.0-SNAPSHOT.jar", true, false),
     // Kotlin, Apache 2.0 license
-    KOTLIN("Kotlin", "KotlinLexer", "KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar", true, false),
+    KOTLIN("Kotlin", "org.antlr.grammars.KotlinLexer", "org.antlr.grammars.KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar", true, false),
     // Lua, BSD license
     LUA("Lua", "LuaLexer", "LuaParser", "chunk", Collections.singletonList(".lua"), "Lua/1.0-SNAPSHOT/Lua-1.0-SNAPSHOT.jar", true, false),
     // PHP, MIT license
