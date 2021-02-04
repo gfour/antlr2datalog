@@ -48,6 +48,31 @@ task bundleLogic(type: Zip) {
     from file('logic')
 }
 
+task cloneSubmodule() {
+    doLast {
+        exec {
+            commandLine 'git', 'submodule', 'update', '--init'
+            ignoreExitValue = true
+        }
+    }
+}
+task installParsers() {
+    doLast {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            workingDir 'grammars-v4'
+            commandLine 'mvn', 'install', '-Dstyle.color=never', '--pl', 'c', '--pl', 'cobol85', '--pl', 'cpp', '--pl', 'kotlin/kotlin-formal', '--pl', 'lua', '--pl', 'php', '--pl', 'python/python3', '--pl', 'rust', '--am'
+            ignoreExitValue = true
+            standardOutput = stdout
+        }
+        String out = stdout.toString()
+        println out
+        if (out.indexOf('[ERROR]') >= 0)
+            throw new RuntimeException('Error in Maven installation of parsers')
+    }
+}
+installParsers.dependsOn cloneSubmodule
+
 task copyParsers(type: Copy) {
     println "Copying parsers..."
     String homeDir = System.getProperty("user.home")

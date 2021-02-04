@@ -19,12 +19,10 @@ and computes the analysis results.
 
 ## Installation
 
-* Install the "grammars-v4" parsers:
+* Install the "grammars-v4" parsers used:
 
 ```
-git clone https://github.com/antlr/grammars-v4.git
-cd grammars-v4
-mvn install
+./gradlew installParsers
 ```
 
 * Install [Souffle](https://github.com/souffle-lang/souffle/).
@@ -51,9 +49,18 @@ build/install/antlr2datalog/bin/antlr2datalog -l kotlin -i grammars-v4/kotlin/ko
 
 ## Adding a language/parser
 
-1. Edit class ParserConfiguration to add a case for your parser.
+1. Put your ANTLR parser in the local Maven repository. For example,
+   to pick from the "grammars-v4" parsers, install them as follows:
 
-2. Add `logic/LANGUAGE-logic.dl` with your Datalog rules.
+```
+git clone https://github.com/antlr/grammars-v4.git
+cd grammars-v4
+mvn install
+```
+
+2. Edit class ParserConfiguration to add a case for the parser.
+
+3. Add `logic/LANGUAGE-logic.dl` with the Datalog rules for the new language.
 
 ## License
 
