@@ -32,7 +32,7 @@ public class MainTest {
 
     @Test public void testLua() {
         Main.main(new String[] { "-l", "lua", "-i", "grammars-v4/lua/examples/factorial.lua" });
-        assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_LUA_Var_NAME.facts")).exists());
+        assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_LUA_Var__NAME.facts")).exists());
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
     }
 

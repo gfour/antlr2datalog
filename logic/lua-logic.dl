@@ -27,6 +27,6 @@ BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
 // Local variable assignments.
 BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   db_LUA.Stat_varlist(stat, vl),
-  db_LUA.Varlist_var(vl, var, _),
-  db_LUA.Var_NAME(var, id, v, line, _, _, pos),
+  db_LUA.Varlist_var_(vl, var, _),
+  db_LUA.Var__NAME(var, id, v, line, _, _, pos),
   ID_PATH(stat, path).
