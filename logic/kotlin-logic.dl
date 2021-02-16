@@ -84,3 +84,52 @@ BASE_VariableDeclaration(paramId, v, LOCATION(path, line, pos)) :-
 BASE_VariableDeclaration(id, v, loc) :-
   KotlinBinding(id, v, loc),
   !KotlinField(id, _, _).
+
+.decl KotlinVal(propertyId: Id)
+.output KotlinVal
+
+KotlinVal(id) :- db_KOTLIN.PropertyDeclaration_VAL(id, _, "val", _, _, _, _).
+
+.decl PropertyModifier(propertyId: Id, modId: Id)
+.output PropertyModifier
+
+PropertyModifier(prop, mod) :-
+  db_KOTLIN.PropertyDeclaration_modifiers(prop, modifiers),
+  db_KOTLIN.Modifiers_modifier(modifiers, modifier, _),
+  ( db_KOTLIN.Modifier_classModifier(modifier, mod)
+  ; db_KOTLIN.Modifier_memberModifier(modifier, mod)
+  ; db_KOTLIN.Modifier_visibilityModifier(modifier, mod)
+  ; db_KOTLIN.Modifier_functionModifier(modifier, mod)  
+  ; db_KOTLIN.Modifier_propertyModifier(modifier, mod)
+  ; db_KOTLIN.Modifier_inheritanceModifier(modifier, mod)
+  ; db_KOTLIN.Modifier_parameterModifier(modifier, mod)
+  ; db_KOTLIN.Modifier_platformModifier(modifier, mod)).
+
+BASE_Modifier(prop, m) :-
+  PropertyModifier(prop, mod),
+  ( db_KOTLIN.ClassModifier_ENUM(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.ClassModifier_SEALED(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.ClassModifier_ANNOTATION(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.ClassModifier_DATA(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.ClassModifier_INNER(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.MemberModifier_OVERRIDE(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.MemberModifier_LATEINIT(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.VisibilityModifier_PUBLIC(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.VisibilityModifier_PRIVATE(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.VisibilityModifier_INTERNAL(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.VisibilityModifier_PROTECTED(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.FunctionModifier_TAILREC(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.FunctionModifier_OPERATOR(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.FunctionModifier_INFIX(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.FunctionModifier_INLINE(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.FunctionModifier_EXTERNAL(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.FunctionModifier_SUSPEND(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.PropertyModifier_CONST(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.InheritanceModifier_ABSTRACT(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.InheritanceModifier_FINAL(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.InheritanceModifier_OPEN(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.ParameterModifier_VARARG(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.ParameterModifier_NOINLINE(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.ParameterModifier_CROSSINLINE(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.PlatformModifier_EXPECT(mod, _, m, _, _, _, _)
+  ; db_KOTLIN.PlatformModifier_ACTUAL(mod, _, m, _, _, _, _)).

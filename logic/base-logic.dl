@@ -70,3 +70,6 @@ BASE_VariableMayShadow(id1, id2, v) :-
   BASE_RecParentOf(id1, b1),
   BASE_RecParentOf(id2, b2),
   BASE_ScopesOverlap(b1, b2).
+
+.decl BASE_Modifier(id: Id, mod: symbol)
+.output BASE_Modifier
