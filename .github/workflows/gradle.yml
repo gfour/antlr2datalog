@@ -24,7 +24,7 @@ jobs:
       uses: stCarolas/setup-maven@v4
     - name: Install Souffle
       run: wget https://github.com/souffle-lang/souffle/releases/download/2.0.2/souffle_2.0.2-1_amd64.deb && sudo apt-get install mcpp && sudo dpkg -i souffle_2.0.2-1_amd64.deb && sudo apt-get install -f -y
-    - name: Install Souffle
+    - name: Install parsers
       run: ./install-parsers.sh
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
