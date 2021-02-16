@@ -1,5 +1,6 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "oo-logic.dl"
 
 BASE_FunctionDefinition(fd, name, LOCATION(path, line, pos)) :-
   db_RUST.Function_identifier(fd, ident),
@@ -68,3 +69,12 @@ RustVisibilityDesc(visId, pub) :-
 BASE_Modifier(id, vis) :-
   RustItemVisibility(id, visId),
   RustVisibilityDesc(visId, vis).
+
+// Consider structs, enums, and traits to be equivalent to OO classes.
+OO_Class(id, name, LOCATION(path, line, pos)) :-
+  ( db_RUST.StructStruct_identifier(id, identId)
+  ; db_RUST.TupleStruct_identifier(id, identId)
+  ; db_RUST.Enumeration_identifier(id, identId)
+  ; db_RUST.Trait_identifier(id, identId)),
+  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(identId, _, name, line, _, _, pos),
+  ID_PATH(id, path).
