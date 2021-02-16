@@ -1,6 +1,7 @@
 #include "schema.dl"
 #include "base-logic.dl"
 #include "oo-logic.dl"
+#include "patterns.dl"
 
 .decl DeclaredVariable(varName: symbol)
 .output DeclaredVariable
@@ -46,3 +47,40 @@ BASE_isScope(id) :- db_KOTLIN.isClassBody(id).
 BASE_isScope(id) :- db_KOTLIN.isEnumClassBody(id).
 BASE_isScope(id) :- db_KOTLIN.isBlock(id).
 BASE_isScope(id) :- db_KOTLIN.isWhenEntry(id).
+
+// Recognize all Kotlin bindings (variables/fields).
+.decl KotlinBinding(vDeclId: Id, name: symbol, loc: Loc)
+.output KotlinBinding
+
+KotlinBinding(vDeclId, name, LOCATION(path, line, pos)) :-
+  db_KOTLIN.VariableDeclaration_simpleIdentifier(vDeclId, identId),
+  db_KOTLIN.SimpleIdentifier_Identifier(identId, _, name, line, _, _, pos),
+  ID_PATH(vDeclId, path).
+// Handle nested multi-variable declarations.
+KotlinBinding(mvDeclId, name, loc) :-
+  KotlinBinding(vDeclId, name, loc),
+  db_KOTLIN.MultiVariableDeclaration_variableDeclaration(mvDeclId, vDeclId, _).
+
+// Recognize Kotlin fields (subset of KotlinBinding).
+.decl KotlinField(field: Id, name: symbol, loc: Loc)
+.output KotlinField
+
+// Top-level objects are considered fields (of compiler-generated classes).
+KotlinField(field, name, loc) :-
+  KotlinBinding(field, name, loc),
+  UP_PATH3(field, db_KOTLIN.isPropertyDeclaration, db_KOTLIN.isDeclaration, db_KOTLIN.isTopLevelObject, tloId).
+// Class body fields.
+KotlinField(field, name, loc) :-
+  KotlinBinding(field, name, loc),
+  UP_PATH3(field, db_KOTLIN.isPropertyDeclaration, db_KOTLIN.isDeclaration, db_KOTLIN.isClassMemberDeclaration, memDeclId).
+
+// Variable declarations from function parameters.
+BASE_VariableDeclaration(paramId, v, LOCATION(path, line, pos)) :-
+  db_KOTLIN.FunctionValueParameter_parameter(_, paramId),
+  db_KOTLIN.Parameter_simpleIdentifier(paramId, identId),
+  db_KOTLIN.SimpleIdentifier_Identifier(identId, _, v, line, _, _, pos),
+  ID_PATH(identId, path).
+// Local variable assignments.
+BASE_VariableDeclaration(id, v, loc) :-
+  KotlinBinding(id, v, loc),
+  !KotlinField(id, _, _).
