@@ -20,3 +20,51 @@ BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   db_RUST.IdentifierPattern_identifier(_, id),
   db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(id, _, v, line, _, _, pos),
   ID_PATH(id, path).
+
+// Node <id> is associated with visibility node <visId>.
+.decl RustItemVisibility(id: Id, visId: Id)
+.output RustItemVisibility
+
+RustItemVisibility(id, visId) :-
+  db_RUST.VisItem_visibility(visItemId, visId),
+  ( db_RUST.VisItem_module(visItemId, id)
+  ; db_RUST.VisItem_externCrate(visItemId, id)
+  ; db_RUST.VisItem_useDeclaration(visItemId, id)
+  ; db_RUST.VisItem_function(visItemId, id)
+  ; db_RUST.VisItem_typeAlias(visItemId, id)
+  ; db_RUST.VisItem_struct(visItemId, id)
+  ; db_RUST.VisItem_enumeration(visItemId, id)
+  ; db_RUST.VisItem_union(visItemId, id)
+  ; db_RUST.VisItem_constantItem(visItemId, id)
+  ; db_RUST.VisItem_staticItem(visItemId, id)
+  ; db_RUST.VisItem_trait(visItemId, id)
+  ; db_RUST.VisItem_implementation(visItemId, id)
+  ; db_RUST.VisItem_externBlock(visItemId, id)).
+RustItemVisibility(id, visId) :-
+  ( db_RUST.StructField_visibility(id, visId)
+  ; db_RUST.TupleField_visibility(id, visId)
+  ; db_RUST.EnumItem_visibility(id, visId)
+  ; db_RUST.TraitItem_visibility(id, visId)
+  ; db_RUST.InherentImplItem_visibility(id, visId)
+  ; db_RUST.TraitImplItem_visibility(id, visId)
+  ; db_RUST.ExternalItem_visibility(id, visId)).
+
+// Generate modifier/visibility descriptions (such as "pub" or "pub crate").
+.decl RustVisibilityDesc(visId: Id, vis: symbol)
+.output RustVisibilityDesc
+RustVisibilityDesc(visId, cat(pub, cat(" ", m))) :-
+  db_RUST.Visibility_KW_PUB(visId, _, pub, _, _, _, _),
+  ( db_RUST.Visibility_KW_CRATE(visId, _, m, _, _, _, _)
+  ; db_RUST.Visibility_KW_SELFVALUE(visId, _, m, _, _, _, _)
+  ; db_RUST.Visibility_KW_SUPER(visId, _, m, _, _, _, _)
+  ; db_RUST.Visibility_KW_IN(visId, _, m, _, _, _, _)).
+RustVisibilityDesc(visId, pub) :-
+  db_RUST.Visibility_KW_PUB(visId, _, pub, _, _, _, _),
+  !db_RUST.Visibility_KW_CRATE(visId, _, _, _, _, _, _),
+  !db_RUST.Visibility_KW_SELFVALUE(visId, _, _, _, _, _, _),
+  !db_RUST.Visibility_KW_SUPER(visId, _, _, _, _, _, _),
+  !db_RUST.Visibility_KW_IN(visId, _, _, _, _, _, _).
+
+BASE_Modifier(id, vis) :-
+  RustItemVisibility(id, visId),
+  RustVisibilityDesc(visId, vis).
