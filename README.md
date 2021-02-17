@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/gfour/antlr2datalog/workflows/Java%20CI%20with%20Gradle/badge.svg?branch=main)](https://github.com/gfour/antlr2datalog/actions)
+
 # antlr2datalog
 
 This is a framework for statically analyzing source code using Datalog
