@@ -91,6 +91,7 @@ public enum ParserConfiguration {
      * @param debug                    debug mode
      * @throws MalformedURLException   on bad local paths
      * @throws ClassNotFoundException  on bad JAR contents
+     * @throws NoSuchMethodException   on bad parser configuration
      */
     public void load(boolean debug) throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
         String jarPath = getJarPath(debug);

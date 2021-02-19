@@ -26,6 +26,7 @@ public class Schema {
 
     /**
      * Writes a list of Datalog schema descriptions to a logic file.
+     * @param baseSchema   the base schema shared by all languages
      * @param langSchemas  the list of language schemas to write (as components)
      * @param schemaFile   the output file
      * @throws IOException when writing fails
