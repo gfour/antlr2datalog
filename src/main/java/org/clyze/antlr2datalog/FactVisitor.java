@@ -2,6 +2,7 @@ package org.clyze.antlr2datalog;
 
 import java.util.*;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.*;
 
 /**
@@ -19,8 +20,8 @@ public class FactVisitor {
      * @param langDb   the database object to use for writing language facts
      * @param baseDb the database object to use for writing facts across languages
      */
-    public FactVisitor(int fileId, Database langDb, Database baseDb) {
-        this.fileId = "#" + fileId + "#";
+    public FactVisitor(String fileId, Database langDb, Database baseDb) {
+        this.fileId = "@" + fileId + "@";
         this.schemaRules = langDb.schema.rules;
         this.langDb = langDb;
         this.baseDb = baseDb;
@@ -30,11 +31,15 @@ public class FactVisitor {
      * Generates a unique id for an object returned by the parser, so that the
      * object can be identified in the facts of the whole program.
      * @param name     the name of the object type
-     * @param obj      the object
+     * @param parseTree      the object
      * @return         the unique id
      */
-    public String getNodeId(String name, Object obj) {
-        return obj == null ? "##null" : name + fileId + obj.hashCode();
+    public String getNodeId(String name, ParseTree parseTree) {
+        if (parseTree == null)
+            return "##null";
+        Interval sourceInterval = parseTree.getSourceInterval();
+        String location = sourceInterval == null ? "unknown" : sourceInterval.a + "-" + sourceInterval.b;
+        return name + fileId + location;
     }
 
     /**

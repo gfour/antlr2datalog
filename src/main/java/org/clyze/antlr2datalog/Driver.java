@@ -2,7 +2,6 @@ package org.clyze.antlr2datalog;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -69,9 +68,8 @@ public class Driver {
 
             System.out.println("Recording " + parserConfiguration.name + " facts...");
             Database db = new Database(langSchema, getFactsDir());
-            AtomicInteger counter = new AtomicInteger(0);
             for (String path : inputs)
-                parseFile(parserConfiguration, db, baseDb, counter, path, topPath);
+                parseFile(parserConfiguration, db, baseDb, path, topPath);
             db.writeFacts(debug);
         }
         baseDb.writeFacts(debug);
@@ -80,7 +78,7 @@ public class Driver {
 
     private void parseFile(ParserConfiguration parserConfiguration,
                            Database langDb, Database baseDb,
-                           AtomicInteger counter, String path, String topPath) {
+                           String path, String topPath) {
         File pathFile = new File(path);
         if (pathFile.isDirectory()) {
             if (debug)
@@ -89,7 +87,7 @@ public class Driver {
             if (files != null)
                 for (File f : files)
                     try {
-                        parseFile(parserConfiguration, langDb, baseDb, counter, f.getCanonicalPath(), topPath);
+                        parseFile(parserConfiguration, langDb, baseDb, f.getCanonicalPath(), topPath);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -133,7 +131,7 @@ public class Driver {
                 });
             }
             ParserRuleContext ruleContext = (ParserRuleContext) parserConfiguration.rootNodeMethod.invoke(parser);
-            process(langDb, baseDb, path, counter, ruleContext, topPath);
+            process(langDb, baseDb, path, ruleContext, topPath);
         } catch (UnsupportedParserException ignored) {
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -141,14 +139,13 @@ public class Driver {
     }
 
     private void process(Database langDb, Database baseDb, String path,
-                         AtomicInteger counter, ParserRuleContext rootNode, String topPath) {
-        int fileId = counter.getAndIncrement();
-        FactVisitor fv = new FactVisitor(fileId, langDb, baseDb);
+                         ParserRuleContext rootNode, String topPath) {
+        String srcPath = getRelativePath(path, topPath);
+        FactVisitor fv = new FactVisitor(srcPath, langDb, baseDb);
         rootNode.accept(new ParseTreeVisitor<Void>() {
             @Override public Void visit(ParseTree parseTree) {
                 String parseTreeRelationName = SchemaFinder.getSimpleName(parseTree.getClass(), langDb.schema.rules);
-                String srcPath = getRelativePath(path, topPath);
-                BaseSchema.writeSourceFileId(baseDb, srcPath + '\t' + fileId + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
+                BaseSchema.writeSourceFileId(baseDb, srcPath + '\t' + srcPath + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
                 fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass()));
                 return null;
             }
