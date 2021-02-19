@@ -8,7 +8,7 @@ import java.util.*;
 /** The database to use for writing source code facts. */
 public class Database {
     public final Schema schema;
-    private final Map<String, Collection<String>> tables;
+    private final Map<String, List<String>> tables;
     private final File outDir;
     private final String relationPrefix;
 
@@ -32,7 +32,7 @@ public class Database {
      * @param line      the line to write in the corresponding facts file
      */
     public void writeRow(String relName, String line) {
-        Collection<String> relLines = tables.get(relName);
+        List<String> relLines = tables.get(relName);
         if (relLines == null) {
             System.out.println("WARNING: input relation '" + relName + "' not initialized properly, it may be missing for other inputs.");
             relLines = new LinkedList<>();
@@ -48,10 +48,11 @@ public class Database {
     public void writeFacts(boolean debug) {
         if (!outDir.mkdirs() && debug)
             System.out.println("WARNING: directory already exists: " + outDir);
-        for (Map.Entry<String, Collection<String>> entry : tables.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : tables.entrySet()) {
             String relName = entry.getKey();
             try (FileWriter fw = new FileWriter(new File(outDir, relationPrefix + relName + ".facts"))) {
-                Collection<String> lines = tables.get(relName);
+                List<String> lines = tables.get(relName);
+                Collections.sort(lines);
                 if (lines.isEmpty()) {
                     if (Main.debug)
                         System.out.println("WARNING: empty relation " + relName);

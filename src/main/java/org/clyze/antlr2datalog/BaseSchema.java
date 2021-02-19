@@ -1,5 +1,6 @@
 package org.clyze.antlr2datalog;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +31,7 @@ public class BaseSchema extends Schema {
         sbSchema.append(".decl ").append(PARENT_OF).append("(id: symbol, parent_id: symbol)\n");
         sbSchema.append(".input ").append(PARENT_OF).append('\n');
         relationNames.add(PARENT_OF);
+        Collections.sort(relationNames);
         return new BaseSchema(sbSchema, relationNames);
     }
 

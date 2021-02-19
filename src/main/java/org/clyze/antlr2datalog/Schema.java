@@ -3,10 +3,12 @@ package org.clyze.antlr2datalog;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class Schema {
+public class Schema implements Comparable<Schema> {
     /** The language of the schema. */
     private final String language;
     /** The Datalog text of the schema. */
@@ -41,6 +43,7 @@ public class Schema {
             fw.write(baseSchema.textBuilder.toString());
             fw.write("\n");
 
+            Collections.sort(langSchemas);
             // Write one schema per language, as a different component.
             for (Schema langSchema : langSchemas) {
                 if (Main.debug)
@@ -48,6 +51,7 @@ public class Schema {
                 String component = langSchema.relationPrefix;
                 fw.write(".comp " + component + " {\n");
                 fw.write(langSchema.textBuilder.toString());
+                Collections.sort(langSchema.relations);
                 for (String relation : langSchema.relations) {
                     fw.write(".input " + relation + "(filename=\"" + component + relation + ".facts\")\n");
                 }
@@ -55,5 +59,13 @@ public class Schema {
                 fw.write(".init db_" + langSchema.language + " = " + component + "\n");
             }
         }
+    }
+
+    @Override
+    public int compareTo(final Schema that) {
+        if (this.language.equals(that.language))
+            return this.hashCode() - that.hashCode();
+        else
+            return this.language.hashCode() - that.language.hashCode();
     }
 }

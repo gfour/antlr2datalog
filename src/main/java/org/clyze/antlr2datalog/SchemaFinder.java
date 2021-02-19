@@ -16,7 +16,7 @@ public final class SchemaFinder {
     private final Collection<Class<? extends ParseTree>> visitedRules = new HashSet<>();
     private final ParserConfiguration parserConfiguration;
     /** The discivered rules from the parser that will inform the schema. */
-    public final Map<Class<?>, Rule> schemaRules = new HashMap<>();
+    public final Map<Class<?>, Rule> schemaRules = new TreeMap<>(Comparator.comparing(Class::getCanonicalName));
 
     public SchemaFinder(ParserConfiguration parserConfiguration) {
         this.parserConfiguration = parserConfiguration;
