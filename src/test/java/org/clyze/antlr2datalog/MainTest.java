@@ -38,8 +38,9 @@ public class MainTest {
 
     @Test public void testRust() throws IOException {
         String topSrcPath = (new File("grammars-v4/rust")).getCanonicalPath();
-        Main.main(new String[] { "-l", "rust", "-i", topSrcPath + "/examples/deno_core_runtime.rs", "--relative-path",  topSrcPath});
+        Main.main(new String[] { "-l", "rust", "-i", topSrcPath + "/examples/deno_core_runtime.rs", "--relative-path",  topSrcPath, "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_RUST_Identifier_NON_KEYWORD_IDENTIFIER.facts")).exists());
+        assertMetadataExist();
     }
 
     @Test public void testC() {
@@ -50,5 +51,9 @@ public class MainTest {
     @Test public void testCpp() {
         Main.main(new String[] { "-l", "cpp", "-i", "grammars-v4/cpp/examples/and_keyword.cpp" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
+    }
+
+    private void assertMetadataExist() {
+        assert((new File(Main.DEFAULT_WORKSPACE, "database/" + MetadataGenerator.OUTPUT_FILE).exists()));
     }
 }

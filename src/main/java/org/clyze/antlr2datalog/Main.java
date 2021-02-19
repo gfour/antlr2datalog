@@ -47,6 +47,9 @@ public class Main {
         relPathOpt.setArgName("PATH");
         options.addOption(relPathOpt);
 
+        Option genMetadataOpt = new Option("g", "generate-metadata", false, "Generate source code metadata.");
+        options.addOption(genMetadataOpt);
+
         if (args.length == 0 || Arrays.asList(args).contains("--help")) {
             printUsage(options);
             return;
@@ -54,7 +57,7 @@ public class Main {
 
         List<ParserConfiguration> parserConfigurations = new ArrayList<>();
         String workspaceDir = DEFAULT_WORKSPACE;
-        boolean compile;
+        boolean compile, generateMetadata;
         String relativePath;
         String[] inputs;
         CommandLineParser parser = new GnuParser();
@@ -62,6 +65,7 @@ public class Main {
             CommandLine cli = parser.parse(options, args);
             debug = cli.hasOption(debugOpt.getOpt());
             compile = cli.hasOption(compileOpt.getOpt());
+            generateMetadata = cli.hasOption(genMetadataOpt.getOpt());
             String[] langs = cli.getOptionValues(langOpt.getOpt());
             inputs = cli.getOptionValues(inputOpt.getOpt());
             relativePath = cli.getOptionValue(relPathOpt.getLongOpt());
@@ -87,6 +91,8 @@ public class Main {
             driver.initWorkspaceDir();
             driver.generateSchemaAndParseSources(inputs, relativePath);
             driver.runLogic(compile);
+            if (generateMetadata)
+                (new MetadataGenerator(driver.getOutputDatabase())).run();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

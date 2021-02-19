@@ -211,7 +211,7 @@ public class Driver {
             args.add("-DDEBUG");
         ProcessBuilder cpp = new ProcessBuilder(args.toArray(new String[0]));
         runWithOutput(cpp);
-        File outputDatabase = new File(workspaceDir, "database");
+        File outputDatabase = getOutputDatabase();
         createDir(outputDatabase);
         String outDatabasePath = outputDatabase.getCanonicalPath();
         if (compile) {
@@ -241,6 +241,14 @@ public class Driver {
         souffle.directory(workspaceDir);
         runWithOutput(souffle);
         System.out.println("Results written to: " + outDatabasePath);
+    }
+
+    /**
+     * Get the database path.
+     * @return the path to the output database directory
+     */
+    public File getOutputDatabase() {
+        return new File(workspaceDir, "database");
     }
 
     private static void runWithOutput(ProcessBuilder pb) throws InterruptedException, IOException {
