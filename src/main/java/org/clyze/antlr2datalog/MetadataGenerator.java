@@ -18,7 +18,7 @@ import org.clyze.persistent.model.Type;
  */
 public class MetadataGenerator {
     /** The name of the output file. */
-    public static String OUTPUT_FILE = "metadata.json";
+    public static final String OUTPUT_FILE = "metadata.json";
 
     private final File outputDabase;
     public MetadataGenerator(File outputDatabase) {
@@ -30,7 +30,7 @@ public class MetadataGenerator {
 
         SourceMetadata metadata = new SourceMetadata();
 
-        process("OO_Class.csv", ((String[] parts) -> {
+        process("BASE_Type.csv", ((String[] parts) -> {
             String id = parts[0];
             String name = parts[1];
             String[] loc = parts[2].split(":");

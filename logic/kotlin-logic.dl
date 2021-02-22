@@ -1,6 +1,5 @@
 #include "schema.dl"
 #include "base-logic.dl"
-#include "oo-logic.dl"
 #include "patterns.dl"
 
 .decl DeclaredVariable(varName: symbol)
@@ -23,7 +22,7 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   ; db_KOTLIN.MultiLineStringContent_MultiLineStrText(id, _, str, line, _, _, pos)),
   ID_PATH(id, path).
 
-OO_Class(classDecl, name, LOCATION(path, line, pos)) :-
+BASE_Type(classDecl, name, LOCATION(path, line, pos)) :-
   db_KOTLIN.ClassDeclaration_simpleIdentifier(classDecl, identId),
   db_KOTLIN.SimpleIdentifier_Identifier(identId, _, name, line, _, _, pos),
   ID_PATH(classDecl, path).

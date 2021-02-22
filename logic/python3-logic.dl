@@ -1,6 +1,5 @@
 #include "schema.dl"
 #include "base-logic.dl"
-#include "oo-logic.dl"
 
 BASE_FunctionDefinition(fd, name, location) :-
   db_PYTHON3.Funcdef_NAME(fd, _, name, line, _, _, pos),
@@ -50,7 +49,7 @@ NestedFunction(oName, outerLoc, iName, innerLoc) :-
   outerLoc = LOCATION(path, oLine, oPos),
   innerLoc = LOCATION(path, iLine, iPos).
 
-OO_Class(id, name, LOCATION(path, line, pos)) :-
+BASE_Type(id, name, LOCATION(path, line, pos)) :-
   ID_PATH(id, path),
   db_PYTHON3.Classdef_NAME(id, _, name, line, _, _, pos).
 

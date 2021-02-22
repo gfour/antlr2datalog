@@ -73,3 +73,7 @@ BASE_VariableMayShadow(id1, id2, v) :-
 
 .decl BASE_Modifier(id: Id, mod: symbol)
 .output BASE_Modifier
+
+// Type "name" defined at source file "location".
+.decl BASE_Type(id: Id, name: symbol, location: Loc)
+.output BASE_Type
