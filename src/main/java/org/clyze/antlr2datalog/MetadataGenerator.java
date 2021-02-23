@@ -33,26 +33,18 @@ public class MetadataGenerator {
         process("BASE_Type.csv", ((String[] parts) -> {
             String id = parts[0];
             String name = parts[1];
-            String[] loc = parts[2].split(":");
-            long startLine = Long.parseLong(loc[1]);
-            long startCol = Long.parseLong(loc[2]);
-            Position pos = new Position(startLine, startLine, startCol, startCol + 1);
-            String sourceFileName = loc[0];
-            metadata.types.add(new Type(pos, sourceFileName, id, name));
+            SourcePosition srcPos = getSourcePosition(parts[2], name.length());
+            metadata.types.add(new Type(srcPos.position, srcPos.sourceFileName, id, name));
         }));
 
         process("BASE_FunctionDefinition.csv", ((String[] parts) -> {
             String id = parts[0];
             String name = parts[1];
-            String[] loc = parts[2].split(":");
-            long startLine = Long.parseLong(loc[1]);
-            long startCol = Long.parseLong(loc[2]);
-            Position pos = new Position(startLine, startLine, startCol, startCol + name.length());
-            String sourceFileName = loc[0];
+            SourcePosition srcPos = getSourcePosition(parts[2], name.length());
             // TODO: fill in params
             String[] params = new String[] { };
             // TODO: fix outer position
-            metadata.functions.add(new Function(pos, sourceFileName, id, name, params, pos));
+            metadata.functions.add(new Function(srcPos.position, srcPos.sourceFileName, id, name, params, srcPos.position));
         }));
 
         try {
@@ -62,6 +54,20 @@ public class MetadataGenerator {
         } catch (IOException ex) {
             System.err.println("ERROR: failed to generate metadata: " + ex.getMessage());
         }
+    }
+
+    private static SourcePosition getSourcePosition(String location, int length) {
+        String[] loc = location.split(":");
+        if (loc.length != 3) {
+            System.err.println("ERROR: malformed location: " + location);
+            return null;
+        }
+        String sourceFileName = loc[0];
+        long startLine = Long.parseLong(loc[1]);
+        // Use 1-based column numbering.
+        long startCol = Long.parseLong(loc[2]) + 1;
+        Position position = new Position(startLine, startLine, startCol, startCol + length);
+        return new SourcePosition(sourceFileName, position);
     }
 
     void process(String relationFile, Consumer<String[]> proc) {
@@ -83,5 +89,15 @@ public class MetadataGenerator {
         } catch (IOException ex) {
             System.err.println("ERROR: failed to parse metadata relation " + relationFile + ": " + ex.getMessage());
         }
+    }
+}
+
+class SourcePosition {
+    final String sourceFileName;
+    final Position position;
+
+    SourcePosition(String sourceFileName, Position position) {
+        this.sourceFileName = sourceFileName;
+        this.position = position;
     }
 }
