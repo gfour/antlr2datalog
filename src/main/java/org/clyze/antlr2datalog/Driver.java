@@ -76,13 +76,17 @@ public class Driver {
         Schema.write(baseDb.schema, langSchemas, getSchemaFile());
     }
 
+    private static void parserLog(ParserConfiguration pc, String message) {
+        System.out.println("[" + pc.name + "] " + message);
+    }
+
     private void parseFile(ParserConfiguration parserConfiguration,
                            Database langDb, Database baseDb,
                            String path, String topPath) {
         File pathFile = new File(path);
         if (pathFile.isDirectory()) {
             if (debug)
-                System.out.println("[" + parserConfiguration.name + "] Processing directory: " + path);
+                parserLog(parserConfiguration, "Processing directory: " + path);
             File[] files = pathFile.listFiles();
             if (files != null)
                 for (File f : files)
@@ -102,9 +106,11 @@ public class Driver {
             }
         if (ignore) {
             if (debug)
-                System.out.println("[" + parserConfiguration.name + "] Ignoring: " + path);
+                parserLog(parserConfiguration, "Ignoring: " + path);
             return;
         }
+        if (debug)
+            parserLog(parserConfiguration, "Processing file: " + path);
         try (InputStream inputStream = new FileInputStream(path)) {
             CharStream cs = parserConfiguration.getCharStream(path, inputStream);
             Lexer lexer = parserConfiguration.lexerClass.getConstructor(CharStream.class).newInstance(cs);

@@ -75,6 +75,8 @@ public class FactVisitor {
                 t.printStackTrace();
                 return;
             }
+            if (Main.debug)
+                System.out.println("comp.name = " + comp.name + ", comp.index = " + comp.index + ", tpt: " + tpt.parseTree.getClass().getName() + ", result = " + result);
             if (comp.index) {
                 List<? extends ParseTree> pts = (List<? extends ParseTree>)result;
                 if (pts != null) {
@@ -84,8 +86,6 @@ public class FactVisitor {
                             visitPt(relName, comp, parentNodeId, new TypedParseTree(pt, comp.type), idx++, subTrees);
                 }
             } else {
-                if (Main.debug)
-                    System.out.println("comp.name = " + comp.name + ", tpt: " + tpt.parseTree.getClass().getName());
                 ParseTree pt = (ParseTree)result;
                 if (pt != null)
                     visitPt(relName, comp, parentNodeId, new TypedParseTree(pt, comp.type), 0, subTrees);
@@ -99,6 +99,8 @@ public class FactVisitor {
                          TypedParseTree typedParseTree, int index, List<TypedParseTree> subTrees) {
         String compSimpleName = SchemaFinder.getSimpleName(comp.type, schemaRules);
         String compNodeId = getNodeId(compSimpleName, typedParseTree.parseTree);
+        if (Main.debug)
+            System.out.println("compSimpleName = " + compSimpleName + ", compNodeId = " + compNodeId);
         StringBuilder sb = new StringBuilder().append(parentNodeId).append('\t').append(compNodeId);
         BaseSchema.writeParentOf(baseDb, sb.toString());
         if (comp.index)
