@@ -9,5 +9,5 @@ build
 .idea
 schema.dl
 logic-out.dl
-src/main/resources/logic
+src/main/resources/logic*
 src/main/resources/parsers
