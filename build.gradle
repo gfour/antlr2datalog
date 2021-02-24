@@ -57,7 +57,7 @@ task copyParsers(type: Copy) {
     String homeDir = System.getProperty("user.home")
     from homeDir + "/.m2/repository/org/antlr/grammars/"
     into "src/main/resources/parsers"
-    ['C', 'cobol85', 'CPP14', 'kotlin-formal', 'Lua', 'php', 'python3', 'rust'].each { String lang ->
+    ['C', 'cobol85', 'CPP14', 'golang', 'kotlin-formal', 'Lua', 'php', 'python3', 'rust'].each { String lang ->
         include "${lang}/**/*.jar"
     }
 }
