@@ -1,0 +1,19 @@
+#include "schema.dl"
+#include "base-logic.dl"
+
+// Method/function declarations.
+BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
+  ( db_GO.MethodDecl_IDENTIFIER(fd, _, name, line, _, _, pos)
+  ; db_GO.FunctionDecl_IDENTIFIER(fd, _, name, line, _, _, pos)),
+  ID_PATH(fd, path).
+
+// Method/function definitions are declarations with blocks.
+BASE_FunctionDefinition(fd, name, loc) :-
+  BASE_FunctionDeclaration(fd, name, loc),
+  BASE_RecParentOf(fd, block),
+  db_GO.isBlock(block).
+
+BASE_Type(td, name, LOCATION(path, line, pos)) :-
+  db_GO.TypeDecl_typeSpec(td, ts, _),
+  db_GO.TypeSpec_IDENTIFIER(ts, _, name, line, _, _, pos),
+  ID_PATH(td, path).

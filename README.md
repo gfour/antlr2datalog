@@ -8,7 +8,7 @@ queries.
 For the set of supported source languages, see the list of parsers in
 the [grammars-v4](https://github.com/antlr/grammars-v4)
 repository. The following languages are included out of the box: C,
-C++, COBOL85, Kotlin, Lua, PHP, Python3, and Rust. Support for more
+C++, COBOL85, Go, Kotlin, Lua, PHP, Python3, and Rust. Support for more
 languages can be easily added, read on below for how to enable support
 for other languages.
 

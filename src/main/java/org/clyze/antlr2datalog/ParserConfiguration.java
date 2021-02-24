@@ -25,6 +25,8 @@ public enum ParserConfiguration {
     COBOL85("Cobol85", "Cobol85Lexer", "Cobol85Parser", "startRule", Arrays.asList(".txt", ".cbl"), "cobol85/1.0-SNAPSHOT/cobol85-1.0-SNAPSHOT.jar", true, false),
     // C++, MIT license
     CPP("C++", "CPP14Lexer", "CPP14Parser", "translationUnit", Arrays.asList(".cpp", ".c"), "CPP14/1.0-SNAPSHOT/CPP14-1.0-SNAPSHOT.jar", true, false),
+    // Go, BSD license
+    GO("Go", "GoLexer", "GoParser", "sourceFile", Collections.singletonList(".go"), "golang/1.0-SNAPSHOT/golang-1.0-SNAPSHOT.jar", true, false),
     // Kotlin, Apache 2.0 license
     KOTLIN("Kotlin", "org.antlr.grammars.KotlinLexer", "org.antlr.grammars.KotlinParser", "kotlinFile", Collections.singletonList(".kt"), "kotlin-formal/1.0-SNAPSHOT/kotlin-formal-1.0-SNAPSHOT.jar", true, false),
     // Lua, BSD license
