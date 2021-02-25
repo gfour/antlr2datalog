@@ -66,6 +66,7 @@ task cleanResources() {
     println "Cleaning up resources..."
     project.file("src/main/resources/parsers").deleteDir()
     project.file("src/main/resources/logic").deleteDir()
+    project.file("src/main/resources/logic.zip").delete()
 }
 clean.dependsOn cleanResources
 
