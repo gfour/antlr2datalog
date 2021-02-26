@@ -1,5 +1,6 @@
 package org.clyze.antlr2datalog;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -37,6 +38,8 @@ public enum ParserConfiguration {
     PYTHON3("Python3", "Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar", true, false),
     // Rust, MIT license
     RUST("Rust", "RustLexer", "RustParser", "crate", Collections.singletonList(".rs"), "rust/1.0-SNAPSHOT/rust-1.0-SNAPSHOT.jar", true, false),
+    // Solidity, MIT license
+    SOLIDITY("Solidity", "SolidityLexer", "SolidityParser", "sourceUnit", Collections.singletonList(".sol"), "solidity-parser/solidity.jar", false, false),
     ;
 
     /** The path in the local Maven repo for grammars-v4 grammars. */
@@ -54,7 +57,10 @@ public enum ParserConfiguration {
     final Collection<String> extensions;
     /** The parser JAR path in the local Maven repo (suffix). */
     private final String jarPath;
-    /** If true, use special path prefix in local Maven repo. */
+    /**
+     * If true, use special grammars-v4 path prefix in local Maven repo.
+     * If false, use the extra-grammars directory.
+     */
     private final boolean isAntlrGrammars;
     /** If true, use lowercase character stream (for case-insensitive languages such as PHP). */
     public final boolean lowerCase;
@@ -122,7 +128,7 @@ public enum ParserConfiguration {
                 System.out.println("No bundled parser, attempting resolution via file system...");
         }
         String homeDir = System.getProperty("user.home");
-        return (isAntlrGrammars ? homeDir + "/.m2/repository/" + ANTLR_GRAMMARS_PREFIX : "") + this.jarPath;
+        return (isAntlrGrammars ? homeDir + "/.m2/repository/" + ANTLR_GRAMMARS_PREFIX : (new File("extra-grammars").getAbsolutePath() + "/")) + this.jarPath;
     }
 
     public CharStream getCharStream(String path, InputStream inputStream) throws IOException, UnsupportedParserException {

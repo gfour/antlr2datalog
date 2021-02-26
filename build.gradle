@@ -56,10 +56,12 @@ task copyParsers(type: Copy) {
     println "Copying parsers..."
     String homeDir = System.getProperty("user.home")
     from homeDir + "/.m2/repository/org/antlr/grammars/"
+    from 'extra-grammars'
     into "src/main/resources/parsers"
     ['C', 'cobol85', 'CPP14', 'golang', 'kotlin-formal', 'Lua', 'php', 'python3', 'rust'].each { String lang ->
         include "${lang}/**/*.jar"
     }
+    include 'solidity-parser/solidity.jar'
 }
 
 task cleanResources() {

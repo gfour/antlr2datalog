@@ -1,3 +1,6 @@
 [submodule "grammars-v4"]
 	path = grammars-v4
 	url = https://github.com/antlr/grammars-v4.git
+[submodule "extra-grammars/solidity-parser"]
+	path = extra-grammars/solidity-parser
+	url = https://github.com/solidity-parser/antlr.git
