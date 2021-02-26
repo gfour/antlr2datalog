@@ -51,6 +51,8 @@ runs interpreted (the default) or compiled (see command-line options).
 * For every supported language, file `logic/<language>-logic.dl`
   contains the Datalog rules for this language. These rules either
   populate relations from base-logic or compute their own relations.
+* To match patterns against paths in the parse tree, file
+  `logic/patterns.dl` provides a set of C preprocessor macros.
 
 ## Source code metadata
 

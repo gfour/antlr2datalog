@@ -17,7 +17,8 @@ This framework works by transforming ANTLR parsers to
 ANTLR parser API is translated into a Datalog schema and the parser is
 then invoked on the source code to populate a "facts" directory
 according to the schema. Finally, the analysis logic runs on the facts
-and computes the analysis results.
+and computes the analysis results. For more information, see
+[ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Installation
 
