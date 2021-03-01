@@ -9,6 +9,17 @@ BASE_FunctionDefinition(fd, name, location) :-
 BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
 
+// Modifiers are "_" (protected) and "__" (private).
+BASE_Modifier(fd, "__") :-
+  BASE_FunctionDefinition(fd, name, _),
+  strlen(name) > 1,
+  substr(name, 0, 2) = "__".
+BASE_Modifier(fd, "_") :-
+  BASE_FunctionDefinition(fd, name, _),
+  strlen(name) > 1,
+  substr(name, 0, 1) = "_",
+  substr(name, 1, 2) != "_".
+
 .decl isAssign(id: Id, location: Loc)
 isAssign(id, location) :-
   ID_PATH(id, path),
