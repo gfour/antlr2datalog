@@ -3,7 +3,8 @@
 
 BASE_FunctionDefinition(fd, name, LOCATION(path, line, pos)) :-
   db_RUST.Function_identifier(fd, ident),
-  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(ident, _, name, line, _, _, pos),
+  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(ident, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(fd, path).
 
 // In Rust, function definition = declaration.
@@ -11,14 +12,16 @@ BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
 
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
-  db_RUST.LiteralExpression_STRING_LITERAL(id, _, str, line, _, _, pos),
+  db_RUST.LiteralExpression_STRING_LITERAL(id, terminal),
+  BASE_Terminal(terminal, str, line, _, _, pos),
   ID_PATH(id, path).
 
 BASE_isScope(id) :- db_RUST.isBlockExpression(id).
 
 BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   db_RUST.IdentifierPattern_identifier(_, id),
-  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(id, _, v, line, _, _, pos),
+  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(id, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
   ID_PATH(id, path).
 
 // Node <id> is associated with visibility node <visId>.
@@ -53,17 +56,20 @@ RustItemVisibility(id, visId) :-
 .decl RustVisibilityDesc(visId: Id, vis: symbol)
 .output RustVisibilityDesc
 RustVisibilityDesc(visId, cat(pub, cat(" ", m))) :-
-  db_RUST.Visibility_KW_PUB(visId, _, pub, _, _, _, _),
-  ( db_RUST.Visibility_KW_CRATE(visId, _, m, _, _, _, _)
-  ; db_RUST.Visibility_KW_SELFVALUE(visId, _, m, _, _, _, _)
-  ; db_RUST.Visibility_KW_SUPER(visId, _, m, _, _, _, _)
-  ; db_RUST.Visibility_KW_IN(visId, _, m, _, _, _, _)).
+  db_RUST.Visibility_KW_PUB(visId, pTerminal),
+  BASE_Terminal(pTerminal, pub, _, _, _, _),
+  ( db_RUST.Visibility_KW_CRATE(visId, terminal)
+  ; db_RUST.Visibility_KW_SELFVALUE(visId, terminal)
+  ; db_RUST.Visibility_KW_SUPER(visId, terminal)
+  ; db_RUST.Visibility_KW_IN(visId, terminal)),
+  BASE_Terminal(terminal, m, _, _, _, _).
 RustVisibilityDesc(visId, pub) :-
-  db_RUST.Visibility_KW_PUB(visId, _, pub, _, _, _, _),
-  !db_RUST.Visibility_KW_CRATE(visId, _, _, _, _, _, _),
-  !db_RUST.Visibility_KW_SELFVALUE(visId, _, _, _, _, _, _),
-  !db_RUST.Visibility_KW_SUPER(visId, _, _, _, _, _, _),
-  !db_RUST.Visibility_KW_IN(visId, _, _, _, _, _, _).
+  db_RUST.Visibility_KW_PUB(visId, pTerminal),
+  BASE_Terminal(pTerminal, pub, _, _, _, _),
+  !db_RUST.Visibility_KW_CRATE(visId, _),
+  !db_RUST.Visibility_KW_SELFVALUE(visId, _),
+  !db_RUST.Visibility_KW_SUPER(visId, _),
+  !db_RUST.Visibility_KW_IN(visId, _).
 
 BASE_Modifier(id, vis) :-
   RustItemVisibility(id, visId),
@@ -75,5 +81,6 @@ BASE_Type(id, name, LOCATION(path, line, pos)) :-
   ; db_RUST.TupleStruct_identifier(id, identId)
   ; db_RUST.Enumeration_identifier(id, identId)
   ; db_RUST.Trait_identifier(id, identId)),
-  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(identId, _, name, line, _, _, pos),
+  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(identId, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(id, path).

@@ -1,0 +1,41 @@
+#pragma once
+
+// This file contains logic that attempts to auto-detect function
+// areas (pairs of start-stop positions in the text). These rules may
+// miss tokens in the start/end if terminals are missed during parsing
+// (such as the "null" terminals of the Lua parser).
+
+// For every function, keep a triplet (terminal, start, stop), where
+// start/stop are positions according to ANTLR.
+.decl BASE_Function_Terminal(fd: Id, terminal: Id, start: number, stop: number)
+.output BASE_Function_Terminal
+BASE_Function_Terminal(fd, terminal, start, stop) :-
+  BASE_FunctionDefinition(fd, _, _),
+  BASE_RecParentOf(fd, terminal),
+  BASE_Terminal(terminal, _, _, start, stop, _).
+
+// The terminal with the lowest "start" value starts the function.
+.decl BASE_Function_Start(fd: Id, start: number)
+.output BASE_Function_Start
+BASE_Function_Start(fd, minStart) :-
+  BASE_FunctionDefinition(fd, _, _),
+  minStart = min start : { BASE_Function_Terminal(fd, _, start, _) }.
+
+// The terminal with the highest "stop" value ends the function.
+.decl BASE_Function_Stop(fd: Id, stop: number)
+.output BASE_Function_Stop
+BASE_Function_Stop(fd, maxStop) :-
+  BASE_FunctionDefinition(fd, _, _),
+  maxStop = max stop : { BASE_Function_Terminal(fd, _, _, stop) }.
+
+// Populate the start-location base relation.
+BASE_Function_StartLoc(fd, startLine, startColumn) :-
+  BASE_Function_Start(fd, start),
+  BASE_Function_Terminal(fd, startTerminal, start, _),
+  BASE_Terminal(startTerminal, _, startLine, start, _, startColumn).
+// Populate the stop-location base relation.
+BASE_Function_EndLoc(fd, endLine, endColumn) :-
+  BASE_Function_Stop(fd, stop),
+  BASE_Function_Terminal(fd, stopTerminal, _, stop),
+  BASE_Terminal(stopTerminal, tok, endLine, _, stop, endColumn0),
+  endColumn = endColumn0 + strlen(tok).

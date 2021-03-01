@@ -13,6 +13,8 @@ public class BaseSchema extends Schema {
     private static final String SOURCE_FILE_ID = "BASE_SourceFileId";
     /** Relation node-is-parent-of-node. */
     private static final String PARENT_OF = "BASE_ParentOf";
+    /** Relation containing all terminals. */
+    private static final String TERMINAL = "BASE_Terminal";
 
     private BaseSchema(StringBuilder textBuilder, List<String> relations) {
         super(null, textBuilder, relations, new HashMap<>());
@@ -31,6 +33,9 @@ public class BaseSchema extends Schema {
         sbSchema.append(".decl ").append(PARENT_OF).append("(id: symbol, parent_id: symbol)\n");
         sbSchema.append(".input ").append(PARENT_OF).append('\n');
         relationNames.add(PARENT_OF);
+        sbSchema.append(".decl ").append(TERMINAL).append("(id: symbol, text:symbol, line: number, startIndex: number, stopIndex: number, charPos: number)\n");
+        sbSchema.append(".input ").append(TERMINAL).append('\n');
+        relationNames.add(TERMINAL);
         Collections.sort(relationNames);
         return new BaseSchema(sbSchema, relationNames);
     }
@@ -51,5 +56,14 @@ public class BaseSchema extends Schema {
      */
     public static void writeSourceFileId(Database baseDb, String line) {
         baseDb.writeRow(SOURCE_FILE_ID, line);
+    }
+
+    /**
+     * Writes a terminal node in the database.
+     * @param baseDb   the database object
+     * @param line     the text line representation of the terminal node tuple
+     */
+    public static void writeTerminal(Database baseDb, String line) {
+        baseDb.writeRow(TERMINAL, line);
     }
 }

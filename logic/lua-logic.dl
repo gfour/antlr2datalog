@@ -1,10 +1,19 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "areas.dl"
 
 // Only named function definitions, no lambdas.
 BASE_FunctionDefinition(statId, name, LOCATION(path, line, pos)) :-
   db_LUA.Stat_funcname(statId, fnId),
-  db_LUA.Funcname_NAME(fnId, _, _, name, line, _, _, pos),
+  db_LUA.Funcname_NAME(fnId, terminal, _),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(statId, path).
+// Local functions.
+BASE_Modifier(statId, "local"),
+BASE_FunctionDefinition(statId, name, LOCATION(path, line, pos)) :-
+  db_LUA.Stat_NAME(statId, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  db_LUA.Stat_funcbody(statId, _),
   ID_PATH(fnId, path).
 
 // No distinction between declarations and definitions.
@@ -12,21 +21,25 @@ BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
 
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
-  db_LUA.String_NORMALSTRING(id, _, str, line, _, _, pos),
+  db_LUA.String_NORMALSTRING(id, terminal),
+  BASE_Terminal(terminal, str, line, _, _, pos),
   ID_PATH(id, path).
 
 BASE_isScope(id) :- db_LUA.isFuncbody(id).
 BASE_isScope(id) :- db_LUA.isBlock(id).
 
 // Variable declarations from function parameters.
-BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(terminal, v, LOCATION(path, line, pos)) :-
   db_LUA.Funcbody_parlist(funcBody, pl),
   db_LUA.Parlist_namelist(pl, nl),
-  db_LUA.Namelist_NAME(nl, id, _, v, line, _, _, pos),
+  db_LUA.Namelist_NAME(nl, terminal, _),
+  BASE_Terminal(terminal, v, line, _, _, pos),
   ID_PATH(funcBody, path).
 // Local variable assignments.
-BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(terminal, v, LOCATION(path, line, pos)) :-
   db_LUA.Stat_varlist(stat, vl),
   db_LUA.Varlist_var_(vl, var, _),
-  db_LUA.Var__NAME(var, id, v, line, _, _, pos),
+  db_LUA.Var__NAME(var, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
   ID_PATH(stat, path).
+

@@ -77,3 +77,16 @@ BASE_VariableMayShadow(id1, id2, v) :-
 // Type "name" defined at source file "location".
 .decl BASE_Type(id: Id, name: symbol, location: Loc)
 .output BASE_Type
+
+// Where a function starts.
+.decl BASE_Function_StartLoc(id: Id, startLine: number, startColumn: number)
+.output BASE_Function_StartLoc
+// Where a function ends.
+.decl BASE_Function_EndLoc(id: Id, endLine: number, endColumn: number)
+.output BASE_Function_EndLoc
+// The area covered by a function.
+.decl BASE_Function_Area(id: Id, startLine: number, startColumn: number, endLine: number, endColumn: number)
+.output BASE_Function_Area
+BASE_Function_Area(id, startLine, startColumn, endLine, endColumn) :-
+  BASE_Function_StartLoc(id, startLine, startColumn),
+  BASE_Function_EndLoc(id, endLine, endColumn).

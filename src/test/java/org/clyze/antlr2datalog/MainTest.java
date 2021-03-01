@@ -46,11 +46,19 @@ public class MainTest {
     @Test public void testC() {
         Main.main(new String[] { "-l", "c", "-i", "grammars-v4/c/examples/FuncForwardDeclaration.c", "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
+        assertMetadataExist();
     }
 
     @Test public void testCpp() {
         Main.main(new String[] { "-l", "cpp", "-i", "grammars-v4/cpp/examples/and_keyword.cpp" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
+    }
+
+    @Test public void testGo() {
+        Main.main(new String[] { "-l", "go", "-i", "src/test/resources/bit_cmd.go", "-g" });
+        assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
+        assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_Function_Area.csv")).exists());
+        assertMetadataExist();
     }
 
     private void assertMetadataExist() {

@@ -1,13 +1,15 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "areas.dl"
 
 // Unsupported relation.
 BASE_Modifier("UNSUPPORTED", "UNSUPPORTED").
 
 // Method/function declarations.
 BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
-  ( db_GO.MethodDecl_IDENTIFIER(fd, _, name, line, _, _, pos)
-  ; db_GO.FunctionDecl_IDENTIFIER(fd, _, name, line, _, _, pos)),
+  ( db_GO.MethodDecl_IDENTIFIER(fd, terminal)
+  ; db_GO.FunctionDecl_IDENTIFIER(fd, terminal)),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(fd, path).
 
 // Method/function definitions are declarations with blocks.
@@ -18,5 +20,15 @@ BASE_FunctionDefinition(fd, name, loc) :-
 
 BASE_Type(td, name, LOCATION(path, line, pos)) :-
   db_GO.TypeDecl_typeSpec(td, ts, _),
-  db_GO.TypeSpec_IDENTIFIER(ts, _, name, line, _, _, pos),
+  db_GO.TypeSpec_IDENTIFIER(ts, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(td, path).
+
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  ( db_GO.String__INTERPRETED_STRING_LIT(id, terminal)
+  ; db_GO.String__RAW_STRING_LIT(id, terminal)),
+  BASE_Terminal(terminal, str, line, _, _, pos),
+  ID_PATH(id, path).
+
+BASE_isScope(id) :- db_GO.isBlock(id).
+

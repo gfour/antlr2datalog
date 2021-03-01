@@ -1,8 +1,10 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "areas.dl"
 
 BASE_FunctionDefinition(fd, name, location) :-
-  db_PYTHON3.Funcdef_NAME(fd, _, name, line, _, _, pos),
+  db_PYTHON3.Funcdef_NAME(fd, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(fd, path),
   location = LOCATION(path, line, pos).
 // In Python, function definition = declaration.
@@ -23,7 +25,8 @@ BASE_Modifier(fd, "_") :-
 .decl isAssign(id: Id, location: Loc)
 isAssign(id, location) :-
   ID_PATH(id, path),
-  db_PYTHON3.Expr_stmt_ASSIGN(id, _, _, "=", line, _, _, pos),
+  db_PYTHON3.Expr_stmt_ASSIGN(id, terminal, _),
+  BASE_Terminal(terminal, "=", line, _, _, pos),
   location = LOCATION(path, line, pos).
 
 .decl NameInAssignment(id: Id, n: symbol, location: Loc)
@@ -31,7 +34,8 @@ isAssign(id, location) :-
 
 NameInAssignment(atomId, n, location) :-
   ID_PATH(atomId, path),
-  db_PYTHON3.Atom_NAME(atomId, _, n, line, _, _, pos),
+  db_PYTHON3.Atom_NAME(atomId, terminal),
+  BASE_Terminal(terminal, n, line, _, _, pos),
   BASE_RecParentOf(exprStmtId, atomId),
   BASE_ParentOf(exprStmtId, assignId),
   isAssign(assignId, _),
@@ -47,25 +51,31 @@ FunctionUsesName(f, fLocation, n, nLocation) :-
 
 .decl Func_Name(id: Id, name: symbol)
 .output Func_Name
-Func_Name(id, name) :- db_PYTHON3.Funcdef_NAME(id, _, name, _, _, _, _).
+Func_Name(id, name) :-
+  db_PYTHON3.Funcdef_NAME(id, terminal),
+  BASE_Terminal(terminal, name, _, _, _, _).
 
 .decl NestedFunction(outerName: symbol, outerLoc: Loc, innerName: symbol, innerLoc: Loc)
 .output NestedFunction
 
 NestedFunction(oName, outerLoc, iName, innerLoc) :-
   ID_PATH(outer, path),
-  db_PYTHON3.Funcdef_NAME(outer, _, oName, oLine, _, _, oPos),
+  db_PYTHON3.Funcdef_NAME(outer, oTerminal),
+  BASE_Terminal(oTerminal, oName, oLine, _, _, oPos),
   BASE_RecParentOf(outer, inner),
-  db_PYTHON3.Funcdef_NAME(inner, _, iName, iLine, _, _, iPos),
+  db_PYTHON3.Funcdef_NAME(inner, iTerminal),
+  BASE_Terminal(iTerminal, iName, iLine, _, _, iPos),
   outerLoc = LOCATION(path, oLine, oPos),
   innerLoc = LOCATION(path, iLine, iPos).
 
 BASE_Type(id, name, LOCATION(path, line, pos)) :-
   ID_PATH(id, path),
-  db_PYTHON3.Classdef_NAME(id, _, name, line, _, _, pos).
+  db_PYTHON3.Classdef_NAME(id, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos).
 
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
-  db_PYTHON3.Atom_STRING(id, _, _, str, line, _, _, pos),
+  db_PYTHON3.Atom_STRING(id, terminal, _),
+  BASE_Terminal(terminal, str, line, _, _, pos),
   ID_PATH(id, path).
 
 BASE_isScope(id) :- db_PYTHON3.isSuite(id).

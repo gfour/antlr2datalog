@@ -114,11 +114,13 @@ public class FactVisitor {
                 System.out.println("WARNING: null token.");
                 text = "";
             }
-            sb.append("\t").append(text.replace('\t', ' ').replace('\n', ' '))
-                    .append("\t").append(token.getLine())
-                    .append("\t").append(token.getStartIndex())
-                    .append("\t").append(token.getStopIndex())
-                    .append("\t").append(token.getCharPositionInLine());
+            String sbTerminal = compNodeId +
+                    "\t" + text.replace('\t', ' ').replace('\n', ' ') +
+                    "\t" + token.getLine() +
+                    "\t" + token.getStartIndex() +
+                    "\t" + token.getStopIndex() +
+                    "\t" + token.getCharPositionInLine();
+            BaseSchema.writeTerminal(baseDb, sbTerminal);
         }
         langDb.writeRow(relName + "_" + comp.name, sb.toString());
         subTrees.add(typedParseTree);

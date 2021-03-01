@@ -2,11 +2,13 @@
 #include "base-logic.dl"
 
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
-  db_COBOL85.Literal_NONNUMERICLITERAL(id, _, str, line, _, _, pos),
+  db_COBOL85.Literal_NONNUMERICLITERAL(id, terminal),
+  BASE_Terminal(terminal, str, line, _, _, pos),
   ID_PATH(id, path).
 
 BASE_FunctionDefinition(id, name, LOCATION(path, line, pos)) :-
-  db_COBOL85.CobolWord_IDENTIFIER(id, _, name, line, _, _, pos),
+  db_COBOL85.CobolWord_IDENTIFIER(id, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   // Grammar causes 4 "hops" to go to the procedure division header.
   BASE_ParentOf(id1, id),
   BASE_ParentOf(id2, id1),
@@ -22,7 +24,8 @@ BASE_FunctionDeclaration(fd, name, location) :-
 BASE_isScope(id) :- BASE_SourceFileId(_, _, id).
 
 BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
-  db_COBOL85.CobolWord_IDENTIFIER(word, id, v, line, _, _, pos),
+  db_COBOL85.CobolWord_IDENTIFIER(word, id),
+  BASE_Terminal(id, v, line, _, _, pos),
   BASE_RecParentOf(ddEntry, word),
   db_COBOL85.isDataDescriptionEntry(ddEntry),
   BASE_RecParentOf(section, ddEntry),

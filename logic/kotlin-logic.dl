@@ -1,13 +1,15 @@
 #include "schema.dl"
 #include "base-logic.dl"
 #include "patterns.dl"
+#include "areas.dl"
 
 .decl DeclaredVariable(varName: symbol)
 .output DeclaredVariable
 
 DeclaredVariable(varName) :-
   db_KOTLIN.VariableDeclaration_simpleIdentifier(_, id),
-  db_KOTLIN.SimpleIdentifier_Identifier(id, _, varName, _, _, _, _).
+  db_KOTLIN.SimpleIdentifier_Identifier(id, terminal),
+  BASE_Terminal(terminal, varName, _, _, _, _).
 
 .decl UsedVariable(varName: symbol)
 .output UsedVariable
@@ -15,23 +17,27 @@ DeclaredVariable(varName) :-
 UsedVariable(varName) :-
   DeclaredVariable(varName),
   db_KOTLIN.PrimaryExpression_simpleIdentifier(_, id),
-  db_KOTLIN.SimpleIdentifier_Identifier(id, _, varName, _, _, _, _).
+  db_KOTLIN.SimpleIdentifier_Identifier(id, terminal),
+  BASE_Terminal(terminal, varName, _, _, _, _).
 
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
-  ( db_KOTLIN.LineStringContent_LineStrText(id, _, str, line, _, _, pos)
-  ; db_KOTLIN.MultiLineStringContent_MultiLineStrText(id, _, str, line, _, _, pos)),
+  ( db_KOTLIN.LineStringContent_LineStrText(id, terminal)
+  ; db_KOTLIN.MultiLineStringContent_MultiLineStrText(id, terminal)),
+  BASE_Terminal(terminal, str, line, _, _, pos),
   ID_PATH(id, path).
 
 BASE_Type(classDecl, name, LOCATION(path, line, pos)) :-
   db_KOTLIN.ClassDeclaration_simpleIdentifier(classDecl, identId),
-  db_KOTLIN.SimpleIdentifier_Identifier(identId, _, name, line, _, _, pos),
+  db_KOTLIN.SimpleIdentifier_Identifier(identId, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(classDecl, path).
 
 .decl FuncDefOrDecl(id: Id, name: symbol, location: Loc)
 
 FuncDefOrDecl(fd, name, LOCATION(path, line, pos)) :-
   db_KOTLIN.FunctionDeclaration_simpleIdentifier(fd, identId),
-  db_KOTLIN.SimpleIdentifier_Identifier(identId, _, name, line, _, _, pos),
+  db_KOTLIN.SimpleIdentifier_Identifier(identId, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(fd, path).
 
 BASE_FunctionDefinition(fd, name, location) :-
@@ -53,7 +59,8 @@ BASE_isScope(id) :- db_KOTLIN.isWhenEntry(id).
 
 KotlinBinding(vDeclId, name, LOCATION(path, line, pos)) :-
   db_KOTLIN.VariableDeclaration_simpleIdentifier(vDeclId, identId),
-  db_KOTLIN.SimpleIdentifier_Identifier(identId, _, name, line, _, _, pos),
+  db_KOTLIN.SimpleIdentifier_Identifier(identId, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(vDeclId, path).
 // Handle nested multi-variable declarations.
 KotlinBinding(mvDeclId, name, loc) :-
@@ -77,7 +84,8 @@ KotlinField(field, name, loc) :-
 BASE_VariableDeclaration(paramId, v, LOCATION(path, line, pos)) :-
   db_KOTLIN.FunctionValueParameter_parameter(_, paramId),
   db_KOTLIN.Parameter_simpleIdentifier(paramId, identId),
-  db_KOTLIN.SimpleIdentifier_Identifier(identId, _, v, line, _, _, pos),
+  db_KOTLIN.SimpleIdentifier_Identifier(identId, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
   ID_PATH(identId, path).
 // Local variable assignments.
 BASE_VariableDeclaration(id, v, loc) :-
@@ -87,7 +95,9 @@ BASE_VariableDeclaration(id, v, loc) :-
 .decl KotlinVal(propertyId: Id)
 .output KotlinVal
 
-KotlinVal(id) :- db_KOTLIN.PropertyDeclaration_VAL(id, _, "val", _, _, _, _).
+KotlinVal(id) :-
+  db_KOTLIN.PropertyDeclaration_VAL(id, terminal),
+  BASE_Terminal(terminal, "val", _, _, _, _).
 
 .decl PropertyModifier(propertyId: Id, modId: Id)
 .output PropertyModifier
@@ -106,29 +116,30 @@ PropertyModifier(prop, mod) :-
 
 BASE_Modifier(prop, m) :-
   PropertyModifier(prop, mod),
-  ( db_KOTLIN.ClassModifier_ENUM(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.ClassModifier_SEALED(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.ClassModifier_ANNOTATION(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.ClassModifier_DATA(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.ClassModifier_INNER(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.MemberModifier_OVERRIDE(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.MemberModifier_LATEINIT(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.VisibilityModifier_PUBLIC(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.VisibilityModifier_PRIVATE(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.VisibilityModifier_INTERNAL(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.VisibilityModifier_PROTECTED(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.FunctionModifier_TAILREC(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.FunctionModifier_OPERATOR(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.FunctionModifier_INFIX(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.FunctionModifier_INLINE(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.FunctionModifier_EXTERNAL(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.FunctionModifier_SUSPEND(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.PropertyModifier_CONST(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.InheritanceModifier_ABSTRACT(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.InheritanceModifier_FINAL(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.InheritanceModifier_OPEN(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.ParameterModifier_VARARG(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.ParameterModifier_NOINLINE(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.ParameterModifier_CROSSINLINE(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.PlatformModifier_EXPECT(mod, _, m, _, _, _, _)
-  ; db_KOTLIN.PlatformModifier_ACTUAL(mod, _, m, _, _, _, _)).
+  ( db_KOTLIN.ClassModifier_ENUM(mod, terminal)
+  ; db_KOTLIN.ClassModifier_SEALED(mod, terminal)
+  ; db_KOTLIN.ClassModifier_ANNOTATION(mod, terminal)
+  ; db_KOTLIN.ClassModifier_DATA(mod, terminal)
+  ; db_KOTLIN.ClassModifier_INNER(mod, terminal)
+  ; db_KOTLIN.MemberModifier_OVERRIDE(mod, terminal)
+  ; db_KOTLIN.MemberModifier_LATEINIT(mod, terminal)
+  ; db_KOTLIN.VisibilityModifier_PUBLIC(mod, terminal)
+  ; db_KOTLIN.VisibilityModifier_PRIVATE(mod, terminal)
+  ; db_KOTLIN.VisibilityModifier_INTERNAL(mod, terminal)
+  ; db_KOTLIN.VisibilityModifier_PROTECTED(mod, terminal)
+  ; db_KOTLIN.FunctionModifier_TAILREC(mod, terminal)
+  ; db_KOTLIN.FunctionModifier_OPERATOR(mod, terminal)
+  ; db_KOTLIN.FunctionModifier_INFIX(mod, terminal)
+  ; db_KOTLIN.FunctionModifier_INLINE(mod, terminal)
+  ; db_KOTLIN.FunctionModifier_EXTERNAL(mod, terminal)
+  ; db_KOTLIN.FunctionModifier_SUSPEND(mod, terminal)
+  ; db_KOTLIN.PropertyModifier_CONST(mod, terminal)
+  ; db_KOTLIN.InheritanceModifier_ABSTRACT(mod, terminal)
+  ; db_KOTLIN.InheritanceModifier_FINAL(mod, terminal)
+  ; db_KOTLIN.InheritanceModifier_OPEN(mod, terminal)
+  ; db_KOTLIN.ParameterModifier_VARARG(mod, terminal)
+  ; db_KOTLIN.ParameterModifier_NOINLINE(mod, terminal)
+  ; db_KOTLIN.ParameterModifier_CROSSINLINE(mod, terminal)
+  ; db_KOTLIN.PlatformModifier_EXPECT(mod, terminal)
+  ; db_KOTLIN.PlatformModifier_ACTUAL(mod, terminal)),
+  BASE_Terminal(terminal, m, _, _, _, _).

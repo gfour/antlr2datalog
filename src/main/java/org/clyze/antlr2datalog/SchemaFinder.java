@@ -153,8 +153,6 @@ public final class SchemaFinder {
                 sbSchema.append(comp.name).append(":").append(getSimpleName(comp.type, this.schemaRules));
                 if (comp.index)
                     sbSchema.append(", _comp_index: number");
-                if (comp.isTerminal)
-                    sbSchema.append(", _comp_text: symbol, line: number, startIndex: number, stopIndex: number, charPos: number");
                 sbSchema.append(")\n");
                 relationNames.add(relNameC);
             }
