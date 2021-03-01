@@ -3,6 +3,7 @@ package org.clyze.antlr2datalog;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -36,6 +37,10 @@ public class MetadataGenerator {
             String id = parts[0];
             String name = parts[1];
             SourcePosition srcPos = getSourcePosition(parts[2], name.length());
+            if (srcPos == null) {
+                System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
+                return;
+            }
             metadata.types.add(new Type(srcPos.position, srcPos.sourceFileName, id, name));
         }));
 
@@ -54,6 +59,10 @@ public class MetadataGenerator {
             String id = parts[0];
             String name = parts[1];
             SourcePosition srcPos = getSourcePosition(parts[2], name.length());
+            if (srcPos == null) {
+                System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
+                return;
+            }
             // TODO: fill in params
             String[] params = new String[] { };
             Position area = functionAreas.get(id);
