@@ -1,2 +1,37 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "areas.dl"
+
+.decl SolidityFunction(fd: Id, name: symbol, location: Loc)
+.output SolidityFunction
+
+SolidityFunction(fd, name, LOCATION(path, line, pos)) :-
+  db_SOLIDITY.FunctionDefinition_functionDescriptor(fd, fdesc),
+  db_SOLIDITY.FunctionDescriptor_identifier(fdesc, ident),
+  db_SOLIDITY.Identifier_Identifier(ident, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(fd, path).
+
+// Function definitions have implementation blocks.
+BASE_FunctionDefinition(fd, name, location) :-
+  SolidityFunction(fd, name, location),
+  db_SOLIDITY.FunctionDefinition_block(fd, _).
+// Function declarations do not have implementation blocks.
+BASE_FunctionDeclaration(fd, name, location) :-
+  SolidityFunction(fd, name, location),
+  !db_SOLIDITY.FunctionDefinition_block(fd, _).
+
+BASE_isScope(id) :- db_SOLIDITY.isBlock(id).
+
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  db_SOLIDITY.StringLiteral_StringLiteralFragment(_, terminal, _),
+  BASE_Terminal(terminal, str, line, _, _, pos),
+  ID_PATH(terminal, path).
+
+// Enum/struct definitions.
+BASE_Type(ed, name, LOCATION(path, line, pos)) :-
+  ( db_SOLIDITY.EnumDefinition_identifier(ed, ident)
+  ; db_SOLIDITY.StructDefinition_identifier(ed, ident)),
+  db_SOLIDITY.Identifier_Identifier(ident, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(ed, path).
