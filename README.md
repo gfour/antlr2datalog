@@ -22,10 +22,10 @@ and computes the analysis results. For more information, see
 
 ## Installation
 
-* Install the "grammars-v4" parsers used:
+* Install the parsers used:
 
 ```
-./gradlew installParsers
+./install-parsers.sh
 ```
 
 * Install [Souffle](https://github.com/souffle-lang/souffle/).
