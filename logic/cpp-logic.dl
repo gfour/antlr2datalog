@@ -1,6 +1,7 @@
 #include "schema.dl"
 #include "base-logic.dl"
 #include "patterns.dl"
+#include "areas.dl"
 
 .decl Functionlike(id: Id, name: symbol, location: Loc, paramsAndQuals: Id)
 .output Functionlike
@@ -14,12 +15,12 @@ Functionlike(uid, name, LOCATION(path, line, pos), paqId) :-
   db_CPP.ParametersAndQualifiers_RightParen(paqId, _),
   ID_PATH(uid, path).
 
-BASE_FunctionDeclaration(id, name, loc) :-
+BASE_FunctionDeclaration(blockDecl, name, loc) :-
   Functionlike(id, name, loc, _),
   BASE_RecParentOf(blockDecl, id),
   db_CPP.isBlockDeclaration(blockDecl).
 
-BASE_FunctionDefinition(id, name, loc) :-
+BASE_FunctionDefinition(funcDef, name, loc) :-
   Functionlike(id, name, loc, _),
   BASE_RecParentOf(funcDef, id),
   db_CPP.isFunctionDefinition(funcDef).
