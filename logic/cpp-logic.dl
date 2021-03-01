@@ -25,10 +25,25 @@ BASE_FunctionDefinition(funcDef, name, loc) :-
   BASE_RecParentOf(funcDef, id),
   db_CPP.isFunctionDefinition(funcDef).
 
+BASE_Modifier(funcDef, mod) :-
+  db_CPP.FunctionDefinition_declSpecifierSeq(funcDef, dsSeq),
+  db_CPP.DeclSpecifierSeq_declSpecifier(dsSeq, ds, _),
+  db_CPP.DeclSpecifier_functionSpecifier(ds, funcSpec),
+  ( db_CPP.FunctionSpecifier_Inline(funcSpec, terminal)
+  ; db_CPP.FunctionSpecifier_Explicit(funcSpec, terminal)
+  ; db_CPP.FunctionSpecifier_Virtual(funcSpec, terminal)),
+  BASE_Terminal(terminal, mod, _, _, _, _).
+
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_CPP.Literal_StringLiteral(id, terminal),
   BASE_Terminal(terminal, str, line, _, _, pos),
   ID_PATH(id, path).
+
+BASE_Type(typeSpec, name, LOCATION(path, line, pos)) :-
+  UP_PATH4(className, db_CPP.isClassHeadName, db_CPP.isClassHead, db_CPP.isClassSpecifier, db_CPP.isTypeSpecifier, typeSpec),
+  db_CPP.ClassName_Identifier(className, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(typeSpec, path).
 
 BASE_isScope(id) :- db_CPP.isLambdaIntroducer(id).
 BASE_isScope(id) :- db_CPP.isCompoundStatement(id).
