@@ -26,6 +26,23 @@ BASE_FunctionDefinition(fd, name, location) :-
   BASE_RecParentOf(fd, dd2_id),
   db_C.isFunctionDefinition(fd).
 
+.decl CPP_Function_Specifier(fd: Id, specifier: Id)
+.output CPP_Function_Specifier
+
+// Group together different kinds of C++ function specifiers.
+CPP_Function_Specifier(fd, specifier) :-
+  BASE_FunctionDefinition(fd, _, _),
+  db_C.FunctionDefinition_declarationSpecifiers(fd, declSpecs),
+  db_C.DeclarationSpecifiers_declarationSpecifier(declSpecs, declSpec, _),
+  ( db_C.DeclarationSpecifier_functionSpecifier(declSpec, specifier)
+  ; db_C.DeclarationSpecifier_storageClassSpecifier(declSpec, specifier)
+  ; db_C.DeclarationSpecifier_typeQualifier(declSpec, specifier)).
+
+BASE_Modifier(fd, mod) :-
+  CPP_Function_Specifier(fd, specifier),
+  BASE_ParentOf(specifier, terminal),
+  BASE_Terminal(terminal, mod, _, _, _, _).
+
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_C.PrimaryExpression_StringLiteral(id, terminal, _),
   BASE_Terminal(terminal, str, line, _, _, pos),
