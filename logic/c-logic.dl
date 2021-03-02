@@ -51,12 +51,42 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
 BASE_isScope(id) :- db_C.isCompoundStatement(id).
 BASE_isScope(id) :- db_C.isStructDeclarationList(id).
 
-// Variable declarations from function parameters.
-BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+.decl C_Param(pd: db_C.ParameterDeclaration, idx: number)
+.output C_Param
+
+// Innermost (last) parameter declaration.
+C_Param(pd, 0) :-
+  db_C.ParameterList_parameterDeclaration(pl, pd),
+  !db_C.ParameterList_parameterList(pl, _).
+// Parameter declaration at pos (i+1) after pos (i).
+C_Param(pd, i + 1) :-
+  db_C.ParameterList_parameterDeclaration(pl, pd),
+  db_C.ParameterList_parameterList(pl, pl0),
+  db_C.ParameterList_parameterDeclaration(pl0, pd0),
+  C_Param(pd0, i).
+
+.decl C_Function_ParameterDecl(fd: db_C.FunctionDefinition, pd: db_C.ParameterDeclaration, idx: number)
+.output C_Function_ParameterDecl
+
+C_Function_ParameterDecl(fd, pd, i) :-
+  C_Param(pd, i),
+  BASE_RecParentOf(ptl, pd),
+  UP_PATH4(ptl, db_C.isParameterTypeList, db_C.isDirectDeclarator, db_C.isDeclarator, db_C.isFunctionDefinition, fd).
+
+BASE_Function_Arity(fd, a) :-
+  BASE_FunctionDefinition(fd, _, _),
+  a = count : { C_Function_ParameterDecl(fd, _, _) }.
+
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+  C_Function_ParameterDecl(fd, pd, idx),
   db_C.DirectDeclarator_Identifier(dd, id),
   BASE_Terminal(id, v, line, _, _, pos),
   UP_PATH2(dd, db_C.isDeclarator, db_C.isParameterDeclaration, pd),
   ID_PATH(pd, path).
+
+// Variable declarations from function parameters.
+BASE_VariableDeclaration(id, v, location) :-
+  BASE_FunctionParameter(_, id, v, _, location).
 // Local variable declarations.
 BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   db_C.DirectDeclarator_Identifier(dd, id),

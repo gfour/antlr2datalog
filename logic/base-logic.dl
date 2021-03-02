@@ -57,6 +57,13 @@ BASE_ScopesOverlap(b1, b2) :-
   b1 != b2,
   (BASE_RecParentOf(b1, b2) ; BASE_RecParentOf(b2, b1)).
 
+// The number of arguments that an argument receives (no vararg support).
+.decl BASE_Function_Arity(fd: Id, a: number)
+.output BASE_Function_Arity
+
+.decl BASE_FunctionParameter(fd: Id, id: Id, v: symbol, idx: number, loc: Loc)
+.output BASE_FunctionParameter
+
 .decl BASE_VariableDeclaration(id: Id, v: symbol, loc: Loc)
 .output BASE_VariableDeclaration
 

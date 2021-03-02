@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.clyze.persistent.metadata.Configuration;
@@ -55,23 +56,33 @@ public class MetadataGenerator {
             functionAreas.put(id, area);
         }));
 
+        Map<String, TreeMap<String, String>> functionParams = new HashMap<>();
+        process("BASE_FunctionParameter.csv", ((String[] parts) -> {
+            String fd = parts[0];
+            String v = parts[2];
+            String idx = parts[3];
+            // Maintain a map that is sorted by the parameter index.
+            TreeMap<String, String> params = functionParams.computeIfAbsent(fd, k -> new TreeMap<>());
+            params.put(idx, v);
+        }));
+
         process("BASE_FunctionDefinition.csv", ((String[] parts) -> {
-            String id = parts[0];
+            String fd = parts[0];
             String name = parts[1];
             SourcePosition srcPos = getSourcePosition(parts[2], name.length());
             if (srcPos == null) {
                 System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
                 return;
             }
-            // TODO: fill in params
-            String[] params = new String[] { };
-            Position area = functionAreas.get(id);
+            TreeMap<String, String> fParams = functionParams.get(fd);
+            String[] params = fParams == null ? new String[] { } : fParams.values().toArray(new String[0]);
+            Position area = functionAreas.get(fd);
             if (area == null) {
                 area = srcPos.position;
                 if (Main.debug)
-                    System.err.println("WARNING: function " + id + " has no area information.");
+                    System.err.println("WARNING: function " + fd + " has no area information.");
             }
-            metadata.functions.add(new Function(srcPos.position, srcPos.sourceFileName, id, name, params, area));
+            metadata.functions.add(new Function(srcPos.position, srcPos.sourceFileName, fd, name, params, area));
         }));
 
         try {
