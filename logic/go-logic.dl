@@ -3,7 +3,7 @@
 #include "areas.dl"
 
 // Unsupported relation.
-BASE_Modifier("UNSUPPORTED", "UNSUPPORTED").
+BASE_Modifier(id, mod) :- id = "UNSUPPORTED", mod = "UNSUPPORTED".
 
 // Method/function declarations.
 BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
