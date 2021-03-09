@@ -1,5 +1,6 @@
 #include "schema.dl"
 #include "base-logic.dl"
+#include "areas.dl"
 
 BASE_FunctionDefinition(fd, name, LOCATION(path, line, pos)) :-
   ( db_RUST.Function_identifier(fd, ident)
