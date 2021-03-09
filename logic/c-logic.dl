@@ -73,10 +73,6 @@ C_Function_ParameterDecl(fd, pd, i) :-
   BASE_RecParentOf(ptl, pd),
   UP_PATH4(ptl, db_C.isParameterTypeList, db_C.isDirectDeclarator, db_C.isDeclarator, db_C.isFunctionDefinition, fd).
 
-BASE_Function_Arity(fd, a) :-
-  BASE_FunctionDefinition(fd, _, _),
-  a = count : { C_Function_ParameterDecl(fd, _, _) }.
-
 BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
   C_Function_ParameterDecl(fd, pd, idx),
   db_C.DirectDeclarator_Identifier(dd, id),

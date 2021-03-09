@@ -61,6 +61,10 @@ BASE_ScopesOverlap(b1, b2) :-
 .decl BASE_Function_Arity(fd: Id, a: number)
 .output BASE_Function_Arity
 
+BASE_Function_Arity(fd, a) :-
+  BASE_FunctionDefinition(fd, _, _),
+  a = count : { BASE_FunctionParameter(fd, _, _, _, _) }.
+
 .decl BASE_FunctionParameter(fd: Id, id: Id, v: symbol, idx: number, loc: Loc)
 .output BASE_FunctionParameter
 
