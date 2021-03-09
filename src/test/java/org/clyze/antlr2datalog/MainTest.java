@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.clyze.persistent.metadata.JSONUtil;
+import org.clyze.persistent.metadata.SourceMetadata;
 import org.junit.Before;
 import org.junit.Test;
 //import static org.junit.Assert.*;
@@ -14,10 +16,12 @@ public class MainTest {
         FileUtils.deleteQuietly(new File(Main.DEFAULT_WORKSPACE));
     }
 
-    @Test public void testC() {
+    @Test public void testC() throws IOException {
         Main.main(new String[] { "-l", "c", "-i", "grammars-v4/c/examples/FuncForwardDeclaration.c", "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
         assertMetadataExist();
+        SourceMetadata sm = getSourceMetadata();
+        assert sm.functions.size() == 1;
     }
 
     @Test public void testCpp() {
@@ -31,11 +35,13 @@ public class MainTest {
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
     }
 
-    @Test public void testGo() {
+    @Test public void testGo() throws IOException {
         Main.main(new String[] { "-l", "go", "-i", "src/test/resources/bit_cmd.go", "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_Function_Area.csv")).exists());
         assertMetadataExist();
+        SourceMetadata sm = getSourceMetadata();
+        assert sm.functions.size() == 9;
     }
 
     @Test public void testKotlin() {
@@ -59,15 +65,27 @@ public class MainTest {
         Main.main(new String[] { "-l", "rust", "-i", topSrcPath + "/examples/deno_core_runtime.rs", "--relative-path",  topSrcPath, "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_RUST_Identifier_NON_KEYWORD_IDENTIFIER.facts")).exists());
         assertMetadataExist();
+        SourceMetadata sm = getSourceMetadata();
+        assert sm.types.size() == 13;
+        assert sm.functions.size() == 80;
     }
 
     @Test public void testSolidity() {
         Main.main(new String[] { "-l", "solidity", "-i", "./grammars-v4/solidity/test.sol", "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
         assertMetadataExist();
+
     }
 
     private void assertMetadataExist() {
-        assert((new File(Main.DEFAULT_WORKSPACE, "database/" + MetadataGenerator.OUTPUT_FILE).exists()));
+        assert(getMetadataFile().exists());
+    }
+
+    private File getMetadataFile() {
+        return new File(Main.DEFAULT_WORKSPACE, "database/" + MetadataGenerator.OUTPUT_FILE);
+    }
+
+    private SourceMetadata getSourceMetadata() throws IOException {
+        return SourceMetadata.fromMap(JSONUtil.toMap(getMetadataFile().toPath()));
     }
 }
