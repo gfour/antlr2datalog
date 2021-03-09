@@ -51,6 +51,8 @@ public class MainTest {
     @Test public void testKotlin() {
         Main.main(new String[] { "-l", "kotlin", "-i", "grammars-v4/kotlin/kotlin-formal/examples/Test.kt" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/UsedVariable.csv")).exists());
+        assert functionDefinition("FunctionDeclaration@grammars-v4/kotlin/kotlin-formal/examples/Test.kt@4298-4353", "main", "grammars-v4/kotlin/kotlin-formal/examples/Test.kt:559:4");
+        assert functionArity("FunctionDeclaration@grammars-v4/kotlin/kotlin-formal/examples/Test.kt@4298-4353", "1");
     }
 
     @Test public void testLua() {

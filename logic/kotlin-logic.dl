@@ -143,3 +143,13 @@ BASE_Modifier(prop, m) :-
   ; db_KOTLIN.PlatformModifier_EXPECT(mod, terminal)
   ; db_KOTLIN.PlatformModifier_ACTUAL(mod, terminal)),
   BASE_Terminal(terminal, m, _, _, _, _).
+
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+  FuncDefOrDecl(fd, _, _),
+  db_KOTLIN.FunctionDeclaration_functionValueParameters(fd, fvParams),
+  db_KOTLIN.FunctionValueParameters_functionValueParameter(fvParams, fvParam, idx),
+  db_KOTLIN.FunctionValueParameter_parameter(fvParam, param),
+  db_KOTLIN.Parameter_simpleIdentifier(param, id),
+  db_KOTLIN.SimpleIdentifier_Identifier(id, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
+  ID_PATH(fd, path).
