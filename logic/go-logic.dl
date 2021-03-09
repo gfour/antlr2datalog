@@ -32,3 +32,13 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
 
 BASE_isScope(id) :- db_GO.isBlock(id).
 
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+  BASE_FunctionDefinition(fd, _, _),
+  BASE_ParentOf(fd, sig),
+  db_GO.Signature_parameters(sig, params),
+  db_GO.Parameters_parameterDecl(params, paramDecl, idx),
+  db_GO.ParameterDecl_identifierList(paramDecl, idL),
+  db_GO.IdentifierList_IDENTIFIER(idL, id, _),
+  BASE_Terminal(id, v, line, _, _, pos),
+  ID_PATH(fd, path).
+

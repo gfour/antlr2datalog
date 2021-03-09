@@ -2,6 +2,7 @@ package org.clyze.antlr2datalog;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.clyze.persistent.metadata.JSONUtil;
@@ -39,9 +40,12 @@ public class MainTest {
         Main.main(new String[] { "-l", "go", "-i", "src/test/resources/bit_cmd.go", "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_Function_Area.csv")).exists());
+        assert functionDefinition("FunctionDecl@src/test/resources/bit_cmd.go@1074-1544", "HijackGitCommandOccurred", "src/test/resources/bit_cmd.go:134:5");
+        assert functionArity("FunctionDecl@src/test/resources/bit_cmd.go@1074-1544", "3");
         assertMetadataExist();
         SourceMetadata sm = getSourceMetadata();
         assert sm.functions.size() == 9;
+        assert sm.types.size() == 0;
     }
 
     @Test public void testKotlin() {
@@ -81,11 +85,34 @@ public class MainTest {
         assert(getMetadataFile().exists());
     }
 
-    private File getMetadataFile() {
-        return new File(Main.DEFAULT_WORKSPACE, "database/" + MetadataGenerator.OUTPUT_FILE);
+    private static File getDatabase() {
+        return new File(Main.DEFAULT_WORKSPACE, "database");
     }
 
-    private SourceMetadata getSourceMetadata() throws IOException {
+    private static File getMetadataFile() {
+        return new File(getDatabase(), MetadataGenerator.OUTPUT_FILE);
+    }
+
+    private static SourceMetadata getSourceMetadata() throws IOException {
         return SourceMetadata.fromMap(JSONUtil.toMap(getMetadataFile().toPath()));
+    }
+
+    private static boolean relationTuple(String relName, java.util.function.Function<String[], Boolean> test) {
+        File csv = new File(getDatabase(), relName);
+        try {
+            return Files.lines(csv.toPath()).map((String line) -> line.split("\t")).anyMatch(test::apply);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean functionArity(String funcId, String arity) {
+        return relationTuple("BASE_Function_Arity.csv", ((String[] parts) -> parts[0].equals(funcId) && parts[1].equals(arity)));
+    }
+
+    private boolean functionDefinition(String funcId, String name, String loc) {
+        return relationTuple("BASE_FunctionDefinition.csv", ((String[] parts) ->
+                (parts[0].equals(funcId)) && (parts[1].equals(name)) && (parts[2].equals(loc))));
     }
 }
