@@ -2,7 +2,8 @@
 #include "base-logic.dl"
 
 BASE_FunctionDefinition(fd, name, LOCATION(path, line, pos)) :-
-  db_RUST.Function_identifier(fd, ident),
+  ( db_RUST.Function_identifier(fd, ident)
+  ; db_RUST.Method_identifier(fd, ident)),
   db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(fd, path).
