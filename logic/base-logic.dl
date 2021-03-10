@@ -71,6 +71,10 @@ BASE_Function_Arity(fd, a) :-
 .decl BASE_VariableDeclaration(id: Id, v: symbol, loc: Loc)
 .output BASE_VariableDeclaration
 
+// Variable declarations from function parameters.
+BASE_VariableDeclaration(id, v, loc) :-
+  BASE_FunctionParameter(_, id, v, _, loc).
+
 .decl BASE_VariableMayShadow(id1: Id, id2: Id, v: symbol)
 .output BASE_VariableMayShadow
 

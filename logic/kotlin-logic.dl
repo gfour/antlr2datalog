@@ -80,13 +80,6 @@ KotlinField(field, name, loc) :-
   KotlinBinding(field, name, loc),
   UP_PATH3(field, db_KOTLIN.isPropertyDeclaration, db_KOTLIN.isDeclaration, db_KOTLIN.isClassMemberDeclaration, memDeclId).
 
-// Variable declarations from function parameters.
-BASE_VariableDeclaration(paramId, v, LOCATION(path, line, pos)) :-
-  db_KOTLIN.FunctionValueParameter_parameter(_, paramId),
-  db_KOTLIN.Parameter_simpleIdentifier(paramId, identId),
-  db_KOTLIN.SimpleIdentifier_Identifier(identId, terminal),
-  BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(identId, path).
 // Local variable assignments.
 BASE_VariableDeclaration(id, v, loc) :-
   KotlinBinding(id, v, loc),

@@ -80,9 +80,6 @@ BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
   UP_PATH2(dd, db_C.isDeclarator, db_C.isParameterDeclaration, pd),
   ID_PATH(pd, path).
 
-// Variable declarations from function parameters.
-BASE_VariableDeclaration(id, v, location) :-
-  BASE_FunctionParameter(_, id, v, _, location).
 // Local variable declarations.
 BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   db_C.DirectDeclarator_Identifier(dd, id),
