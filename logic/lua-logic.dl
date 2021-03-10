@@ -28,13 +28,15 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
 BASE_isScope(id) :- db_LUA.isFuncbody(id).
 BASE_isScope(id) :- db_LUA.isBlock(id).
 
-// Variable declarations from function parameters.
-BASE_VariableDeclaration(terminal, v, LOCATION(path, line, pos)) :-
-  db_LUA.Funcbody_parlist(funcBody, pl),
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+  BASE_FunctionDefinition(fd, _, _),
+  db_LUA.Stat_funcbody(fd, fBody),
+  db_LUA.Funcbody_parlist(fBody, pl),
   db_LUA.Parlist_namelist(pl, nl),
-  db_LUA.Namelist_NAME(nl, terminal, _),
-  BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(funcBody, path).
+  db_LUA.Namelist_NAME(nl, id, idx),
+  BASE_Terminal(id, v, line, _, _, pos),
+  ID_PATH(fd, path).
+
 // Local variable assignments.
 BASE_VariableDeclaration(terminal, v, LOCATION(path, line, pos)) :-
   db_LUA.Stat_varlist(stat, vl),
@@ -43,3 +45,6 @@ BASE_VariableDeclaration(terminal, v, LOCATION(path, line, pos)) :-
   BASE_Terminal(terminal, v, line, _, _, pos),
   ID_PATH(stat, path).
 
+// There are not type definitions in Lua: all types are variants of
+// the "dictionary" data structure.
+BASE_Type(id, name, loc) :- U = "LUA/UNSUPPORTED:0:0", id = U, name = U, loc = U.
