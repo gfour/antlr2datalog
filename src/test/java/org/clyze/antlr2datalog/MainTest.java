@@ -70,6 +70,8 @@ public class MainTest {
         String topSrcPath = (new File("grammars-v4/rust")).getCanonicalPath();
         Main.main(new String[] { "-l", "rust", "-i", topSrcPath + "/examples/deno_core_runtime.rs", "--relative-path",  topSrcPath, "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_RUST_Identifier_NON_KEYWORD_IDENTIFIER.facts")).exists());
+        assert functionDefinition("Method@examples/deno_core_runtime.rs@4373-4513", "register_op", "examples/deno_core_runtime.rs:423:9");
+        assert functionArity("Method@examples/deno_core_runtime.rs@4373-4513", "2");
         assertMetadataExist();
         SourceMetadata sm = getSourceMetadata();
         assert sm.types.size() == 13;

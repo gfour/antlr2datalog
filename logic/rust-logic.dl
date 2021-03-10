@@ -13,6 +13,24 @@ BASE_FunctionDefinition(fd, name, LOCATION(path, line, pos)) :-
 BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
 
+.decl RUST_FunctionParameter(fd: Id, fParam: Id, idx: number)
+.output RUST_FunctionParameter
+
+// We omit "self" parameters here for uniformity with other languages.
+RUST_FunctionParameter(fd, fParam, idx) :-
+  db_RUST.Method_functionParam(fd, fParam, idx).
+RUST_FunctionParameter(fd, fParam, idx) :-
+  db_RUST.Function_functionParameters(fd, fParams),
+  db_RUST.FunctionParameters_functionParam(fParams, fParam, idx).
+
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+  RUST_FunctionParameter(fd, fParam, idx),
+  db_RUST.FunctionParam_pattern(fParam, pat),
+  BASE_RecParentOf(pat, ident),
+  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(ident, id),
+  BASE_Terminal(id, v, line, _, _, pos),
+  ID_PATH(fd, path).
+
 BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   db_RUST.LiteralExpression_STRING_LITERAL(id, terminal),
   BASE_Terminal(terminal, str, line, _, _, pos),
