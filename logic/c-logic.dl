@@ -89,3 +89,10 @@ BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   BASE_Terminal(id, v, line, _, _, pos),
   UP_PATH2(dd, db_C.isDeclarator, db_C.isInitDeclarator, idecl),
   ID_PATH(idecl, path).
+
+BASE_Type(decl, name, LOCATION(path, line, pos)) :-
+  db_C.StructOrUnionSpecifier_Identifier(spec, terminal),
+  db_C.StructOrUnionSpecifier_LeftBrace(spec, _),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  UP_PATH4(spec, db_C.isTypeSpecifier, db_C.isDeclarationSpecifier, db_C.isDeclarationSpecifiers, db_C.isDeclaration, decl),
+  ID_PATH(decl, path).

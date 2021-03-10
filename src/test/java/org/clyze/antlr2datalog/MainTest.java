@@ -18,11 +18,12 @@ public class MainTest {
     }
 
     @Test public void testC() throws IOException {
-        Main.main(new String[] { "-l", "c", "-i", "grammars-v4/c/examples/FuncForwardDeclaration.c", "-g" });
+        Main.main(new String[] { "-l", "c", "-i", "grammars-v4/c/examples/FuncForwardDeclaration.c", "-i", "grammars-v4/c/examples/ll.c", "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
         assertMetadataExist();
         SourceMetadata sm = getSourceMetadata();
-        assert sm.functions.size() == 1;
+        assert sm.functions.size() == 2;
+        assert sm.types.size() == 1;
     }
 
     @Test public void testCpp() {
