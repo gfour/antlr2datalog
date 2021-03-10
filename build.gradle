@@ -61,7 +61,7 @@ task copyParsers(type: Copy) {
     ['C', 'cobol85', 'CPP14', 'golang', 'kotlin-formal', 'Lua', 'php', 'python3', 'rust'].each { String lang ->
         include "${lang}/**/*.jar"
     }
-    include 'solidity-parser/solidity.jar'
+    include 'solidity/solidity.jar'
 }
 
 task cleanResources() {

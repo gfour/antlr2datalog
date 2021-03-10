@@ -24,5 +24,8 @@ rm -rf target
 mkdir -p target
 mv *.class target
 jar -cf solidity.jar -C target .
+rm *.java *.tokens *.interp
 cd ..
+mkdir -p solidity
+mv solidity-parser/solidity.jar solidity
 cd ..

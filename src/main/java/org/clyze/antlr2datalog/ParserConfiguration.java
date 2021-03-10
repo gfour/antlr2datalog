@@ -39,7 +39,7 @@ public enum ParserConfiguration {
     // Rust, MIT license
     RUST("Rust", "RustLexer", "RustParser", "crate", Collections.singletonList(".rs"), "rust/1.0-SNAPSHOT/rust-1.0-SNAPSHOT.jar", true, false),
     // Solidity, MIT license
-    SOLIDITY("Solidity", "SolidityLexer", "SolidityParser", "sourceUnit", Collections.singletonList(".sol"), "solidity-parser/solidity.jar", false, false),
+    SOLIDITY("Solidity", "SolidityLexer", "SolidityParser", "sourceUnit", Collections.singletonList(".sol"), "solidity/solidity.jar", false, false),
     ;
 
     /** The path in the local Maven repo for grammars-v4 grammars. */
