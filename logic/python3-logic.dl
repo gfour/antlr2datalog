@@ -79,3 +79,12 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   ID_PATH(id, path).
 
 BASE_isScope(id) :- db_PYTHON3.isSuite(id).
+
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+  BASE_FunctionDefinition(fd, _, _),
+  db_PYTHON3.Funcdef_parameters(fd, params),
+  db_PYTHON3.Parameters_typedargslist(params, tl),
+  db_PYTHON3.Typedargslist_tfpdef(tl, tfp, idx),
+  db_PYTHON3.Tfpdef_NAME(tfp, id),
+  BASE_Terminal(id, v, line, _, _, pos),
+  ID_PATH(fd, path).
