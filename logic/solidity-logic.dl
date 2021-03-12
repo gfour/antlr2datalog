@@ -35,3 +35,30 @@ BASE_Type(ed, name, LOCATION(path, line, pos)) :-
   db_SOLIDITY.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(ed, path).
+
+BASE_FunctionParameter(fd, ident, v, idx, LOCATION(path, line, pos)) :-
+  SolidityFunction(fd, _, _),
+  db_SOLIDITY.FunctionDefinition_parameterList(fd, pl),
+  db_SOLIDITY.ParameterList_parameter(pl, param, idx),
+  db_SOLIDITY.Parameter_identifier(param, ident),
+  db_SOLIDITY.Identifier_Identifier(ident, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
+  ID_PATH(fd, path).
+
+.decl Function_ModList(fd: db_SOLIDITY.FunctionDefinition, ml: db_SOLIDITY.ModifierList)
+.output Function_ModList
+
+Function_ModList(fd, ml) :-
+  SolidityFunction(fd, _, _),
+  db_SOLIDITY.FunctionDefinition_modifierList(fd, ml).
+
+BASE_Modifier(fd, "external") :-
+  Function_ModList(fd, ml), db_SOLIDITY.ModifierList_ExternalKeyword(ml, _, _).
+BASE_Modifier(fd, "internal") :-
+  Function_ModList(fd, ml), db_SOLIDITY.ModifierList_InternalKeyword(ml, _, _).
+BASE_Modifier(fd, "private") :-
+  Function_ModList(fd, ml), db_SOLIDITY.ModifierList_PrivateKeyword(ml, _, _).
+BASE_Modifier(fd, "public") :-
+  Function_ModList(fd, ml), db_SOLIDITY.ModifierList_PublicKeyword(ml, _, _).
+BASE_Modifier(fd, "virtual") :-
+  Function_ModList(fd, ml), db_SOLIDITY.ModifierList_VirtualKeyword(ml, _, _).

@@ -55,6 +55,10 @@ public class LangTest {
         return findTuple("BASE_FunctionDeclaration.csv", funcId, name, loc);
     }
 
+    protected boolean functionParameter(String funcId, String paramId, String name, String idx, String loc) {
+        return findTuple("BASE_FunctionParameter.csv", funcId, paramId, name, idx, loc);
+    }
+
     protected boolean variableDeclaration(String id, String name, String loc) {
         return findTuple("BASE_VariableDeclaration.csv", id, name, loc);
     }
