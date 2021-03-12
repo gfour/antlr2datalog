@@ -4,9 +4,11 @@ import java.io.File;
 import org.junit.Test;
 
 public class KotlinTest extends LangTest {
+    public static final String SRC_FILE = "grammars-v4/kotlin/kotlin-formal/examples/Test.kt";
+
     @Test
     public void testKotlin() {
-        Main.main(new String[] { "-l", "kotlin", "-i", "grammars-v4/kotlin/kotlin-formal/examples/Test.kt" });
+        Main.main(new String[] { "-l", "kotlin", "-i", SRC_FILE });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/UsedVariable.csv")).exists());
         assert functionDeclaration("FunctionDeclaration@grammars-v4/kotlin/kotlin-formal/examples/Test.kt@6859-6869", "property", "grammars-v4/kotlin/kotlin-formal/examples/Test.kt:832:8");
         assert functionDefinition("FunctionDeclaration@grammars-v4/kotlin/kotlin-formal/examples/Test.kt@4298-4353", "main", "grammars-v4/kotlin/kotlin-formal/examples/Test.kt:559:4");

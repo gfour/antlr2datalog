@@ -6,6 +6,8 @@ import org.clyze.persistent.metadata.SourceMetadata;
 import org.junit.Test;
 
 public class RustTest extends LangTest {
+    public static final String SRC_FILE = "grammars-v4/rust/examples/deno_core_runtime.rs";
+
     @Test
     public void testRust() throws IOException {
         String topSrcPath = (new File("grammars-v4/rust")).getCanonicalPath();

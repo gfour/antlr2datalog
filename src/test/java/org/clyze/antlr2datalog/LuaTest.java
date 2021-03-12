@@ -4,9 +4,11 @@ import java.io.File;
 import org.junit.Test;
 
 public class LuaTest extends LangTest {
+    public static final String SRC_FILE = "grammars-v4/lua/examples/factorial.lua";
+
     @Test
     public void testLua() {
-        Main.main(new String[] { "-l", "lua", "-i", "grammars-v4/lua/examples/factorial.lua" });
+        Main.main(new String[] { "-l", "lua", "-i", SRC_FILE });
         assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_LUA_Var__NAME.facts")).exists());
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
         assert functionDefinition("Stat@grammars-v4/lua/examples/factorial.lua@1-24", "fact", "grammars-v4/lua/examples/factorial.lua:2:13");
