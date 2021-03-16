@@ -55,7 +55,7 @@ public class Main {
             return;
         }
 
-        List<ParserConfiguration> parserConfigurations = new ArrayList<>();
+        List<ParserReflection> parserConfigurations = new ArrayList<>();
         String workspaceDir = DEFAULT_WORKSPACE;
         boolean compile, generateMetadata;
         String relativePath;
@@ -76,8 +76,7 @@ public class Main {
             System.out.println("Using workspace directory: " + workspaceDir);
             for (String lang : langs) {
                 ParserConfiguration pc = ParserConfiguration.valueOf(lang.toUpperCase());
-                parserConfigurations.add(pc);
-                pc.load(debug);
+                parserConfigurations.add(new ParserReflection(pc, debug));
                 System.out.println("Using language: " + pc.name);
             }
         } catch (ParseException | MalformedURLException | ClassNotFoundException | NoSuchMethodException e) {

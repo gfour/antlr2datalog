@@ -38,6 +38,7 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
 
 BASE_isScope(id) :- db_RUST.isBlockExpression(id).
 
+// This also captures variables bound in pattern matching.
 BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   db_RUST.IdentifierPattern_identifier(_, id),
   db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(id, terminal),

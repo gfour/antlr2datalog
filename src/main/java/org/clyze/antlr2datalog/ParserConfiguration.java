@@ -1,20 +1,12 @@
 package org.clyze.antlr2datalog;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
-
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.Parser;
 
 /**
  * The parser configurations to use. This is a sample, extend as needed.
@@ -48,28 +40,22 @@ public enum ParserConfiguration {
     /** The friendly name of the configuration. */
     public final String name;
     /** The (fully qualified) class name of the lexer. */
-    private final String lexerClassName;
+    public final String lexerClassName;
     /** The (fully qualified) class name of the parser. */
-    private final String parserClassName;
+    public final String parserClassName;
     /** The name of the root node in the grammar. */
-    private final String rootNode;
+    public final String rootNode;
     /** The file extensions recognized by the parser. */
     final Collection<String> extensions;
     /** The parser JAR path in the local Maven repo (suffix). */
-    private final String jarPath;
+    public final String jarPath;
     /**
      * If true, use special grammars-v4 path prefix in local Maven repo.
      * If false, use the extra-grammars directory.
      */
-    private final boolean isAntlrGrammars;
+    public final boolean isAntlrGrammars;
     /** If true, use lowercase character stream (for case-insensitive languages such as PHP). */
     public final boolean lowerCase;
-    /** The resolved (by load method) lexer Class. */
-    public Class<? extends Lexer> lexerClass = null;
-    /** The resolved (by load method) parser Class. */
-    public Class<? extends Parser> parserClass = null;
-    /** The resolved (by load method) root node Method. */
-    public Method rootNodeMethod = null;
 
     /**
      * Create a new parser configuration.
@@ -94,41 +80,8 @@ public enum ParserConfiguration {
         this.lowerCase = lowerCase;
     }
 
-    /**
-     * Loads the lexer/parser JAR and resolves their Class objects.
-     * @param debug                    debug mode
-     * @throws MalformedURLException   on bad local paths
-     * @throws ClassNotFoundException  on bad JAR contents
-     * @throws NoSuchMethodException   on bad parser configuration
-     */
-    public void load(boolean debug) throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
-        String jarPath = getJarPath(debug);
-        System.out.println("Using JAR: " + jarPath);
-        ClassLoader loader = new URLClassLoader(new URL[] { new URL("file://" + jarPath) }, this.getClass().getClassLoader());
-        this.lexerClass = (Class<? extends Lexer>)loader.loadClass(lexerClassName);
-        this.parserClass = (Class<? extends Parser>)loader.loadClass(parserClassName);
-        this.rootNodeMethod = parserClass.getDeclaredMethod(rootNode);
-    }
-
     public static String[] valuesLowercase() {
         return Arrays.stream(values()).map((ParserConfiguration pc) -> pc.name().toLowerCase(Locale.ROOT)).toArray(String[]::new);
-    }
-
-    /**
-     * This method resolves the parser JAR. It may look into the bundled
-     * resources, the local Maven repository, or some custom path.
-     * @param debug                    debug mode
-     * @return the path of the parser JAR
-     */
-    private String getJarPath(boolean debug) {
-        try {
-            return Resources.extractResourceFile(getClass().getClassLoader(), "parsers/" + jarPath);
-        } catch (Exception ignored) {
-            if (debug)
-                System.out.println("No bundled parser, attempting resolution via file system...");
-        }
-        String homeDir = System.getProperty("user.home");
-        return (isAntlrGrammars ? homeDir + "/.m2/repository/" + ANTLR_GRAMMARS_PREFIX : (new File("extra-grammars").getAbsolutePath() + "/")) + this.jarPath;
     }
 
     public CharStream getCharStream(String path, InputStream inputStream) throws IOException, UnsupportedParserException {

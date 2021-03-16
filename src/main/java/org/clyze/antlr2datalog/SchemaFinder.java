@@ -14,12 +14,12 @@ public final class SchemaFinder {
     private static final Class<RuleNode> RULE_NODE_CLASS = RuleNode.class;
     private static final Class<TerminalNode> TERMINAL_NODE_CLASS = TerminalNode.class;
     private final Collection<Class<? extends ParseTree>> visitedRules = new HashSet<>();
-    private final ParserConfiguration parserConfiguration;
-    /** The discivered rules from the parser that will inform the schema. */
+    private final ParserReflection parser;
+    /** The discovered rules from the parser that will inform the schema. */
     public final Map<Class<?>, Rule> schemaRules = new TreeMap<>(Comparator.comparing(Class::getCanonicalName));
 
-    public SchemaFinder(ParserConfiguration parserConfiguration) {
-        this.parserConfiguration = parserConfiguration;
+    public SchemaFinder(ParserReflection parser) {
+        this.parser = parser;
     }
 
     /**
@@ -52,6 +52,16 @@ public final class SchemaFinder {
         visitedRules.add(c);
         for (Class<? extends ParseTree> c0 : next)
             discoverSchema(c0);
+
+        // Process any subtypes of this node type.
+        Collection<Class<?>> subclasses = parser.subtypes.get(c.getCanonicalName());
+        if (subclasses != null) {
+            if (Main.debug)
+                System.out.println("Also processing subclasses: " + subclasses);
+            for (Class<?> subclass : subclasses)
+                if (RULE_NODE_CLASS.isAssignableFrom(subclass))
+                    discoverSchema((Class<? extends ParseTree>) subclass);
+        }
     }
 
     private void registerComponent(Method m, Class<? extends ParseTree> c,
@@ -114,7 +124,7 @@ public final class SchemaFinder {
      * @return     the logic schema rules (parser rule class to a collection of sub-rules/terminals)
      */
     private Map<Class<?>, Rule> computeSchema() {
-        Class<? extends ParseTree> rootNodeClass = (Class<? extends ParseTree>)parserConfiguration.rootNodeMethod.getReturnType();
+        Class<? extends ParseTree> rootNodeClass = (Class<? extends ParseTree>) parser.rootNodeMethod.getReturnType();
         discoverSchema(rootNodeClass);
         return schemaRules;
     }
@@ -158,7 +168,7 @@ public final class SchemaFinder {
             }
         }
 
-        return new Schema(parserConfiguration.name(), sbSchema, relationNames, schemaRules);
+        return new Schema(parser.pc.name(), sbSchema, relationNames, schemaRules);
     }
 
     public static String getSimpleName(Class<?> c, Map<Class<?>, Rule> schema) {

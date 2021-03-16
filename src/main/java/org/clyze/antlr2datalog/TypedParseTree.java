@@ -12,9 +12,18 @@ public class TypedParseTree {
     final ParseTree parseTree;
     /** The companion (super)type. */
     final Class<? extends ParseTree> c;
+    /** If true, this parse tree is of a different type than the supertype it presents. */
+    final boolean subTyped;
+    /** The id of this parse tree, used in debug reports. */
+    String id = null;
 
-    TypedParseTree(ParseTree parseTree, Class<? extends ParseTree> c) {
+    TypedParseTree(ParseTree parseTree, Class<? extends ParseTree> c, boolean subTyped) {
         this.parseTree = parseTree;
         this.c = c;
+        this.subTyped = subTyped;
+    }
+
+    TypedParseTree(ParseTree parseTree, Class<? extends ParseTree> c) {
+        this(parseTree, c, parseTree.getClass() != c);
     }
 }

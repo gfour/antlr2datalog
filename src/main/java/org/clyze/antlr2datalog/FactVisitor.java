@@ -45,23 +45,25 @@ public class FactVisitor {
     /**
      * Visit a node in the AST.
      * @param typedParseTree   the node of the tree
+     * @return                 the unique id of the node
      */
-    public void visitParseTree(TypedParseTree typedParseTree) {
+    public String visitParseTree(TypedParseTree typedParseTree) {
         String relName = SchemaFinder.getSimpleName(typedParseTree.c, schemaRules);
         if (Main.debug)
-            System.out.println("relName = " + relName);
+            System.out.println("Visiting: " + typedParseTree.id + ", relName = " + relName);
         String nodeId = getNodeId(relName, typedParseTree.parseTree);
         langDb.writeRow("is" + relName, nodeId);
         Collection<Component> rules = schemaRules.get(typedParseTree.c).components;
         if (rules == null) {
             System.out.println("WARNING: schema lacks " + relName);
-            return;
+            return null;
         }
         List<TypedParseTree> subTrees = new LinkedList<>();
         for (Component rule : rules)
             visitComponent(typedParseTree, relName, nodeId, rule, subTrees);
         for (TypedParseTree subTree : subTrees)
             visitParseTree(subTree);
+        return nodeId;
     }
 
     private void visitComponent(TypedParseTree tpt, String relName, String parentNodeId, Component comp, List<TypedParseTree> subTrees) {
@@ -98,32 +100,50 @@ public class FactVisitor {
     private void visitPt(String relName, Component comp, String parentNodeId,
                          TypedParseTree typedParseTree, int index, List<TypedParseTree> subTrees) {
         String compSimpleName = SchemaFinder.getSimpleName(comp.type, schemaRules);
-        String compNodeId = getNodeId(compSimpleName, typedParseTree.parseTree);
+        ParseTree pTree = typedParseTree.parseTree;
+        String compNodeId = getNodeId(compSimpleName, pTree);
         if (Main.debug)
-            System.out.println("compSimpleName = " + compSimpleName + ", compNodeId = " + compNodeId);
+            System.out.println("compSimpleName = " + compSimpleName + ", compNodeId = " + compNodeId + ", class = " + pTree.getClass().getSimpleName());
         StringBuilder sb = new StringBuilder().append(parentNodeId).append('\t').append(compNodeId);
         BaseSchema.writeParentOf(baseDb, sb.toString());
         if (comp.index)
             sb.append("\t").append(index);
         if (comp.isTerminal) {
-            Token token = ((TerminalNode) typedParseTree.parseTree).getSymbol();
+            Token token = ((TerminalNode) pTree).getSymbol();
             String text = token.getText();
+            int line = token.getLine();
             if (Main.debug)
-                System.out.println("Token: " + text);
+                System.out.println("Token: " + text + ", line = " + line);
             if (text == null) {
                 System.out.println("WARNING: null token.");
                 text = "";
             }
             String sbTerminal = compNodeId +
                     "\t" + text.replace('\t', ' ').replace('\n', ' ') +
-                    "\t" + token.getLine() +
+                    "\t" + line +
                     "\t" + token.getStartIndex() +
                     "\t" + token.getStopIndex() +
                     "\t" + token.getCharPositionInLine();
             BaseSchema.writeTerminal(baseDb, sbTerminal);
         }
         langDb.writeRow(relName + "_" + comp.name, sb.toString());
+        if (Main.debug) {
+            System.out.println("Adding node [" + compNodeId + "] to subTrees.");
+            typedParseTree.id = compNodeId;
+        }
         subTrees.add(typedParseTree);
+
+        // If this value is a non-terminal and is in fact of another type,
+        // also process the getters of that type.
+        if (typedParseTree.subTyped) {
+            Class<? extends ParseTree> pClass = pTree.getClass();
+            if (TerminalNode.class.isAssignableFrom(pClass))
+                return;
+            if (Main.debug)
+                System.out.println("Also processing [" + compNodeId + "] as " + pClass.getSimpleName());
+            String subNodeId = visitParseTree(new TypedParseTree(pTree, pClass));
+            BaseSchema.writeParentOf(baseDb, compNodeId + '\t' + subNodeId);
+        }
     }
 }
 

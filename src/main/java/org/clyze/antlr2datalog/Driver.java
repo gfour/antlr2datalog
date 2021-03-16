@@ -9,18 +9,18 @@ import org.antlr.v4.runtime.tree.*;
  * The main driver that guides schema detection and source code parsing.
  */
 public class Driver {
-    private final List<ParserConfiguration> parserConfigurations;
+    private final List<ParserReflection> parsers;
     private final File workspaceDir;
     private final boolean debug;
 
     /**
      * Create a new driver to generate the schema and parse the sources.
-     * @param parserConfigurations   the parser configurations to use
-     * @param workspaceDir           the workspace directory to use
-     * @param debug                  debug mode
+     * @param parsers          the parsers to use (with reflection metadata)
+     * @param workspaceDir     the workspace directory to use
+     * @param debug            debug mode
      */
-    public Driver(List<ParserConfiguration> parserConfigurations, File workspaceDir, boolean debug) {
-        this.parserConfigurations = parserConfigurations;
+    public Driver(List<ParserReflection> parsers, File workspaceDir, boolean debug) {
+        this.parsers = parsers;
         this.workspaceDir = workspaceDir;
         this.debug = debug;
     }
@@ -60,16 +60,17 @@ public class Driver {
     throws IOException {
         List<Schema> langSchemas = new ArrayList<>();
         Database baseDb = new Database(BaseSchema.create(), getFactsDir());
-        for (ParserConfiguration parserConfiguration : parserConfigurations) {
+        for (ParserReflection reflMetadata : parsers) {
+            ParserConfiguration parserConfiguration = reflMetadata.pc;
             System.out.println("Discovering " + parserConfiguration.name + " schema...");
-            SchemaFinder sf = new SchemaFinder(parserConfiguration);
+            SchemaFinder sf = new SchemaFinder(reflMetadata);
             Schema langSchema = sf.generateLanguageSchema();
             langSchemas.add(langSchema);
 
             System.out.println("Recording " + parserConfiguration.name + " facts...");
             Database db = new Database(langSchema, getFactsDir());
             for (String path : inputs)
-                parseFile(parserConfiguration, db, baseDb, path, topPath);
+                parseFile(reflMetadata, db, baseDb, path, topPath);
             db.writeFacts(debug);
         }
         baseDb.writeFacts(debug);
@@ -80,18 +81,18 @@ public class Driver {
         System.out.println("[" + pc.name + "] " + message);
     }
 
-    private void parseFile(ParserConfiguration parserConfiguration,
+    private void parseFile(ParserReflection parserReflection,
                            Database langDb, Database baseDb,
                            String path, String topPath) {
         File pathFile = new File(path);
         if (pathFile.isDirectory()) {
             if (debug)
-                parserLog(parserConfiguration, "Processing directory: " + path);
+                parserLog(parserReflection.pc, "Processing directory: " + path);
             File[] files = pathFile.listFiles();
             if (files != null)
                 for (File f : files)
                     try {
-                        parseFile(parserConfiguration, langDb, baseDb, f.getCanonicalPath(), topPath);
+                        parseFile(parserReflection, langDb, baseDb, f.getCanonicalPath(), topPath);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -99,6 +100,7 @@ public class Driver {
         }
 
         boolean ignore = true;
+        ParserConfiguration parserConfiguration = parserReflection.pc;
         for (String ext : parserConfiguration.extensions)
             if (path.endsWith(ext)) {
                 ignore = false;
@@ -113,9 +115,9 @@ public class Driver {
             parserLog(parserConfiguration, "Processing file: " + path);
         try (InputStream inputStream = new FileInputStream(path)) {
             CharStream cs = parserConfiguration.getCharStream(path, inputStream);
-            Lexer lexer = parserConfiguration.lexerClass.getConstructor(CharStream.class).newInstance(cs);
+            Lexer lexer = parserReflection.lexerClass.getConstructor(CharStream.class).newInstance(cs);
             TokenStream tokenStream = new CommonTokenStream(lexer);
-            Parser parser = parserConfiguration.parserClass.getConstructor(TokenStream.class).newInstance(tokenStream);
+            Parser parser = parserReflection.parserClass.getConstructor(TokenStream.class).newInstance(tokenStream);
             if (debug) {
                 parser.addParseListener(new ParseTreeListener() {
                     @Override
@@ -136,7 +138,7 @@ public class Driver {
                     }
                 });
             }
-            ParserRuleContext ruleContext = (ParserRuleContext) parserConfiguration.rootNodeMethod.invoke(parser);
+            ParserRuleContext ruleContext = (ParserRuleContext) parserReflection.rootNodeMethod.invoke(parser);
             process(langDb, baseDb, path, ruleContext, topPath);
         } catch (UnsupportedParserException ignored) {
         } catch (Exception ex) {
@@ -152,7 +154,7 @@ public class Driver {
             @Override public Void visit(ParseTree parseTree) {
                 String parseTreeRelationName = SchemaFinder.getSimpleName(parseTree.getClass(), langDb.schema.rules);
                 BaseSchema.writeSourceFileId(baseDb, srcPath + '\t' + srcPath + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
-                fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass()));
+                fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass(), false));
                 return null;
             }
             @Override public Void visitChildren(RuleNode ruleNode) { return visit(ruleNode); }
@@ -202,8 +204,8 @@ public class Driver {
         System.out.println("Using logic directory: " + logicDir);
         File logicIn = new File(workspaceDir, "logic-pre.dl");
         try (FileWriter fw = new FileWriter(logicIn)) {
-            for (ParserConfiguration parserConfiguration : parserConfigurations) {
-                String language = parserConfiguration.name().toLowerCase(Locale.ROOT);
+            for (ParserReflection parser : parsers) {
+                String language = parser.pc.name().toLowerCase(Locale.ROOT);
                 String logicName = language + "-logic.dl";
                 File logic = new File(logicDir, logicName);
                 if (!logic.exists())
