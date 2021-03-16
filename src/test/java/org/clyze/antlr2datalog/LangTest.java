@@ -3,16 +3,13 @@ package org.clyze.antlr2datalog;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-
 import org.apache.commons.io.FileUtils;
 import org.clyze.persistent.metadata.JSONUtil;
 import org.clyze.persistent.metadata.SourceMetadata;
-import org.junit.Before;
-import org.junit.Test;
-//import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeEach;
 
 public class LangTest {
-    @Before
+    @BeforeEach
     public void deleteWorkspace() {
         FileUtils.deleteQuietly(new File(Main.DEFAULT_WORKSPACE));
     }

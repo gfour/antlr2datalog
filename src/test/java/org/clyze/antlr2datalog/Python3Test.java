@@ -1,7 +1,7 @@
 package org.clyze.antlr2datalog;
 
 import java.io.File;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class Python3Test extends LangTest {
     public static final String SRC_FILE = "grammars-v4/python/python3/examples/coroutines.py";

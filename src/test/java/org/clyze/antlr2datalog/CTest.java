@@ -3,7 +3,7 @@ package org.clyze.antlr2datalog;
 import java.io.File;
 import java.io.IOException;
 import org.clyze.persistent.metadata.SourceMetadata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CTest extends LangTest {
     public static final String SRC_FILE = "grammars-v4/c/examples/FuncForwardDeclaration.c";

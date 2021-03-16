@@ -1,7 +1,7 @@
 package org.clyze.antlr2datalog;
 
 import java.io.File;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SolidityTest extends LangTest {
     public static final String SRC_FILE = "grammars-v4/solidity/test.sol";

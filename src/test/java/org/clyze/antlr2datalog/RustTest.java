@@ -2,8 +2,9 @@ package org.clyze.antlr2datalog;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import org.clyze.persistent.metadata.SourceMetadata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RustTest extends LangTest {
     public static final String SRC_FILE = "grammars-v4/rust/examples/deno_core_runtime.rs";

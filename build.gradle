@@ -26,7 +26,8 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.13'
 
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
+    testImplementation(platform('org.junit:junit-bom:5.7.1'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
 }
 
 String mainClass = 'org.clyze.antlr2datalog.Main'
@@ -35,6 +36,10 @@ group = "org.clyze"
 application {
     // Define the main class for the application
     mainClassName = mainClass
+}
+
+test {
+    useJUnitPlatform { }
 }
 
 wrapper {

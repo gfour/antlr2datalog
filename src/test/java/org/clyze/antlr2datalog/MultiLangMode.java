@@ -1,10 +1,9 @@
 package org.clyze.antlr2datalog;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test simultaneous processing of many source files in different languages.
