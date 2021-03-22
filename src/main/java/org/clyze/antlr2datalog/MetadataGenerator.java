@@ -42,7 +42,7 @@ public class MetadataGenerator {
                 System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
                 return;
             }
-            metadata.types.add(new Type(srcPos.position, srcPos.sourceFileName, id, name));
+            metadata.types.add(new Type(srcPos.position, srcPos.sourceFileName, true, id, name));
         }));
 
         Map<String, Position> functionAreas = new HashMap<>();
@@ -82,7 +82,7 @@ public class MetadataGenerator {
                 if (Main.debug)
                     System.err.println("WARNING: function " + fd + " has no area information.");
             }
-            metadata.functions.add(new Function(srcPos.position, srcPos.sourceFileName, fd, name, params, area));
+            metadata.functions.add(new Function(srcPos.position, srcPos.sourceFileName, true, fd, name, params, area));
         }));
 
         try {
