@@ -14,7 +14,7 @@ BASE_FunctionDefinition(statId, name, LOCATION(path, line, pos)) :-
   db_LUA.Stat_NAME(statId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   db_LUA.Stat_funcbody(statId, _),
-  ID_PATH(fnId, path).
+  ID_PATH(statId, path).
 
 // No distinction between declarations and definitions.
 BASE_FunctionDeclaration(fd, name, location) :-
