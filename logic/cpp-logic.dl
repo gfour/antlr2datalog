@@ -57,9 +57,9 @@ BASE_isScope(id) :- db_CPP.isCompoundStatement(id).
 // Variable declarations from function parameters.
 BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   Functionlike(func, _, _, paqId),
+  BASE_RecParentOf(paqId, id),
   db_CPP.ClassName_Identifier(_, id),
   BASE_Terminal(id, v, line, _, _, pos),
-  BASE_RecParentOf(paqId, id),
   ID_PATH(func, path).
 // Local variable declarations.
 BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
