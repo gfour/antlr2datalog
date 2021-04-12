@@ -1,39 +1,42 @@
 #pragma once
 
 // This is a collection of preprocessor macros for pattern matching on paths. */
-
+//
 // Macros UP_PATHx match upward paths of length x from node leaf to node
 // root, where each encountered parent matches a given type.
+//
+// The "_##leaf_##root" concatenation creates unique local variables for each macro
+// so that more than one macros can be used in the same rule.
 
 #define UP_PATH1(leaf, predA, root)                             \
   BASE_ParentOf(root, leaf), predA(root)
 
 #define UP_PATH2(leaf, predA, predB, root)                      \
-  BASE_ParentOf(MACROnode1, leaf), predA(MACROnode1),           \
-  BASE_ParentOf(root, MACROnode1), predB(root)
+  BASE_ParentOf(MACROnode1_##leaf_##root, leaf), predA(MACROnode1_##leaf_##root),\
+  BASE_ParentOf(root, MACROnode1_##leaf_##root), predB(root)
 
 #define UP_PATH3(leaf, predA, predB, predC, root)               \
-  BASE_ParentOf(MACROnode1, leaf), predA(MACROnode1),           \
-  BASE_ParentOf(MACROnode2, MACROnode1), predB(MACROnode2),     \
-  BASE_ParentOf(root, MACROnode2), predC(root)
+  BASE_ParentOf(MACROnode1_##leaf_##root, leaf), predA(MACROnode1_##leaf_##root),\
+  BASE_ParentOf(MACROnode2_##leaf_##root, MACROnode1_##leaf_##root), predB(MACROnode2_##leaf_##root),\
+  BASE_ParentOf(root, MACROnode2_##leaf_##root), predC(root)
 
 #define UP_PATH4(leaf, predA, predB, predC, predD, root)        \
-  BASE_ParentOf(MACROnode1, leaf), predA(MACROnode1),           \
-  BASE_ParentOf(MACROnode2, MACROnode1), predB(MACROnode2),     \
-  BASE_ParentOf(MACROnode3, MACROnode2), predC(MACROnode3),     \
-  BASE_ParentOf(root, MACROnode3), predD(root)
+  BASE_ParentOf(MACROnode1_##leaf_##root, leaf), predA(MACROnode1_##leaf_##root),           \
+  BASE_ParentOf(MACROnode2_##leaf_##root, MACROnode1_##leaf_##root), predB(MACROnode2_##leaf_##root),     \
+  BASE_ParentOf(MACROnode3_##leaf_##root, MACROnode2_##leaf_##root), predC(MACROnode3_##leaf_##root),     \
+  BASE_ParentOf(root, MACROnode3_##leaf_##root), predD(root)
 
 #define UP_PATH5(leaf, predA, predB, predC, predD, predE, root) \
-  BASE_ParentOf(MACROnode1, leaf), predA(MACROnode1),           \
-  BASE_ParentOf(MACROnode2, MACROnode1), predB(MACROnode2),     \
-  BASE_ParentOf(MACROnode3, MACROnode2), predC(MACROnode3),     \
-  BASE_ParentOf(MACROnode4, MACROnode3), predD(MACROnode4),     \
-  BASE_ParentOf(root, MACROnode4), predE(root)
+  BASE_ParentOf(MACROnode1_##leaf_##root, leaf), predA(MACROnode1_##leaf_##root),           \
+  BASE_ParentOf(MACROnode2_##leaf_##root, MACROnode1_##leaf_##root), predB(MACROnode2_##leaf_##root),     \
+  BASE_ParentOf(MACROnode3_##leaf_##root, MACROnode2_##leaf_##root), predC(MACROnode3_##leaf_##root),     \
+  BASE_ParentOf(MACROnode4_##leaf_##root, MACROnode3_##leaf_##root), predD(MACROnode4_##leaf_##root),     \
+  BASE_ParentOf(root, MACROnode4_##leaf_##root), predE(root)
 
 #define UP_PATH6(leaf, predA, predB, predC, predD, predE, predF, root) \
-  BASE_ParentOf(MACROnode1, leaf), predA(MACROnode1),           \
-  BASE_ParentOf(MACROnode2, MACROnode1), predB(MACROnode2),     \
-  BASE_ParentOf(MACROnode3, MACROnode2), predC(MACROnode3),     \
-  BASE_ParentOf(MACROnode4, MACROnode3), predD(MACROnode4),     \
-  BASE_ParentOf(MACROnode5, MACROnode4), predE(MACROnode5),     \
-  BASE_ParentOf(root, MACROnode5), predF(root)
+  BASE_ParentOf(MACROnode1_##leaf_##root, leaf), predA(MACROnode1_##leaf_##root),           \
+  BASE_ParentOf(MACROnode2_##leaf_##root, MACROnode1_##leaf_##root), predB(MACROnode2_##leaf_##root),     \
+  BASE_ParentOf(MACROnode3_##leaf_##root, MACROnode2_##leaf_##root), predC(MACROnode3_##leaf_##root),     \
+  BASE_ParentOf(MACROnode4_##leaf_##root, MACROnode3_##leaf_##root), predD(MACROnode4_##leaf_##root),     \
+  BASE_ParentOf(MACROnode5_##leaf_##root, MACROnode4_##leaf_##root), predE(MACROnode5_##leaf_##root),     \
+  BASE_ParentOf(root, MACROnode5_##leaf_##root), predF(root)
