@@ -15,13 +15,19 @@ Functionlike(uid, name, LOCATION(path, line, pos), paqId) :-
   db_CPP.ParametersAndQualifiers_RightParen(paqId, _),
   ID_PATH(uid, path).
 
+// Helper function to record parameter declarations for function definitions/declarations.
+.decl Function_paq(func: Id, paq: Id)
+.output Function_paq
+
+Function_paq(blockDecl, paq),
 BASE_FunctionDeclaration(blockDecl, name, loc) :-
-  Functionlike(id, name, loc, _),
+  Functionlike(id, name, loc, paq),
   BASE_RecParentOf(blockDecl, id),
   db_CPP.isBlockDeclaration(blockDecl).
 
+Function_paq(funcDef, paq),
 BASE_FunctionDefinition(funcDef, name, loc) :-
-  Functionlike(id, name, loc, _),
+  Functionlike(id, name, loc, paq),
   BASE_RecParentOf(funcDef, id),
   db_CPP.isFunctionDefinition(funcDef).
 
@@ -61,3 +67,19 @@ BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
   BASE_Terminal(id, v, line, _, _, pos),
   UP_PATH6(uId, db_CPP.isIdExpression, db_CPP.isDeclaratorid, db_CPP.isNoPointerDeclarator, db_CPP.isPointerDeclarator, db_CPP.isDeclarator, db_CPP.isInitDeclarator, di),
   ID_PATH(di, path).
+
+// Utility: mapping NoPointerDeclaration -> terminal.
+.decl NoPointerDecl_terminal(npDecl: db_CPP.NoPointerDeclarator, terminal: Id)
+.output NoPointerDecl_terminal
+NoPointerDecl_terminal(npDecl, terminal) :-
+  db_CPP.UnqualifiedId_Identifier(uid, terminal),
+  UP_PATH3(uid, db_CPP.isIdExpression, db_CPP.isDeclaratorid, db_CPP.isNoPointerDeclarator, npDecl).
+
+BASE_FunctionParameter(func, terminal, v, idx, LOCATION(path, line, pos)) :-
+  Function_paq(func, paq),
+  UP_PATH2(pdl, db_CPP.isParameterDeclarationClause, db_CPP.isParametersAndQualifiers, paq),
+  db_CPP.ParameterDeclarationList_parameterDeclaration(pdl, pd, idx),
+  UP_PATH3(npDecl, db_CPP.isPointerDeclarator, db_CPP.isDeclarator, db_CPP.isParameterDeclaration, pd),
+  NoPointerDecl_terminal(npDecl, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
+  ID_PATH(terminal, path).
