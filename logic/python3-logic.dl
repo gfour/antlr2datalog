@@ -88,3 +88,9 @@ BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
   db_PYTHON3.Tfpdef_NAME(tfp, id),
   BASE_Terminal(id, v, line, _, _, pos),
   ID_PATH(fd, path).
+
+// Global variable declarations.
+BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+  db_PYTHON3.Global_stmt_NAME(id, terminal, _),
+  BASE_Terminal(terminal, v, line, _, _, pos),
+  ID_PATH(id, path).
