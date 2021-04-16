@@ -51,6 +51,8 @@ java {
     withJavadocJar()
 }
 
+javadoc.options.addBooleanOption('Xdoclint:all', true)
+
 task bundleLogic(type: Zip) {
     archiveFileName = 'logic.zip'
     destinationDirectory = file('src/main/resources')
