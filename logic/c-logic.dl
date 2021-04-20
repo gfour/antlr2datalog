@@ -51,25 +51,11 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
 BASE_isScope(id) :- db_C.isCompoundStatement(id).
 BASE_isScope(id) :- db_C.isStructDeclarationList(id).
 
-.decl C_Param(pd: db_C.ParameterDeclaration, idx: number)
-.output C_Param
-
-// Innermost (last) parameter declaration.
-C_Param(pd, 0) :-
-  db_C.ParameterList_parameterDeclaration(pl, pd),
-  !db_C.ParameterList_parameterList(pl, _).
-// Parameter declaration at pos (i+1) after pos (i).
-C_Param(pd, i + 1) :-
-  db_C.ParameterList_parameterDeclaration(pl, pd),
-  db_C.ParameterList_parameterList(pl, pl0),
-  db_C.ParameterList_parameterDeclaration(pl0, pd0),
-  C_Param(pd0, i).
-
 .decl C_Function_ParameterDecl(fd: db_C.FunctionDefinition, pd: db_C.ParameterDeclaration, idx: number)
 .output C_Function_ParameterDecl
 
 C_Function_ParameterDecl(fd, pd, i) :-
-  C_Param(pd, i),
+  db_C.ParameterList_parameterDeclaration(_, pd, i),
   BASE_RecParentOf(ptl, pd),
   UP_PATH4(ptl, db_C.isParameterTypeList, db_C.isDirectDeclarator, db_C.isDeclarator, db_C.isFunctionDefinition, fd).
 
