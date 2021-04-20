@@ -105,3 +105,16 @@ BASE_Type(id, name, LOCATION(path, line, pos)) :-
   db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(identId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(id, path).
+
+// Struct/union fields.
+BASE_Field(id, name, LOCATION(path, line, pos)) :-
+  db_RUST.StructField_identifier(id, identId),
+  db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(identId, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(id, path).
+
+BASE_Field_DeclaringType(field, structId) :-
+  BASE_Type(structId, _, _),
+  db_RUST.StructStruct_structFields(structId, structFields),
+  db_RUST.StructFields_structField(structFields, field, _),
+  BASE_Field(field, _, _).

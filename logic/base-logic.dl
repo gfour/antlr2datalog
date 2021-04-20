@@ -110,6 +110,13 @@ BASE_VariableMayShadow(id1, id2, v) :-
 .decl BASE_Type(id: Id, name: symbol, location: Loc)
 .output BASE_Type
 
+// Field "name" defined at source file "location".
+.decl BASE_Field(id: Id, name: symbol, location: Loc)
+.output BASE_Field
+
+.decl BASE_Field_DeclaringType(field: Id, type: Id)
+.output BASE_Field_DeclaringType
+
 // Where a function starts.
 .decl BASE_Function_StartLoc(id: Id, startLine: number, startColumn: number)
 .output BASE_Function_StartLoc
