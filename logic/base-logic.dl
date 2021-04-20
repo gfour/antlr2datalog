@@ -57,6 +57,15 @@ BASE_ScopesOverlap(b1, b2) :-
   b1 != b2,
   (BASE_RecParentOf(b1, b2) ; BASE_RecParentOf(b2, b1)).
 
+.decl BASE_Node_Scope(node: Id, scope: Id)
+.output BASE_Node_Scope
+BASE_Node_Scope(node, scope) :-
+  BASE_ParentOf(scope, node),
+  BASE_isScope(scope).
+BASE_Node_Scope(node, scope) :-
+  BASE_Node_Scope(node0, scope),
+  BASE_ParentOf(node0, node).
+
 // The number of arguments that an argument receives (no vararg support).
 .decl BASE_Function_Arity(fd: Id, a: number)
 .output BASE_Function_Arity
@@ -74,6 +83,14 @@ BASE_Function_Arity(fd, a) :-
 // Variable declarations from function parameters.
 BASE_VariableDeclaration(id, v, loc) :-
   BASE_FunctionParameter(_, id, v, _, loc).
+
+.decl BASE_VariableDeclaration_Scope(vdecl:Id, scope:Id)
+.output BASE_VariableDeclaration_Scope
+
+// Variable declarations and scopes
+BASE_VariableDeclaration_Scope(vdecl, scope) :-
+  BASE_VariableDeclaration(vdecl, _, _),
+  BASE_Node_Scope(vdecl, scope).
 
 .decl BASE_VariableMayShadow(id1: Id, id2: Id, v: symbol)
 .output BASE_VariableMayShadow
