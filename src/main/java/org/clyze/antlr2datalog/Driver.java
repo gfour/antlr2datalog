@@ -225,20 +225,19 @@ public class Driver {
         if (compile) {
             System.out.println("Compiling logic...");
             final String ANALYZER_NAME = "analyzer";
-            ProcessBuilder souffle = new ProcessBuilder("souffle", "-c", logicOut, "-o", ANALYZER_NAME);
+            List<String> cmdCompile = initCmd();
+            cmdCompile.addAll(Arrays.asList("souffle", "-c", logicOut, "-o", ANALYZER_NAME));
+            ProcessBuilder souffle = new ProcessBuilder(cmdCompile);
             souffle.directory(workspaceDir);
             souffle.redirectErrorStream(true);
             runWithOutput(souffle);
         }
 
         System.out.println("Running logic...");
-        List<String> cmd = new LinkedList<>();
-        if (compile) {
-            String time = "/usr/bin/time";
-            if ((new File(time)).exists())
-                cmd.add(time);
+        List<String> cmd = initCmd();
+        if (compile)
             cmd.add("./analyzer");
-        } else {
+        else {
             cmd.add("souffle");
             cmd.add(logicOut);
         }
@@ -249,6 +248,14 @@ public class Driver {
         souffle.directory(workspaceDir);
         runWithOutput(souffle);
         System.out.println("Results written to: " + outDatabasePath);
+    }
+
+    private static List<String> initCmd() {
+        List<String> cmd = new ArrayList<>();
+        String time = "/usr/bin/time";
+        if ((new File(time)).exists())
+            cmd.add(time);
+        return cmd;
     }
 
     /**
