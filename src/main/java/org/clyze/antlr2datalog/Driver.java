@@ -195,10 +195,11 @@ public class Driver {
     /**
      * Run the analysis logic.
      * @param compile                if true, logic is compiled to a binary
+     * @param profile                if true, gather profiling information
      * @throws IOException           on file handling error
      * @throws InterruptedException  on command execution error
      */
-    public void runLogic(boolean compile)
+    public void runLogic(boolean compile, boolean profile)
             throws IOException, InterruptedException {
         File logicDir = getLogicDir();
         System.out.println("Using logic directory: " + logicDir);
@@ -237,10 +238,10 @@ public class Driver {
         List<String> cmd = initCmd();
         if (compile)
             cmd.add("./analyzer");
-        else {
-            cmd.add("souffle");
-            cmd.add(logicOut);
-        }
+        else
+            cmd.addAll(Arrays.asList("souffle", logicOut));
+        if (profile)
+            cmd.add("--profile=profile.json");
         cmd.addAll(Arrays.asList("-F", getFactsDir().getCanonicalPath(), "-D", outDatabasePath));
         String[] cmdLine = cmd.toArray(new String[0]);
         System.out.println("Running: " + String.join(" ", cmdLine));

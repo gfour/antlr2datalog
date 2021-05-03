@@ -43,6 +43,9 @@ public class Main {
         Option compileOpt = new Option("c", "compile", false, "Compile logic.");
         options.addOption(compileOpt);
 
+        Option profileOpt = new Option("p", "profile", false, "Gather profiling information.");
+        options.addOption(profileOpt);
+
         Option relPathOpt = new Option(null, "relative-path", true, "Make source file paths in element locations relative to given path.");
         relPathOpt.setArgName("PATH");
         options.addOption(relPathOpt);
@@ -57,7 +60,7 @@ public class Main {
 
         List<ParserReflection> parserConfigurations = new ArrayList<>();
         String workspaceDir = DEFAULT_WORKSPACE;
-        boolean compile, generateMetadata;
+        boolean compile, generateMetadata, profile;
         String relativePath;
         String[] inputs;
         CommandLineParser parser = new GnuParser();
@@ -65,6 +68,7 @@ public class Main {
             CommandLine cli = parser.parse(options, args);
             debug = cli.hasOption(debugOpt.getOpt());
             compile = cli.hasOption(compileOpt.getOpt());
+            profile = cli.hasOption(profileOpt.getOpt());
             generateMetadata = cli.hasOption(genMetadataOpt.getOpt());
             String[] langs = cli.getOptionValues(langOpt.getOpt());
             inputs = cli.getOptionValues(inputOpt.getOpt());
@@ -89,7 +93,7 @@ public class Main {
             Driver driver = new Driver(parserConfigurations, new File(workspaceDir), debug);
             driver.initWorkspaceDir();
             driver.generateSchemaAndParseSources(inputs, relativePath);
-            driver.runLogic(compile);
+            driver.runLogic(compile, profile);
             if (generateMetadata)
                 (new MetadataGenerator(driver.getOutputDatabase())).run();
         } catch (Exception ex) {
