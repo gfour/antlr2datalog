@@ -228,6 +228,7 @@ public class Driver {
             final String ANALYZER_NAME = "analyzer";
             List<String> cmdCompile = initCmd();
             cmdCompile.addAll(Arrays.asList("souffle", "-c", logicOut, "-o", ANALYZER_NAME));
+            addProfileFlag(cmdCompile, profile);
             ProcessBuilder souffle = new ProcessBuilder(cmdCompile);
             souffle.directory(workspaceDir);
             souffle.redirectErrorStream(true);
@@ -238,10 +239,10 @@ public class Driver {
         List<String> cmd = initCmd();
         if (compile)
             cmd.add("./analyzer");
-        else
+        else {
             cmd.addAll(Arrays.asList("souffle", logicOut));
-        if (profile)
-            cmd.add("--profile=profile.json");
+            addProfileFlag(cmd, profile);
+        }
         cmd.addAll(Arrays.asList("-F", getFactsDir().getCanonicalPath(), "-D", outDatabasePath));
         String[] cmdLine = cmd.toArray(new String[0]);
         System.out.println("Running: " + String.join(" ", cmdLine));
@@ -249,6 +250,11 @@ public class Driver {
         souffle.directory(workspaceDir);
         runWithOutput(souffle);
         System.out.println("Results written to: " + outDatabasePath);
+    }
+
+    private static void addProfileFlag(List<String> cmd, boolean profile) {
+        if (profile)
+            cmd.add("--profile=profile.json");
     }
 
     private static List<String> initCmd() {
