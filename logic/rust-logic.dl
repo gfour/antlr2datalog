@@ -3,7 +3,7 @@
 #include "areas.dl"
 
 BASE_FunctionDefinition(fd, name, LOCATION(path, line, pos)) :-
-  ( db_RUST.Function_identifier(fd, ident)
+  ( db_RUST.Function__identifier(fd, ident)
   ; db_RUST.Method_identifier(fd, ident)),
   db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
@@ -20,7 +20,7 @@ BASE_FunctionDeclaration(fd, name, location) :-
 RUST_FunctionParameter(fd, fParam, idx) :-
   db_RUST.Method_functionParam(fd, fParam, idx).
 RUST_FunctionParameter(fd, fParam, idx) :-
-  db_RUST.Function_functionParameters(fd, fParams),
+  db_RUST.Function__functionParameters(fd, fParams),
   db_RUST.FunctionParameters_functionParam(fParams, fParam, idx).
 
 BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
@@ -54,14 +54,14 @@ RustItemVisibility(id, visId) :-
   ( db_RUST.VisItem_module(visItemId, id)
   ; db_RUST.VisItem_externCrate(visItemId, id)
   ; db_RUST.VisItem_useDeclaration(visItemId, id)
-  ; db_RUST.VisItem_function(visItemId, id)
+  ; db_RUST.VisItem_function_(visItemId, id)
   ; db_RUST.VisItem_typeAlias(visItemId, id)
   ; db_RUST.VisItem_struct_(visItemId, id)
   ; db_RUST.VisItem_enumeration(visItemId, id)
   ; db_RUST.VisItem_union_(visItemId, id)
   ; db_RUST.VisItem_constantItem(visItemId, id)
   ; db_RUST.VisItem_staticItem(visItemId, id)
-  ; db_RUST.VisItem_trait(visItemId, id)
+  ; db_RUST.VisItem_trait_(visItemId, id)
   ; db_RUST.VisItem_implementation(visItemId, id)
   ; db_RUST.VisItem_externBlock(visItemId, id)).
 RustItemVisibility(id, visId) :-
@@ -101,7 +101,7 @@ BASE_Type(id, name, LOCATION(path, line, pos)) :-
   ( db_RUST.StructStruct_identifier(id, identId)
   ; db_RUST.TupleStruct_identifier(id, identId)
   ; db_RUST.Enumeration_identifier(id, identId)
-  ; db_RUST.Trait_identifier(id, identId)),
+  ; db_RUST.Trait__identifier(id, identId)),
   db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(identId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(id, path).
