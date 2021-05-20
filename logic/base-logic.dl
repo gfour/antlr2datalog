@@ -6,10 +6,11 @@
 BASE_RecParentOf(a, b) :- BASE_ParentOf(a, b).
 BASE_RecParentOf(a, c) :- BASE_RecParentOf(a, b), BASE_ParentOf(b, c).
 
+.output BASE_SourceFileId
+
 #ifdef DEBUG
 
 .output BASE_ParentOf
-.output BASE_SourceFileId
 .output BASE_RecParentOf
 
 .decl Parent3(a1: symbol, a2: symbol, a3: symbol)
