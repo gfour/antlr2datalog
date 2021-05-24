@@ -41,7 +41,7 @@ test {
 }
 
 wrapper {
-    gradleVersion = "6.2"
+    gradleVersion = '6.7'
 }
 
 java {
