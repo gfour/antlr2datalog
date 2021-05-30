@@ -1,0 +1,43 @@
+#include "schema.dl"
+#include "base-logic.dl"
+#include "areas.dl"
+
+BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
+  db_JAVASCRIPT.FunctionDeclaration_identifier(fd, ident),
+  db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(fd, path).
+
+// Assume function definition = declaration.
+BASE_FunctionDefinition(fd, name, location) :-
+  BASE_FunctionDeclaration(fd, name, location).
+
+BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+  ( db_JAVASCRIPT.Literal_StringLiteral(_, terminal)
+  ; db_JAVASCRIPT.ImportFromBlock_StringLiteral(_, terminal)
+  ; db_JAVASCRIPT.ImportFrom_StringLiteral(_, terminal)
+  ; db_JAVASCRIPT.PropertyName_StringLiteral(_, terminal)),
+  BASE_Terminal(terminal, str, line, _, _, pos),
+  ID_PATH(terminal, path).
+
+BASE_FunctionParameter(fd, frmArg, v, idx, LOCATION(path, line, pos)) :-
+  BASE_FunctionDeclaration(fd, _, _),
+  db_JAVASCRIPT.FunctionDeclaration_formalParameterList(fd, frmList),
+  db_JAVASCRIPT.FormalParameterList_formalParameterArg(frmList, frmArg, idx),
+  db_JAVASCRIPT.FormalParameterArg_assignable(frmArg, aa),
+  db_JAVASCRIPT.Assignable_identifier(aa, ident),
+  db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
+  ID_PATH(fd, path).
+BASE_FunctionParameter(fd, lastFrm, v, lastIdx + 1, LOCATION(path, line, pos)) :-
+  BASE_FunctionDeclaration(fd, _, _),
+  db_JAVASCRIPT.FunctionDeclaration_formalParameterList(fd, frmList),
+  db_JAVASCRIPT.FormalParameterList_lastFormalParameterArg(frmList, lastFrm),
+  lastIdx = count : db_JAVASCRIPT.FormalParameterList_formalParameterArg(frmList, _, _),
+  db_JAVASCRIPT.LastFormalParameterArg_singleExpression(lastFrm, se),
+  BASE_ParentOf(se, identExpr),
+  db_JAVASCRIPT.IdentifierExpression_identifier(identExpr, ident),
+  db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
+  ID_PATH(fd, path).
+  
