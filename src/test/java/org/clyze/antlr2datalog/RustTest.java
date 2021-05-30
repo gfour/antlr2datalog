@@ -14,8 +14,8 @@ public class RustTest extends LangTest {
         String topSrcPath = (new File("grammars-v4/rust")).getCanonicalPath();
         Main.main(new String[] { "-l", "rust", "-i", topSrcPath + "/examples/deno_core_runtime.rs", "--relative-path",  topSrcPath, "-g" });
         assert((new File(Main.DEFAULT_WORKSPACE, "facts/DB_RUST_Identifier_NON_KEYWORD_IDENTIFIER.facts")).exists());
-        assert functionDefinition("Method@examples/deno_core_runtime.rs@4373-4513", "register_op", "examples/deno_core_runtime.rs:423:9");
-        assert functionArity("Method@examples/deno_core_runtime.rs@4373-4513", "2");
+        assert functionDefinition("Function_@examples/deno_core_runtime.rs@4373-4513", "register_op", "examples/deno_core_runtime.rs:423:9");
+        assert functionArity("Function_@examples/deno_core_runtime.rs@4373-4513", "3");
         assert variableDeclaration("TerminalNode@examples/deno_core_runtime.rs@10231-10231", "mod_id", "examples/deno_core_runtime.rs:949:50");
         assert variableDeclaration("Identifier@examples/deno_core_runtime.rs@10104-10104", "message", "examples/deno_core_runtime.rs:940:12");
         assert metadataExist();

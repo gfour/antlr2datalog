@@ -3,8 +3,7 @@
 #include "areas.dl"
 
 BASE_FunctionDefinition(fd, name, LOCATION(path, line, pos)) :-
-  ( db_RUST.Function__identifier(fd, ident)
-  ; db_RUST.Method_identifier(fd, ident)),
+  db_RUST.Function__identifier(fd, ident),
   db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(fd, path).
@@ -16,16 +15,24 @@ BASE_FunctionDeclaration(fd, name, location) :-
 .decl RUST_FunctionParameter(fd: Id, fParam: Id, idx: number)
 .output RUST_FunctionParameter
 
-// We omit "self" parameters here for uniformity with other languages.
-RUST_FunctionParameter(fd, fParam, idx) :-
-  db_RUST.Method_functionParam(fd, fParam, idx).
+// "Self" receivers.
+RUST_FunctionParameter(fd, fParam, 0) :-
+  db_RUST.Function__functionParameters(fd, fParams),
+  db_RUST.FunctionParameters_selfParam(fParams, fParam).
 RUST_FunctionParameter(fd, fParam, idx) :-
   db_RUST.Function__functionParameters(fd, fParams),
   db_RUST.FunctionParameters_functionParam(fParams, fParam, idx).
 
 BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
   RUST_FunctionParameter(fd, fParam, idx),
-  db_RUST.FunctionParam_pattern(fParam, pat),
+  db_RUST.SelfParam_shorthandSelf(fParam, sSelf),
+  db_RUST.ShorthandSelf_KW_SELFVALUE(sSelf, id),
+  BASE_Terminal(id, v, line, _, _, pos),
+  ID_PATH(fd, path).
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+  RUST_FunctionParameter(fd, fParam, idx),
+  db_RUST.FunctionParam_functionParamPattern(fParam, fpp),
+  db_RUST.FunctionParamPattern_pattern(fpp, pat),
   BASE_RecParentOf(pat, ident),
   db_RUST.Identifier_NON_KEYWORD_IDENTIFIER(ident, id),
   BASE_Terminal(id, v, line, _, _, pos),
@@ -68,9 +75,7 @@ RustItemVisibility(id, visId) :-
   ( db_RUST.StructField_visibility(id, visId)
   ; db_RUST.TupleField_visibility(id, visId)
   ; db_RUST.EnumItem_visibility(id, visId)
-  ; db_RUST.TraitItem_visibility(id, visId)
-  ; db_RUST.InherentImplItem_visibility(id, visId)
-  ; db_RUST.TraitImplItem_visibility(id, visId)
+  ; db_RUST.AssociatedItem_visibility(id, visId)
   ; db_RUST.ExternalItem_visibility(id, visId)).
 
 // Generate modifier/visibility descriptions (such as "pub" or "pub crate").
