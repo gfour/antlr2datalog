@@ -22,6 +22,10 @@ public class Resources {
         InputStream is = loader.getResourceAsStream(archiveName);
         if (is == null)
             throw new IOException("Error: could not find directory '" + archiveName + "'");
+        return extractInputStream(is, tmpName);
+    }
+
+    public static File extractInputStream(InputStream is, String tmpName) throws IOException {
         File tmpDir = Files.createTempDirectory(tmpName).toFile();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtils.deleteQuietly(tmpDir)));
         ZipUtil.unpack(is, tmpDir);

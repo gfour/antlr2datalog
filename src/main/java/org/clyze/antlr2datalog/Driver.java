@@ -85,6 +85,15 @@ public class Driver {
                            Database langDb, Database baseDb,
                            String path, String topPath) {
         File pathFile = new File(path);
+        if (path.toLowerCase().endsWith(".zip")) {
+            try {
+                pathFile = Resources.extractInputStream(new FileInputStream(pathFile), pathFile.getName());
+                System.out.println("Extracted " + path + " to " + pathFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
         if (pathFile.isDirectory()) {
             if (debug)
                 parserLog(parserReflection.pc, "Processing directory: " + path);

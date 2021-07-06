@@ -21,7 +21,7 @@ public class Main {
         Option helpOpt = new Option("h", "help", false, "Show this help text.");
         options.addOption(helpOpt);
 
-        Option inputOpt = new Option("i", "input", true, "File or directory containing source files.");
+        Option inputOpt = new Option("i", "input", true, "Single source file or archive/directory containing source files.");
         inputOpt.setRequired(true);
         inputOpt.setArgName("PATH");
         inputOpt.setArgs(Option.UNLIMITED_VALUES);
