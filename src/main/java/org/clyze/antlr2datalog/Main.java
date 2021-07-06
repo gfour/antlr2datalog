@@ -30,7 +30,7 @@ public class Main {
         Option langOpt = new Option("l", "language", true, "Parser language (available values: " + Arrays.toString(ParserConfiguration.valuesLowercase()) + ").");
         langOpt.setRequired(true);
         langOpt.setArgName("LANGUAGE");
-        inputOpt.setArgs(Option.UNLIMITED_VALUES);
+        langOpt.setArgs(Option.UNLIMITED_VALUES);
         options.addOption(langOpt);
 
         Option workspaceOpt = new Option("w", "workspace", true, "Workspace directory (default: " + DEFAULT_WORKSPACE + ").");
