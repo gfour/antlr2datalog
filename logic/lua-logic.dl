@@ -44,7 +44,3 @@ BASE_VariableDeclaration(terminal, v, LOCATION(path, line, pos)) :-
   db_LUA.Var__NAME(var, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
   ID_PATH(stat, path).
-
-// There are not type definitions in Lua: all types are variants of
-// the "dictionary" data structure.
-BASE_Type(id, name, loc) :- U = "LUA/UNSUPPORTED:0:0", id = U, name = U, loc = U.

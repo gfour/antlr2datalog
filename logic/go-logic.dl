@@ -2,9 +2,6 @@
 #include "base-logic.dl"
 #include "areas.dl"
 
-// Unsupported relation.
-BASE_Modifier(id, mod) :- id = "UNSUPPORTED", mod = "UNSUPPORTED".
-
 // Method/function declarations.
 BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
   ( db_GO.MethodDecl_IDENTIFIER(fd, terminal)
