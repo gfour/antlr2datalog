@@ -84,6 +84,8 @@ public class Driver {
     private void parseFile(ParserReflection parserReflection,
                            Database langDb, Database baseDb,
                            String path, String topPath) {
+        if (debug)
+            System.out.println("parseFile(): path=" + path);
         File pathFile = new File(path);
         if (path.toLowerCase().endsWith(".zip")) {
             try {

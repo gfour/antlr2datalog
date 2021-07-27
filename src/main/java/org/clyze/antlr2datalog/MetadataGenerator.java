@@ -9,12 +9,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import org.clyze.persistent.metadata.Configuration;
-import org.clyze.persistent.metadata.Printer;
-import org.clyze.persistent.metadata.SourceFileReporter;
-import org.clyze.persistent.metadata.SourceMetadata;
+import org.clyze.persistent.metadata.*;
 import org.clyze.persistent.model.Function;
 import org.clyze.persistent.model.Position;
+import org.clyze.persistent.model.SourceFile;
 import org.clyze.persistent.model.Type;
 
 /**
@@ -33,6 +31,12 @@ public class MetadataGenerator {
         System.out.println("Generating metadata...");
 
         SourceMetadata metadata = new SourceMetadata();
+
+        process("BASE_SourceFileId.csv", (String[] parts) -> {
+            String path = parts[0];
+            String id = parts[2];
+            metadata.sourceFiles.add(new SourceFile(path, id));
+        });
 
         process("BASE_Type.csv", ((String[] parts) -> {
             String id = parts[0];
