@@ -36,6 +36,13 @@ BASE_Type(ed, name, LOCATION(path, line, pos)) :-
   BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(ed, path).
 
+// Contract definitions.
+BASE_Type(cd, name, LOCATION(path, line, pos)) :-
+  db_SOLIDITY.ContractDefinition_identifier(cd, ident),
+  db_SOLIDITY.Identifier_Identifier(ident, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(cd, path).
+
 BASE_FunctionParameter(fd, ident, v, idx, LOCATION(path, line, pos)) :-
   SolidityFunction(fd, _, _),
   db_SOLIDITY.FunctionDefinition_parameterList(fd, pl),
