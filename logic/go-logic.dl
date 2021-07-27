@@ -39,3 +39,28 @@ BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
   BASE_Terminal(id, v, line, _, _, pos),
   ID_PATH(fd, path).
 
+// Variables declared with "v := ...".
+BASE_VariableDeclaration(ident, str, LOCATION(path, line, pos)) :-
+  db_GO.ShortVarDecl_identifierList(svDecl, identList),
+  db_GO.IdentifierList_IDENTIFIER(identList, ident, _),
+  BASE_Terminal(ident, str, line, _, _, pos),
+  str != "_",
+  ID_PATH(svDecl, path).
+
+// Variables declared with "var".
+BASE_VariableDeclaration(ident, str, LOCATION(path, line, pos)) :-
+  db_GO.VarDecl_varSpec(vDecl, vSpec, _),
+  db_GO.VarSpec_identifierList(vSpec, identList),
+  db_GO.IdentifierList_IDENTIFIER(identList, ident, _),
+  BASE_Terminal(ident, str, line, _, _, pos),
+  str != "_",
+  ID_PATH(vDecl, path).
+
+// Variables declared in for loops.
+BASE_VariableDeclaration(ident, str, LOCATION(path, line, pos)) :-
+  db_GO.ForStmt_rangeClause(forStmt, rangeClause),
+  db_GO.RangeClause_identifierList(rangeClause, identList),
+  db_GO.IdentifierList_IDENTIFIER(identList, ident, _),
+  BASE_Terminal(ident, str, line, _, _, pos),
+  str != "_",
+  ID_PATH(forStmt, path).

@@ -10,10 +10,7 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.clyze.persistent.metadata.*;
-import org.clyze.persistent.model.Function;
-import org.clyze.persistent.model.Position;
-import org.clyze.persistent.model.SourceFile;
-import org.clyze.persistent.model.Type;
+import org.clyze.persistent.model.*;
 
 /**
  * This class generates source code metadata for UI integration of the analysis results.
@@ -63,11 +60,19 @@ public class MetadataGenerator {
         Map<String, TreeMap<String, String>> functionParams = new HashMap<>();
         process("BASE_FunctionParameter.csv", ((String[] parts) -> {
             String fd = parts[0];
+            String id = parts[1];
             String v = parts[2];
             String idx = parts[3];
+            String loc = parts[4];
             // Maintain a map that is sorted by the parameter index.
             TreeMap<String, String> params = functionParams.computeIfAbsent(fd, k -> new TreeMap<>());
             params.put(idx, v);
+            SourcePosition srcPos = getSourcePosition(loc, id.length());
+            if (srcPos == null) {
+                System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
+                return;
+            }
+            metadata.variables.add(new Variable(srcPos.position, srcPos.sourceFileName, true, id, v, true, true));
         }));
 
         process("BASE_FunctionDefinition.csv", ((String[] parts) -> {
@@ -87,6 +92,18 @@ public class MetadataGenerator {
                     System.err.println("WARNING: function " + fd + " has no area information.");
             }
             metadata.functions.add(new Function(srcPos.position, srcPos.sourceFileName, true, fd, name, params, area));
+        }));
+
+        process("BASE_VariableDeclaration.csv", ((String[] parts) -> {
+            String id = parts[0];
+            String name = parts[1];
+            String loc = parts[2];
+            SourcePosition srcPos = getSourcePosition(loc, name.length());
+            if (srcPos == null) {
+                System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
+                return;
+            }
+            metadata.variables.add(new Variable(srcPos.position, srcPos.sourceFileName, true, id, name, true, false));
         }));
 
         try {
