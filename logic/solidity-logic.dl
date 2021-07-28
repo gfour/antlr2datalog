@@ -76,3 +76,22 @@ BASE_Modifier(fd, "public") :-
   Function_ModList(fd, ml), db_SOLIDITY.ModifierList_PublicKeyword(ml, _, _).
 BASE_Modifier(fd, "virtual") :-
   Function_ModList(fd, ml), db_SOLIDITY.ModifierList_VirtualKeyword(ml, _, _).
+
+BASE_Field(vd, name, LOCATION(path, line, pos)) :-
+  db_SOLIDITY.StateVariableDeclaration_identifier(vd, identId),
+  db_SOLIDITY.Identifier_Identifier(identId, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(vd, path).
+
+BASE_Modifier(vd, "public") :-
+  BASE_Field(vd, _, _), db_SOLIDITY.StateVariableDeclaration_PublicKeyword(vd, _, _).
+BASE_Modifier(vd, "internal") :-
+  BASE_Field(vd, _, _), db_SOLIDITY.StateVariableDeclaration_InternalKeyword(vd, _, _).
+BASE_Modifier(vd, "private") :-
+  BASE_Field(vd, _, _), db_SOLIDITY.StateVariableDeclaration_PrivateKeyword(vd, _, _).
+BASE_Modifier(vd, "constant") :-
+  BASE_Field(vd, _, _), db_SOLIDITY.StateVariableDeclaration_ConstantKeyword(vd, _, _).
+BASE_Modifier(vd, "immutable") :-
+  BASE_Field(vd, _, _), db_SOLIDITY.StateVariableDeclaration_ImmutableKeyword(vd, _, _).
+BASE_Modifier(vd, "override") :-
+  BASE_Field(vd, _, _), db_SOLIDITY.StateVariableDeclaration_overrideSpecifier(vd, _, _).
