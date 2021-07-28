@@ -5,11 +5,18 @@
 .decl SolidityFunction(fd: Id, name: symbol, location: Loc)
 .output SolidityFunction
 
+// Normal functions.
 SolidityFunction(fd, name, LOCATION(path, line, pos)) :-
   db_SOLIDITY.FunctionDefinition_functionDescriptor(fd, fdesc),
   db_SOLIDITY.FunctionDescriptor_identifier(fdesc, ident),
   db_SOLIDITY.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(fd, path).
+// Special "receive()" declarations.
+SolidityFunction(fd, name, LOCATION(path, line, pos)) :-
+  db_SOLIDITY.FunctionDefinition_functionDescriptor(fd, fdesc),
+  db_SOLIDITY.FunctionDescriptor_ReceiveKeyword(fdesc, receiveKeyword),
+  BASE_Terminal(receiveKeyword, name, line, _, _, pos),
   ID_PATH(fd, path).
 
 // Function definitions have implementation blocks.
