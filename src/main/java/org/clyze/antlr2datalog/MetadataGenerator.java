@@ -106,6 +106,18 @@ public class MetadataGenerator {
             metadata.variables.add(new Variable(srcPos.position, srcPos.sourceFileName, true, id, name, true, false));
         }));
 
+        process("BASE_Field.csv", ((String[] parts) -> {
+            String id = parts[0];
+            String name = parts[1];
+            String loc = parts[2];
+            SourcePosition srcPos = getSourcePosition(loc, name.length());
+            if (srcPos == null) {
+                System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
+                return;
+            }
+            metadata.fields.add(new Field(srcPos.position, srcPos.sourceFileName, true, id, name));
+        }));
+
         try {
             SourceFileReporter fileReporter = new SourceFileReporter(new Configuration(new Printer(true)), metadata);
             fileReporter.createReportFile(new File(outputDabase, OUTPUT_FILE).getCanonicalPath());
