@@ -60,19 +60,11 @@ public class MetadataGenerator {
         Map<String, TreeMap<String, String>> functionParams = new HashMap<>();
         process("BASE_FunctionParameter.csv", ((String[] parts) -> {
             String fd = parts[0];
-            String id = parts[1];
             String v = parts[2];
             String idx = parts[3];
-            String loc = parts[4];
             // Maintain a map that is sorted by the parameter index.
             TreeMap<String, String> params = functionParams.computeIfAbsent(fd, k -> new TreeMap<>());
             params.put(idx, v);
-            SourcePosition srcPos = getSourcePosition(loc, id.length());
-            if (srcPos == null) {
-                System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
-                return;
-            }
-            metadata.variables.add(new Variable(srcPos.position, srcPos.sourceFileName, true, id, v, true, true));
         }));
 
         process("BASE_FunctionDefinition.csv", ((String[] parts) -> {
