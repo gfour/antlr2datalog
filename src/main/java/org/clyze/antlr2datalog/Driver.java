@@ -292,6 +292,19 @@ public class Driver {
         BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
         stdError.lines().forEach(System.out::println);
     }
+
+    /**
+     * Write the metrics output relation (tab-separated table).
+     * @param metrics    the list of metrics lines (containing tab characters, no end-of-line)
+     */
+    public void writeMetrics(List<String> metrics) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getOutputDatabase(), "Stats_Metrics.csv"))); ) {
+            for (String m : metrics)
+                writer.write(m);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 class UnsupportedParserException extends Exception {}

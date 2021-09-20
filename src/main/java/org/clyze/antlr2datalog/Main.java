@@ -2,6 +2,8 @@ package org.clyze.antlr2datalog;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import org.apache.commons.cli.*;
 
@@ -92,10 +94,26 @@ public class Main {
         try {
             Driver driver = new Driver(parserConfigurations, new File(workspaceDir), debug);
             driver.initWorkspaceDir();
+            // Step 1: generate schema, parse sources, generate input facts.
+            Instant instant1 = Instant.now();
             driver.generateSchemaAndParseSources(inputs, relativePath);
+            Instant instant2 = Instant.now();
+            long factsTime = Duration.between(instant1, instant2).toMillis() / 1000;
+            List<String> metrics = new ArrayList<>();
+            metrics.add("Fact generation\t" + factsTime + " sec\n");
+            // Step 2: run analysis logic.
             driver.runLogic(compile, profile);
-            if (generateMetadata)
+            Instant instant3 = Instant.now();
+            long logicTime = Duration.between(instant2, instant3).toMillis() / 1000;
+            metrics.add("Logic execution\t" + logicTime + " sec\n");
+            // Step 3 (optional): generate code metadata.
+            if (generateMetadata) {
                 (new MetadataGenerator(driver.getOutputDatabase())).run();
+                Instant instant4 = Instant.now();
+                long metadataTime = Duration.between(instant3, instant4).toMillis() / 1000;
+                metrics.add("Metadata generation\t" + metadataTime + " sec\n");
+            }
+            driver.writeMetrics(metrics);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
