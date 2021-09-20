@@ -28,6 +28,8 @@ public enum ParserConfiguration {
     LUA("Lua", "LuaLexer", "LuaParser", "chunk", Collections.singletonList(".lua"), "Lua/1.0-SNAPSHOT/Lua-1.0-SNAPSHOT.jar", true, false),
     // PHP, MIT license
     PHP("PHP", "PhpLexer", "PhpParser", "htmlDocument", Collections.singletonList(".php"), "php/1.0-SNAPSHOT/php-1.0-SNAPSHOT.jar", true, true),
+    // Prolog, BSD license
+    PROLOG("Prolog", "prologLexer", "prologParser", "p_text", Arrays.asList(".pl", ".txt"), "prolog/1.0-SNAPSHOT/prolog-1.0-SNAPSHOT.jar", true, false),
     // Python3, MIT license
     PYTHON3("Python3", "Python3Lexer", "Python3Parser", "file_input", Collections.singletonList(".py"), "python3/1.0-SNAPSHOT/python3-1.0-SNAPSHOT.jar", true, false),
     // Rust, MIT license

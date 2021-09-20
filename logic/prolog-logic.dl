@@ -1,0 +1,26 @@
+#include "schema.dl"
+#include "base-logic.dl"
+
+// BASE_VariableDeclaration()
+
+.decl PrologVariable(var: symbol, name: symbol)
+.output PrologVariable
+
+PrologVariable(var, name) :-
+  db_PROLOG.Variable_VARIABLE(var, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(terminal, path).
+
+// Relation rules are represented as function definitions.
+BASE_FunctionDefinition(terminal, v, LOCATION(path, line, pos)) :-
+  db_PROLOG.P_text_clause(_, clause, _),
+  db_PROLOG.Clause_term(clause, term1),
+  BASE_ParentOf(term1, binop),
+  db_PROLOG.isBinary_operator(binop),
+  db_PROLOG.Binary_operator_term(binop, term, _),
+  BASE_ParentOf(term, compound),
+  db_PROLOG.Compound_term_atom(compound, atom),
+  BASE_ParentOf(atom, name),
+  BASE_ParentOf(name, terminal),
+  BASE_Terminal(terminal, v, line, _, _, pos),
+  ID_PATH(terminal, path).
