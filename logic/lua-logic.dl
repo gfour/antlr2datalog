@@ -3,17 +3,18 @@
 #include "areas.dl"
 
 // Only named function definitions, no lambdas.
-BASE_FunctionDefinition(statId, name, LOCATION(path, line, pos)) :-
+BASE_FunctionDefinition(fBody, name, LOCATION(path, line, pos)) :-
+  db_LUA.Stat_funcbody(statId, fBody),
   db_LUA.Stat_funcname(statId, fnId),
   db_LUA.Funcname_NAME(fnId, terminal, _),
   BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(statId, path).
 // Local functions.
-BASE_Modifier(statId, "local"),
-BASE_FunctionDefinition(statId, name, LOCATION(path, line, pos)) :-
+BASE_Modifier(fBody, "local"),
+BASE_FunctionDefinition(fBody, name, LOCATION(path, line, pos)) :-
   db_LUA.Stat_NAME(statId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  db_LUA.Stat_funcbody(statId, _),
+  db_LUA.Stat_funcbody(statId, fBody),
   ID_PATH(statId, path).
 
 // No distinction between declarations and definitions.
@@ -28,14 +29,12 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
 BASE_isScope(id) :- db_LUA.isFuncbody(id).
 BASE_isScope(id) :- db_LUA.isBlock(id).
 
-BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
-  BASE_FunctionDefinition(fd, _, _),
-  db_LUA.Stat_funcbody(fd, fBody),
+BASE_FunctionParameter(fBody, id, v, idx, LOCATION(path, line, pos)) :-
   db_LUA.Funcbody_parlist(fBody, pl),
   db_LUA.Parlist_namelist(pl, nl),
   db_LUA.Namelist_NAME(nl, id, idx),
   BASE_Terminal(id, v, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(fBody, path).
 
 // Local variable assignments.
 BASE_VariableDeclaration(terminal, v, LOCATION(path, line, pos)) :-
