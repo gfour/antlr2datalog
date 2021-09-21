@@ -34,6 +34,11 @@ public class ReproducibleAnalyses {
     }
 
     private static boolean treesAreTheSame(File file1, File file2) throws IOException {
+        // Runtime statistics relations may differ but that does not affect reproducibility.
+        if (file1.getName().equals(Driver.STATS_METRICS_FILE) && file2.getName().equals(Driver.STATS_METRICS_FILE)) {
+            System.out.println("Ignoring relation: " + Driver.STATS_METRICS_FILE);
+            return true;
+        }
         System.out.println("Checking " + file1 + " against " + file2);
         if (file1.exists() && file2.exists()) {
             if (file1.isDirectory() && file2.isDirectory()) {

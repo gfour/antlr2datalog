@@ -9,6 +9,8 @@ import org.antlr.v4.runtime.tree.*;
  * The main driver that guides schema detection and source code parsing.
  */
 public class Driver {
+    public static final String STATS_METRICS_FILE = "Stats_Metrics.csv";
+
     private final List<ParserReflection> parsers;
     private final File workspaceDir;
     private final boolean debug;
@@ -298,7 +300,7 @@ public class Driver {
      * @param metrics    the list of metrics lines (containing tab characters, no end-of-line)
      */
     public void writeMetrics(List<String> metrics) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getOutputDatabase(), "Stats_Metrics.csv"))); ) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getOutputDatabase(), STATS_METRICS_FILE))); ) {
             for (String m : metrics)
                 writer.write(m);
         } catch (IOException e) {
