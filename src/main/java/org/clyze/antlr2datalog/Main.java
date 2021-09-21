@@ -12,6 +12,8 @@ public class Main {
     public static boolean debug = false;
     /** The name of the default workspace directory. */
     public static final String DEFAULT_WORKSPACE = "workspace";
+    //** Default number of parallel jobs to use. */
+    public static final int DEFAULT_JOBS = 1;
 
     /**
      * The main entry point.
@@ -52,6 +54,10 @@ public class Main {
         relPathOpt.setArgName("PATH");
         options.addOption(relPathOpt);
 
+        Option jobsOpt = new Option(null, "jobs", true, "Set number of parallel jobs (Souffle). Default: " + DEFAULT_JOBS + ".");
+        jobsOpt.setArgName("JOBS");
+        options.addOption(jobsOpt);
+
         Option genMetadataOpt = new Option("g", "generate-metadata", false, "Generate source code metadata.");
         options.addOption(genMetadataOpt);
 
@@ -66,6 +72,7 @@ public class Main {
         String relativePath;
         String[] inputs;
         CommandLineParser parser = new GnuParser();
+        Integer jobs = null;
         try {
             CommandLine cli = parser.parse(options, args);
             debug = cli.hasOption(debugOpt.getOpt());
@@ -74,6 +81,8 @@ public class Main {
             generateMetadata = cli.hasOption(genMetadataOpt.getOpt());
             String[] langs = cli.getOptionValues(langOpt.getOpt());
             inputs = cli.getOptionValues(inputOpt.getOpt());
+            if (cli.hasOption(jobsOpt.getLongOpt()))
+                jobs = Integer.parseInt(cli.getOptionValue(jobsOpt.getLongOpt()));
             relativePath = cli.getOptionValue(relPathOpt.getLongOpt());
             if (relativePath != null && inputs.length > 1)
                 System.out.println("Making all paths relative to " + relativePath + ", ensure that no duplicate paths appear in the sources.");
@@ -102,7 +111,7 @@ public class Main {
             List<String> metrics = new ArrayList<>();
             metrics.add("Fact generation\t" + factsTime + " sec\n");
             // Step 2: run analysis logic.
-            driver.runLogic(compile, profile);
+            driver.runLogic(compile, profile, jobs);
             Instant instant3 = Instant.now();
             long logicTime = Duration.between(instant2, instant3).toMillis() / 1000;
             metrics.add("Logic execution\t" + logicTime + " sec\n");

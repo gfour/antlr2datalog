@@ -209,10 +209,11 @@ public class Driver {
      * Run the analysis logic.
      * @param compile                if true, logic is compiled to a binary
      * @param profile                if true, gather profiling information
+     * @param jobs                   the number of parallel jobs to use (null disables parallelism)
      * @throws IOException           on file handling error
      * @throws InterruptedException  on command execution error
      */
-    public void runLogic(boolean compile, boolean profile)
+    public void runLogic(boolean compile, boolean profile, Integer jobs)
             throws IOException, InterruptedException {
         File logicDir = getLogicDir();
         System.out.println("Using logic directory: " + logicDir);
@@ -242,6 +243,8 @@ public class Driver {
             List<String> cmdCompile = initCmd();
             cmdCompile.addAll(Arrays.asList("souffle", "-c", logicOut, "-o", ANALYZER_NAME));
             addProfileFlag(cmdCompile, profile);
+            addJobsFlag(cmdCompile, jobs);
+            System.out.println("Running: " + String.join(" ", cmdCompile));
             ProcessBuilder souffle = new ProcessBuilder(cmdCompile);
             souffle.directory(workspaceDir);
             souffle.redirectErrorStream(true);
@@ -256,6 +259,7 @@ public class Driver {
             cmd.addAll(Arrays.asList("souffle", logicOut));
             addProfileFlag(cmd, profile);
         }
+        addJobsFlag(cmd, jobs);
         cmd.addAll(Arrays.asList("-F", getFactsDir().getCanonicalPath(), "-D", outDatabasePath));
         String[] cmdLine = cmd.toArray(new String[0]);
         System.out.println("Running: " + String.join(" ", cmdLine));
@@ -268,6 +272,11 @@ public class Driver {
     private static void addProfileFlag(List<String> cmd, boolean profile) {
         if (profile)
             cmd.add("--profile=profile.json");
+    }
+
+    private static void addJobsFlag(List<String> cmd, Integer jobs) {
+        if (jobs != null)
+            cmd.add("--jobs=" + jobs);
     }
 
     private static List<String> initCmd() {
