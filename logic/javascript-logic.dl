@@ -8,6 +8,28 @@ BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
   BASE_Terminal(terminal, name, line, _, _, pos),
   ID_PATH(fd, path).
 
+.decl MethodDefinitionName(methodDef: Id, identifier: Id)
+.output MethodDefinitionName
+
+// Normal method definitions.
+MethodDefinitionName(methodDef, identifier) :-
+  db_JAVASCRIPT.MethodDefinition_propertyName(methodDef, propName),
+  db_JAVASCRIPT.PropertyName_identifierName(propName, identName),
+  db_JAVASCRIPT.IdentifierName_identifier(identName, identifier).
+// Special method definitions: getters/setters.
+MethodDefinitionName(methodDef, identifier) :-
+  ( db_JAVASCRIPT.MethodDefinition_getter(methodDef, special)
+  ; db_JAVASCRIPT.MethodDefinition_getter(methodDef, special)),
+  db_JAVASCRIPT.Getter_identifier(special, identifier).
+
+// Class methods.
+BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
+  db_JAVASCRIPT.ClassElement_methodDefinition(_, fd),
+  MethodDefinitionName(fd, ident),
+  db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(fd, path).
+
 // Assume function definition = declaration.
 BASE_FunctionDefinition(fd, name, location) :-
   BASE_FunctionDeclaration(fd, name, location).
@@ -20,15 +42,27 @@ BASE_StringConstant(str, LOCATION(path, line, pos)) :-
   BASE_Terminal(terminal, str, line, _, _, pos),
   ID_PATH(terminal, path).
 
-BASE_FunctionParameter(fd, frmArg, v, idx, LOCATION(path, line, pos)) :-
-  BASE_FunctionDeclaration(fd, _, _),
-  db_JAVASCRIPT.FunctionDeclaration_formalParameterList(fd, frmList),
+.decl FormalsListToFormal(frmList: Id, frmArg: Id, v: symbol, idx: number, loc: Loc)
+.output FormalsListToFormal
+FormalsListToFormal(frmList, frmArg, v, idx, LOCATION(path, line, pos)) :-
   db_JAVASCRIPT.FormalParameterList_formalParameterArg(frmList, frmArg, idx),
   db_JAVASCRIPT.FormalParameterArg_assignable(frmArg, aa),
   db_JAVASCRIPT.Assignable_identifier(aa, ident),
   db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(frmList, path).
+
+// Function parameters.
+BASE_FunctionParameter(fd, frmArg, v, idx, loc) :-
+  BASE_FunctionDeclaration(fd, _, _),
+  db_JAVASCRIPT.FunctionDeclaration_formalParameterList(fd, frmList),
+  FormalsListToFormal(frmList, frmArg, v, idx, loc).
+// Method parameters.
+BASE_FunctionParameter(fd, frmArg, v, idx, loc) :-
+  BASE_FunctionDeclaration(fd, _, _),
+  db_JAVASCRIPT.MethodDefinition_formalParameterList(fd, frmList),
+  FormalsListToFormal(frmList, frmArg, v, idx, loc).
+// Handle ellipsis in function signatures.
 BASE_FunctionParameter(fd, lastFrm, v, lastIdx + 1, LOCATION(path, line, pos)) :-
   BASE_FunctionDeclaration(fd, _, _),
   db_JAVASCRIPT.FunctionDeclaration_formalParameterList(fd, frmList),

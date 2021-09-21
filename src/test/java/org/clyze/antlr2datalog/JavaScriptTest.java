@@ -19,9 +19,9 @@ public class JavaScriptTest extends LangTest {
         assert metadataExist();
         SourceMetadata sm = getSourceMetadata();
         assert sm.fields.size() == 1;
-        assert sm.functions.size() == 3;
+        assert sm.functions.size() == 29;
         assert sm.sourceFiles.size() == 2;
         assert sm.types.size() == 16;
-        assert sm.variables.size() == 32;
+        assert sm.variables.size() == 59;
     }
 }
