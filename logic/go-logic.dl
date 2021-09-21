@@ -64,3 +64,10 @@ BASE_VariableDeclaration(ident, str, LOCATION(path, line, pos)) :-
   BASE_Terminal(ident, str, line, _, _, pos),
   str != "_",
   ID_PATH(forStmt, path).
+
+BASE_Field(id, name, LOCATION(path, line, pos)) :-
+  db_GO.StructType_fieldDecl(id, fieldDecl, _),
+  db_GO.FieldDecl_identifierList(fieldDecl, identList),
+  db_GO.IdentifierList_IDENTIFIER(identList, terminal, 0),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(id, path).
