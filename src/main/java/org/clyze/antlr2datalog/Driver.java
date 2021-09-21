@@ -61,7 +61,7 @@ public class Driver {
     public void generateSchemaAndParseSources(String[] inputs, String topPath)
     throws IOException {
         List<Schema> langSchemas = new ArrayList<>();
-        Database baseDb = new Database(BaseSchema.create(), getFactsDir());
+        Database baseDb = new Database(BaseSchema.create(), getFactsDir(), false);
         for (ParserReflection reflMetadata : parsers) {
             ParserConfiguration parserConfiguration = reflMetadata.pc;
             System.out.println("Discovering " + parserConfiguration.name + " schema...");
@@ -70,10 +70,13 @@ public class Driver {
             langSchemas.add(langSchema);
 
             System.out.println("Recording " + parserConfiguration.name + " facts...");
-            Database db = new Database(langSchema, getFactsDir());
-            for (String path : inputs)
+            boolean append = false;
+            for (String path : inputs) {
+                Database db = new Database(langSchema, getFactsDir(), append);
+                append = true;
                 parseFile(reflMetadata, db, baseDb, path, topPath);
-            db.writeFacts(debug);
+                db.writeFacts(debug);
+            }
         }
         baseDb.writeFacts(debug);
         Schema.write(baseDb.schema, langSchemas, getSchemaFile());

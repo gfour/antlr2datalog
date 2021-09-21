@@ -11,19 +11,22 @@ public class Database {
     private final Map<String, List<String>> tables;
     private final File outDir;
     private final String relationPrefix;
+    private final boolean append;
 
     /**
      * Create a new database.
      * @param schema      the schema of the database
      * @param outDir      the output directory path
+     * @param append      if true, append facts, otherwise overwrite
      */
-    public Database(Schema schema, File outDir) {
+    public Database(Schema schema, File outDir, boolean append) {
         this.schema = schema;
         this.outDir = outDir;
         this.tables = new HashMap<>();
         for (String relation : schema.relations)
             tables.put(relation, new LinkedList<>());
         this.relationPrefix = schema.relationPrefix;
+        this.append = append;
     }
 
     /**
@@ -50,7 +53,7 @@ public class Database {
             System.out.println("WARNING: directory already exists: " + outDir);
         for (Map.Entry<String, List<String>> entry : tables.entrySet()) {
             String relName = entry.getKey();
-            try (FileWriter fw = new FileWriter(new File(outDir, relationPrefix + relName + ".facts"))) {
+            try (FileWriter fw = new FileWriter(new File(outDir, relationPrefix + relName + ".facts"), append)) {
                 List<String> lines = tables.get(relName);
                 Collections.sort(lines);
                 if (lines.isEmpty()) {
