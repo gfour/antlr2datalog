@@ -40,4 +40,25 @@ BASE_FunctionParameter(fd, lastFrm, v, lastIdx + 1, LOCATION(path, line, pos)) :
   db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
   ID_PATH(fd, path).
-  
+
+.decl Assignable(assignable: Id, terminal: Id, name: symbol, location: Loc)
+.output Assignable
+Assignable(assignable, terminal, n, LOCATION(path, line, pos)) :-
+  db_JAVASCRIPT.Assignable_identifier(assignable, id),
+  db_JAVASCRIPT.Identifier_Identifier(id, terminal),
+  BASE_Terminal(terminal, n, line, _, _, pos),
+  ID_PATH(id, path).
+
+BASE_VariableDeclaration(terminal, name, loc) :-
+  db_JAVASCRIPT.VariableDeclaration_assignable(_, assignable),
+  Assignable(assignable, terminal, name, loc).
+
+BASE_Field(terminal, name, loc) :-
+  db_JAVASCRIPT.ClassElement_assignable(_, assignable),
+  Assignable(assignable, terminal, name, loc).
+
+BASE_Type(classDecl, n, LOCATION(path, line, pos)) :-
+  db_JAVASCRIPT.ClassDeclaration_identifier(classDecl, id),
+  db_JAVASCRIPT.Identifier_Identifier(id, terminal),
+  BASE_Terminal(terminal, n, line, _, _, pos),
+  ID_PATH(id, path).
