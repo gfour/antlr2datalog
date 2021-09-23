@@ -2,13 +2,34 @@
 #include "base-logic.dl"
 #include "areas.dl"
 
+
+// Lua function names may be composed from various substrings, concatenate.
+.decl LuaFunctionName_Aux(fnId: Id, name: symbol, counter: number, loc: Loc)
+.output LuaFunctionName_Aux
+.decl LuaFunctionName_Count(fnId: Id, num: number)
+.output LuaFunctionName_Count
+
+LuaFunctionName_Aux(fnId, name, 0, LOCATION(path, line, pos)) :-
+  db_LUA.Funcname_NAME(fnId, terminal, 0),
+  BASE_Terminal(terminal, name, line, _, _, pos),
+  ID_PATH(terminal, path).
+LuaFunctionName_Aux(fnId, cat(nameRec, cat("/", name)), i, loc) :-
+  db_LUA.Funcname_NAME(fnId, terminal, i), i > 0,
+  BASE_Terminal(terminal, name, _, _, _, _),
+  LuaFunctionName_Aux(fnId, nameRec, i - 1, loc).
+LuaFunctionName_Count(fnId, num) :-
+  LuaFunctionName_Aux(fnId, _, _, _),
+  num = count : LuaFunctionName_Aux(fnId, _, _, _).
+
 // Only named function definitions, no lambdas.
-BASE_FunctionDefinition(fBody, name, LOCATION(path, line, pos)) :-
+BASE_FunctionDefinition(fBody, name, loc) :-
   db_LUA.Stat_funcbody(statId, fBody),
   db_LUA.Stat_funcname(statId, fnId),
-  db_LUA.Funcname_NAME(fnId, terminal, _),
-  BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(statId, path).
+  LuaFunctionName_Count(fnId, counter),
+  LuaFunctionName_Aux(fnId, name, counter - 1, loc).
+  // db_LUA.Funcname_NAME(fnId, terminal, _),
+  // BASE_Terminal(terminal, name, line, _, _, pos),
+  // ID_PATH(statId, path).
 // Local functions.
 BASE_Modifier(fBody, "local"),
 BASE_FunctionDefinition(fBody, name, LOCATION(path, line, pos)) :-
