@@ -107,7 +107,7 @@ public class MetadataGenerator {
                 System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
                 return;
             }
-            metadata.fields.add(new Field(srcPos.position, srcPos.sourceFileName, true, id, name));
+            metadata.fields.add(new Field(srcPos.position, srcPos.sourceFileName, true, name, id));
         }));
 
         try {
