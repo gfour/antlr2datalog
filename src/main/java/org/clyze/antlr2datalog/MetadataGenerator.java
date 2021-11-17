@@ -111,7 +111,7 @@ public class MetadataGenerator {
         }));
 
         try {
-            SourceFileReporter fileReporter = new SourceFileReporter(new Configuration(new Printer(true)), metadata);
+            FileReporter fileReporter = new FileReporter(new Configuration(new Printer(true)), metadata);
             fileReporter.createReportFile(new File(outputDabase, OUTPUT_FILE).getCanonicalPath());
             fileReporter.printReportStats();
         } catch (IOException ex) {

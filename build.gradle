@@ -7,7 +7,8 @@ plugins {
 
 repositories {
     mavenLocal()
-    maven { url "http://centauri.di.uoa.gr:8081/artifactory/plast-public" }
+    maven { url 'https://clyze.jfrog.io/artifactory/default-maven-local' }
+    // maven { url "http://centauri.di.uoa.gr:8081/artifactory/plast-public" }
     jcenter()
 }
 
@@ -18,7 +19,7 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.2'
     implementation 'commons-io:commons-io:2.7'
     implementation "org.antlr.grammars:grammarsv4:1.0-SNAPSHOT"
-    implementation 'org.clyze:metadata-model:2.2.3'
+    implementation 'org.clyze:metadata-model:2.3.0'
     // Uncomment to support parsers with lowercase requirement (such as PHP).
     // implementation "com.khubla.antlr:antlr4test-maven-plugin:1.17"
     implementation 'org.zeroturnaround:zt-zip:1.13'
