@@ -12,14 +12,14 @@ cd ..
 
 echo "* Building extra grammars..."
 cd extra-grammars
-ANTLR_JAR=antlr-4.9.2-complete.jar
+ANTLR_JAR=antlr-4.9.3-complete.jar
 if [ ! -f "${ANTLR_JAR}" ]; then
     curl https://www.antlr.org/download/${ANTLR_JAR} -o ${ANTLR_JAR}
 fi
 echo "* Building Solidity parser..."
 cd solidity-parser
-java -jar ../antlr-4.9.2-complete.jar *.g4
-javac -cp ../antlr-4.9.2-complete.jar *.java
+java -jar ../${ANTLR_JAR} *.g4
+javac -cp ../${ANTLR_JAR} *.java
 rm -rf target
 mkdir -p target
 mv *.class target
