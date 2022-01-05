@@ -314,7 +314,7 @@ public class Driver {
      * @param metrics    the list of metrics lines (containing tab characters, no end-of-line)
      */
     public void writeMetrics(List<String> metrics) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getOutputDatabase(), STATS_METRICS_FILE))); ) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getOutputDatabase(), STATS_METRICS_FILE))) ) {
             for (String m : metrics)
                 writer.write(m);
         } catch (IOException e) {
