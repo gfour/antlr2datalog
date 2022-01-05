@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.clyze:metadata-model:2.3.0'
     // Uncomment to support parsers with lowercase requirement (such as PHP).
     // implementation "com.khubla.antlr:antlr4test-maven-plugin:1.17"
-    implementation 'org.zeroturnaround:zt-zip:1.13'
+    implementation 'org.zeroturnaround:zt-zip:1.14'
 
     // Use JUnit test framework
     testImplementation(platform('org.junit:junit-bom:5.7.1'))
