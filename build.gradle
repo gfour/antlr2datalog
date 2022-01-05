@@ -9,7 +9,6 @@ repositories {
     mavenLocal()
     maven { url 'https://clyze.jfrog.io/artifactory/default-maven-local' }
     // maven { url "http://centauri.di.uoa.gr:8081/artifactory/plast-public" }
-    jcenter()
     mavenCentral()
 }
 
