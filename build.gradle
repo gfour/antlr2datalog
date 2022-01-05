@@ -10,14 +10,15 @@ repositories {
     maven { url 'https://clyze.jfrog.io/artifactory/default-maven-local' }
     // maven { url "http://centauri.di.uoa.gr:8081/artifactory/plast-public" }
     jcenter()
+    mavenCentral()
 }
 
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 
 dependencies {
-    implementation 'commons-cli:commons-cli:1.2'
-    implementation 'commons-io:commons-io:2.7'
+    implementation 'commons-cli:commons-cli:1.5.0'
+    implementation 'commons-io:commons-io:2.11.0'
     implementation "org.antlr.grammars:grammarsv4:1.0-SNAPSHOT"
     implementation 'org.clyze:metadata-model:2.4.0'
     // Uncomment to support parsers with lowercase requirement (such as PHP).
