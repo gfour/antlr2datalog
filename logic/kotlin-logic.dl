@@ -20,25 +20,25 @@ UsedVariable(varName) :-
   db_KOTLIN.SimpleIdentifier_Identifier(id, terminal),
   BASE_Terminal(terminal, varName, _, _, _, _).
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   ( db_KOTLIN.LineStringContent_LineStrText(id, terminal)
   ; db_KOTLIN.MultiLineStringContent_MultiLineStrText(id, terminal)),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
-BASE_Type(classDecl, name, LOCATION(path, line, pos)) :-
+BASE_Type(classDecl, name, LOCATION(artifact, path, line, pos)) :-
   db_KOTLIN.ClassDeclaration_simpleIdentifier(classDecl, identId),
   db_KOTLIN.SimpleIdentifier_Identifier(identId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(classDecl, path).
+  ID_PATH(artifact, classDecl, path).
 
 .decl FuncDefOrDecl(id: Id, name: symbol, location: Loc)
 
-FuncDefOrDecl(fd, name, LOCATION(path, line, pos)) :-
+FuncDefOrDecl(fd, name, LOCATION(artifact, path, line, pos)) :-
   db_KOTLIN.FunctionDeclaration_simpleIdentifier(fd, identId),
   db_KOTLIN.SimpleIdentifier_Identifier(identId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 BASE_FunctionDefinition(fd, name, location) :-
   FuncDefOrDecl(fd, name, location),
@@ -57,11 +57,11 @@ BASE_isScope(id) :- db_KOTLIN.isWhenEntry(id).
 .decl KotlinBinding(vDeclId: Id, name: symbol, loc: Loc)
 .output KotlinBinding
 
-KotlinBinding(vDeclId, name, LOCATION(path, line, pos)) :-
+KotlinBinding(vDeclId, name, LOCATION(artifact, path, line, pos)) :-
   db_KOTLIN.VariableDeclaration_simpleIdentifier(vDeclId, identId),
   db_KOTLIN.SimpleIdentifier_Identifier(identId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(vDeclId, path).
+  ID_PATH(artifact, vDeclId, path).
 // Handle nested multi-variable declarations.
 KotlinBinding(mvDeclId, name, loc) :-
   KotlinBinding(vDeclId, name, loc),
@@ -137,7 +137,7 @@ BASE_Modifier(prop, m) :-
   ; db_KOTLIN.PlatformModifier_ACTUAL(mod, terminal)),
   BASE_Terminal(terminal, m, _, _, _, _).
 
-BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(artifact, path, line, pos)) :-
   FuncDefOrDecl(fd, _, _),
   db_KOTLIN.FunctionDeclaration_functionValueParameters(fd, fvParams),
   db_KOTLIN.FunctionValueParameters_functionValueParameter(fvParams, fvParam, idx),
@@ -145,4 +145,4 @@ BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
   db_KOTLIN.Parameter_simpleIdentifier(param, id),
   db_KOTLIN.SimpleIdentifier_Identifier(id, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).

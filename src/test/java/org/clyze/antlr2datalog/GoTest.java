@@ -12,7 +12,7 @@ public class GoTest extends LangTest {
         Main.main(new String[] { "-l", "go", "-i", SRC_FILE, "-i", "grammars-v4/golang/examples/structs.go", "-g", "-p" });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_Function_Area.csv")).exists());
-        assert functionDefinition("FunctionDecl@src/test/resources/bit_cmd.go@1074-1544", "HijackGitCommandOccurred", "src/test/resources/bit_cmd.go:134:5");
+        assert functionDefinition("FunctionDecl@src/test/resources/bit_cmd.go@1074-1544", "HijackGitCommandOccurred", ":src/test/resources/bit_cmd.go:134:5");
         assert functionArity("FunctionDecl@src/test/resources/bit_cmd.go@1074-1544", "3");
         assert metadataExist();
         SourceMetadata sm = getSourceMetadata();

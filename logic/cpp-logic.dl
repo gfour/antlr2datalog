@@ -6,14 +6,14 @@
 .decl Functionlike(id: Id, name: symbol, location: Loc, paramsAndQuals: Id)
 .output Functionlike
 
-Functionlike(uid, name, LOCATION(path, line, pos), paqId) :-
+Functionlike(uid, name, LOCATION(artifact, path, line, pos), paqId) :-
   db_CPP.UnqualifiedId_Identifier(uid, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   UP_PATH4(uid, db_CPP.isIdExpression, db_CPP.isDeclaratorid, db_CPP.isNoPointerDeclarator, db_CPP.isNoPointerDeclarator, npDecl),
   BASE_ParentOf(npDecl, paqId),
   db_CPP.ParametersAndQualifiers_LeftParen(paqId, _),
   db_CPP.ParametersAndQualifiers_RightParen(paqId, _),
-  ID_PATH(uid, path).
+  ID_PATH(artifact, uid, path).
 
 // Helper function to record parameter declarations for function definitions/declarations.
 .decl Function_paq(func: Id, paq: Id)
@@ -40,33 +40,33 @@ BASE_Modifier(funcDef, mod) :-
   ; db_CPP.FunctionSpecifier_Virtual(funcSpec, terminal)),
   BASE_Terminal(terminal, mod, _, _, _, _).
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   db_CPP.Literal_StringLiteral(id, terminal),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
-BASE_Type(typeSpec, name, LOCATION(path, line, pos)) :-
+BASE_Type(typeSpec, name, LOCATION(artifact, path, line, pos)) :-
   UP_PATH4(className, db_CPP.isClassHeadName, db_CPP.isClassHead, db_CPP.isClassSpecifier, db_CPP.isTypeSpecifier, typeSpec),
   db_CPP.ClassName_Identifier(className, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(typeSpec, path).
+  ID_PATH(artifact, typeSpec, path).
 
 BASE_isScope(id) :- db_CPP.isLambdaIntroducer(id).
 BASE_isScope(id) :- db_CPP.isCompoundStatement(id).
 
 // Variable declarations from function parameters.
-BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(id, v, LOCATION(artifact, path, line, pos)) :-
   Functionlike(func, _, _, paqId),
   BASE_RecParentOf(paqId, id),
   db_CPP.ClassName_Identifier(_, id),
   BASE_Terminal(id, v, line, _, _, pos),
-  ID_PATH(func, path).
+  ID_PATH(artifact, func, path).
 // Local variable declarations.
-BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(id, v, LOCATION(artifact, path, line, pos)) :-
   db_CPP.UnqualifiedId_Identifier(uId, id),
   BASE_Terminal(id, v, line, _, _, pos),
   UP_PATH6(uId, db_CPP.isIdExpression, db_CPP.isDeclaratorid, db_CPP.isNoPointerDeclarator, db_CPP.isPointerDeclarator, db_CPP.isDeclarator, db_CPP.isInitDeclarator, di),
-  ID_PATH(di, path).
+  ID_PATH(artifact, di, path).
 
 // Utility: mapping NoPointerDeclaration -> terminal.
 .decl NoPointerDecl_terminal(npDecl: db_CPP.NoPointerDeclarator, terminal: Id)
@@ -75,11 +75,11 @@ NoPointerDecl_terminal(npDecl, terminal) :-
   db_CPP.UnqualifiedId_Identifier(uid, terminal),
   UP_PATH3(uid, db_CPP.isIdExpression, db_CPP.isDeclaratorid, db_CPP.isNoPointerDeclarator, npDecl).
 
-BASE_FunctionParameter(func, terminal, v, idx, LOCATION(path, line, pos)) :-
+BASE_FunctionParameter(func, terminal, v, idx, LOCATION(artifact, path, line, pos)) :-
   Function_paq(func, paq),
   UP_PATH2(pdl, db_CPP.isParameterDeclarationClause, db_CPP.isParametersAndQualifiers, paq),
   db_CPP.ParameterDeclarationList_parameterDeclaration(pdl, pd, idx),
   UP_PATH3(npDecl, db_CPP.isPointerDeclarator, db_CPP.isDeclarator, db_CPP.isParameterDeclaration, pd),
   NoPointerDecl_terminal(npDecl, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(terminal, path).
+  ID_PATH(artifact, terminal, path).

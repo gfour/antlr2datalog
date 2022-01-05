@@ -3,11 +3,11 @@
 #include "areas.dl"
 
 // Method/function declarations.
-BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
+BASE_FunctionDeclaration(fd, name, LOCATION(artifact, path, line, pos)) :-
   ( db_GO.MethodDecl_IDENTIFIER(fd, terminal)
   ; db_GO.FunctionDecl_IDENTIFIER(fd, terminal)),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 // Method/function definitions are declarations with blocks.
 BASE_FunctionDefinition(fd, name, loc) :-
@@ -15,21 +15,21 @@ BASE_FunctionDefinition(fd, name, loc) :-
   BASE_RecParentOf(fd, block),
   db_GO.isBlock(block).
 
-BASE_Type(td, name, LOCATION(path, line, pos)) :-
+BASE_Type(td, name, LOCATION(artifact, path, line, pos)) :-
   db_GO.TypeDecl_typeSpec(td, ts, _),
   db_GO.TypeSpec_IDENTIFIER(ts, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(td, path).
+  ID_PATH(artifact, td, path).
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   ( db_GO.String__INTERPRETED_STRING_LIT(id, terminal)
   ; db_GO.String__RAW_STRING_LIT(id, terminal)),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
 BASE_isScope(id) :- db_GO.isBlock(id).
 
-BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(artifact, path, line, pos)) :-
   BASE_FunctionDefinition(fd, _, _),
   BASE_ParentOf(fd, sig),
   db_GO.Signature_parameters(sig, params),
@@ -37,37 +37,37 @@ BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
   db_GO.ParameterDecl_identifierList(paramDecl, idL),
   db_GO.IdentifierList_IDENTIFIER(idL, id, _),
   BASE_Terminal(id, v, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 // Variables declared with "v := ...".
-BASE_VariableDeclaration(ident, str, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(ident, str, LOCATION(artifact, path, line, pos)) :-
   db_GO.ShortVarDecl_identifierList(svDecl, identList),
   db_GO.IdentifierList_IDENTIFIER(identList, ident, _),
   BASE_Terminal(ident, str, line, _, _, pos),
   str != "_",
-  ID_PATH(svDecl, path).
+  ID_PATH(artifact, svDecl, path).
 
 // Variables declared with "var".
-BASE_VariableDeclaration(ident, str, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(ident, str, LOCATION(artifact, path, line, pos)) :-
   db_GO.VarDecl_varSpec(vDecl, vSpec, _),
   db_GO.VarSpec_identifierList(vSpec, identList),
   db_GO.IdentifierList_IDENTIFIER(identList, ident, _),
   BASE_Terminal(ident, str, line, _, _, pos),
   str != "_",
-  ID_PATH(vDecl, path).
+  ID_PATH(artifact, vDecl, path).
 
 // Variables declared in for loops.
-BASE_VariableDeclaration(ident, str, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(ident, str, LOCATION(artifact, path, line, pos)) :-
   db_GO.ForStmt_rangeClause(forStmt, rangeClause),
   db_GO.RangeClause_identifierList(rangeClause, identList),
   db_GO.IdentifierList_IDENTIFIER(identList, ident, _),
   BASE_Terminal(ident, str, line, _, _, pos),
   str != "_",
-  ID_PATH(forStmt, path).
+  ID_PATH(artifact, forStmt, path).
 
-BASE_Field(id, name, LOCATION(path, line, pos)) :-
+BASE_Field(id, name, LOCATION(artifact, path, line, pos)) :-
   db_GO.StructType_fieldDecl(id, fieldDecl, _),
   db_GO.FieldDecl_identifierList(fieldDecl, identList),
   db_GO.IdentifierList_IDENTIFIER(identList, terminal, 0),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).

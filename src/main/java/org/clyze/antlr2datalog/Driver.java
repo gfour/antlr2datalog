@@ -74,7 +74,7 @@ public class Driver {
             for (String path : inputs) {
                 Database db = new Database(langSchema, getFactsDir(), append);
                 append = true;
-                parseFile(reflMetadata, db, baseDb, path, topPath);
+                parseFile(reflMetadata, db, baseDb, path, topPath, "");
                 db.writeFacts(debug);
             }
         }
@@ -88,13 +88,15 @@ public class Driver {
 
     private void parseFile(ParserReflection parserReflection,
                            Database langDb, Database baseDb,
-                           String path, String topPath) {
+                           String path, String topPath, String artifact) {
         if (debug)
             System.out.println("parseFile(): path=" + path);
         File pathFile = new File(path);
         if (path.toLowerCase().endsWith(".zip")) {
             try {
                 pathFile = Resources.extractInputStream(new FileInputStream(pathFile), pathFile.getName());
+                artifact = getRelativePath(path, topPath);
+                topPath = pathFile.getCanonicalPath();
                 System.out.println("Extracted " + path + " to " + pathFile);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -108,7 +110,7 @@ public class Driver {
             if (files != null)
                 for (File f : files)
                     try {
-                        parseFile(parserReflection, langDb, baseDb, f.getCanonicalPath(), topPath);
+                        parseFile(parserReflection, langDb, baseDb, f.getCanonicalPath(), topPath, artifact);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -155,7 +157,7 @@ public class Driver {
                 });
             }
             ParserRuleContext ruleContext = (ParserRuleContext) parserReflection.rootNodeMethod.invoke(parser);
-            process(langDb, baseDb, path, ruleContext, topPath);
+            process(langDb, baseDb, path, ruleContext, topPath, artifact);
         } catch (UnsupportedParserException ignored) {
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -163,13 +165,13 @@ public class Driver {
     }
 
     private void process(Database langDb, Database baseDb, String path,
-                         ParserRuleContext rootNode, String topPath) {
+                         ParserRuleContext rootNode, String topPath, String artifact) {
         String srcPath = getRelativePath(path, topPath);
         FactVisitor fv = new FactVisitor(srcPath, langDb, baseDb);
         rootNode.accept(new ParseTreeVisitor<Void>() {
             @Override public Void visit(ParseTree parseTree) {
                 String parseTreeRelationName = SchemaFinder.getSimpleName(parseTree.getClass(), langDb.schema.rules);
-                BaseSchema.writeSourceFileId(baseDb, srcPath + '\t' + srcPath + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
+                BaseSchema.writeSourceFileId(baseDb, artifact + '\t' + srcPath + '\t' + srcPath + '\t' + fv.getNodeId(parseTreeRelationName, parseTree));
                 fv.visitParseTree(new TypedParseTree(parseTree, parseTree.getClass(), false));
                 return null;
             }

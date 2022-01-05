@@ -6,18 +6,18 @@
 .output SolidityFunction
 
 // Normal functions.
-SolidityFunction(fd, name, LOCATION(path, line, pos)) :-
+SolidityFunction(fd, name, LOCATION(artifact, path, line, pos)) :-
   db_SOLIDITY.FunctionDefinition_functionDescriptor(fd, fdesc),
   db_SOLIDITY.FunctionDescriptor_identifier(fdesc, ident),
   db_SOLIDITY.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 // Special "receive()" declarations.
-SolidityFunction(fd, name, LOCATION(path, line, pos)) :-
+SolidityFunction(fd, name, LOCATION(artifact, path, line, pos)) :-
   db_SOLIDITY.FunctionDefinition_functionDescriptor(fd, fdesc),
   db_SOLIDITY.FunctionDescriptor_ReceiveKeyword(fdesc, receiveKeyword),
   BASE_Terminal(receiveKeyword, name, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 // Function definitions have implementation blocks.
 BASE_FunctionDefinition(fd, name, location) :-
@@ -30,34 +30,34 @@ BASE_FunctionDeclaration(fd, name, location) :-
 
 BASE_isScope(id) :- db_SOLIDITY.isBlock(id).
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   db_SOLIDITY.StringLiteral_StringLiteralFragment(_, terminal, _),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(terminal, path).
+  ID_PATH(artifact, terminal, path).
 
 // Enum/struct definitions.
-BASE_Type(ed, name, LOCATION(path, line, pos)) :-
+BASE_Type(ed, name, LOCATION(artifact, path, line, pos)) :-
   ( db_SOLIDITY.EnumDefinition_identifier(ed, ident)
   ; db_SOLIDITY.StructDefinition_identifier(ed, ident)),
   db_SOLIDITY.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(ed, path).
+  ID_PATH(artifact, ed, path).
 
 // Contract definitions.
-BASE_Type(cd, name, LOCATION(path, line, pos)) :-
+BASE_Type(cd, name, LOCATION(artifact, path, line, pos)) :-
   db_SOLIDITY.ContractDefinition_identifier(cd, ident),
   db_SOLIDITY.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(cd, path).
+  ID_PATH(artifact, cd, path).
 
-BASE_FunctionParameter(fd, ident, v, idx, LOCATION(path, line, pos)) :-
+BASE_FunctionParameter(fd, ident, v, idx, LOCATION(artifact, path, line, pos)) :-
   SolidityFunction(fd, _, _),
   db_SOLIDITY.FunctionDefinition_parameterList(fd, pl),
   db_SOLIDITY.ParameterList_parameter(pl, param, idx),
   db_SOLIDITY.Parameter_identifier(param, ident),
   db_SOLIDITY.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 .decl Function_ModList(fd: db_SOLIDITY.FunctionDefinition, ml: db_SOLIDITY.ModifierList)
 .output Function_ModList
@@ -77,11 +77,11 @@ BASE_Modifier(fd, "public") :-
 BASE_Modifier(fd, "virtual") :-
   Function_ModList(fd, ml), db_SOLIDITY.ModifierList_VirtualKeyword(ml, _, _).
 
-BASE_Field(vd, name, LOCATION(path, line, pos)) :-
+BASE_Field(vd, name, LOCATION(artifact, path, line, pos)) :-
   db_SOLIDITY.StateVariableDeclaration_identifier(vd, identId),
   db_SOLIDITY.Identifier_Identifier(identId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(vd, path).
+  ID_PATH(artifact, vd, path).
 
 BASE_Modifier(vd, "public") :-
   BASE_Field(vd, _, _), db_SOLIDITY.StateVariableDeclaration_PublicKeyword(vd, _, _).

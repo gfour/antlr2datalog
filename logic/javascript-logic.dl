@@ -2,11 +2,11 @@
 #include "base-logic.dl"
 #include "areas.dl"
 
-BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
+BASE_FunctionDeclaration(fd, name, LOCATION(artifact, path, line, pos)) :-
   db_JAVASCRIPT.FunctionDeclaration_identifier(fd, ident),
   db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 .decl MethodDefinitionName(methodDef: Id, identifier: Id)
 .output MethodDefinitionName
@@ -23,34 +23,34 @@ MethodDefinitionName(methodDef, identifier) :-
   db_JAVASCRIPT.Getter_identifier(special, identifier).
 
 // Class methods.
-BASE_FunctionDeclaration(fd, name, LOCATION(path, line, pos)) :-
+BASE_FunctionDeclaration(fd, name, LOCATION(artifact, path, line, pos)) :-
   db_JAVASCRIPT.ClassElement_methodDefinition(_, fd),
   MethodDefinitionName(fd, ident),
   db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 // Assume function definition = declaration.
 BASE_FunctionDefinition(fd, name, location) :-
   BASE_FunctionDeclaration(fd, name, location).
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   ( db_JAVASCRIPT.Literal_StringLiteral(_, terminal)
   ; db_JAVASCRIPT.ImportFromBlock_StringLiteral(_, terminal)
   ; db_JAVASCRIPT.ImportFrom_StringLiteral(_, terminal)
   ; db_JAVASCRIPT.PropertyName_StringLiteral(_, terminal)),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(terminal, path).
+  ID_PATH(artifact, terminal, path).
 
 .decl FormalsListToFormal(frmList: Id, frmArg: Id, v: symbol, idx: number, loc: Loc)
 .output FormalsListToFormal
-FormalsListToFormal(frmList, frmArg, v, idx, LOCATION(path, line, pos)) :-
+FormalsListToFormal(frmList, frmArg, v, idx, LOCATION(artifact, path, line, pos)) :-
   db_JAVASCRIPT.FormalParameterList_formalParameterArg(frmList, frmArg, idx),
   db_JAVASCRIPT.FormalParameterArg_assignable(frmArg, aa),
   db_JAVASCRIPT.Assignable_identifier(aa, ident),
   db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(frmList, path).
+  ID_PATH(artifact, frmList, path).
 
 // Function parameters.
 BASE_FunctionParameter(fd, frmArg, v, idx, loc) :-
@@ -63,7 +63,7 @@ BASE_FunctionParameter(fd, frmArg, v, idx, loc) :-
   db_JAVASCRIPT.MethodDefinition_formalParameterList(fd, frmList),
   FormalsListToFormal(frmList, frmArg, v, idx, loc).
 // Handle ellipsis in function signatures.
-BASE_FunctionParameter(fd, lastFrm, v, lastIdx + 1, LOCATION(path, line, pos)) :-
+BASE_FunctionParameter(fd, lastFrm, v, lastIdx + 1, LOCATION(artifact, path, line, pos)) :-
   BASE_FunctionDeclaration(fd, _, _),
   db_JAVASCRIPT.FunctionDeclaration_formalParameterList(fd, frmList),
   db_JAVASCRIPT.FormalParameterList_lastFormalParameterArg(frmList, lastFrm),
@@ -73,15 +73,15 @@ BASE_FunctionParameter(fd, lastFrm, v, lastIdx + 1, LOCATION(path, line, pos)) :
   db_JAVASCRIPT.IdentifierExpression_identifier(identExpr, ident),
   db_JAVASCRIPT.Identifier_Identifier(ident, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 .decl Assignable(assignable: Id, terminal: Id, name: symbol, location: Loc)
 .output Assignable
-Assignable(assignable, terminal, n, LOCATION(path, line, pos)) :-
+Assignable(assignable, terminal, n, LOCATION(artifact, path, line, pos)) :-
   db_JAVASCRIPT.Assignable_identifier(assignable, id),
   db_JAVASCRIPT.Identifier_Identifier(id, terminal),
   BASE_Terminal(terminal, n, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
 BASE_VariableDeclaration(terminal, name, loc) :-
   db_JAVASCRIPT.VariableDeclaration_assignable(_, assignable),
@@ -91,8 +91,8 @@ BASE_Field(terminal, name, loc) :-
   db_JAVASCRIPT.ClassElement_assignable(_, assignable),
   Assignable(assignable, terminal, name, loc).
 
-BASE_Type(classDecl, n, LOCATION(path, line, pos)) :-
+BASE_Type(classDecl, n, LOCATION(artifact, path, line, pos)) :-
   db_JAVASCRIPT.ClassDeclaration_identifier(classDecl, id),
   db_JAVASCRIPT.Identifier_Identifier(id, terminal),
   BASE_Terminal(terminal, n, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).

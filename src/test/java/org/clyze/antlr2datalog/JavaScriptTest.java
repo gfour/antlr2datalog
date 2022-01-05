@@ -14,7 +14,7 @@ public class JavaScriptTest extends LangTest {
                 "-i", "grammars-v4/javascript/javascript/examples/Classes.js"
         });
         assert((new File(Main.DEFAULT_WORKSPACE, "database/BASE_FunctionDefinition.csv")).exists());
-        assert functionDefinition("FunctionDeclaration@grammars-v4/javascript/javascript/examples/Generators.js@430-649", "fasync", "grammars-v4/javascript/javascript/examples/Generators.js:82:9");
+        assert functionDefinition("FunctionDeclaration@grammars-v4/javascript/javascript/examples/Generators.js@430-649", "fasync", ":grammars-v4/javascript/javascript/examples/Generators.js:82:9");
         assert functionArity("FunctionDeclaration@grammars-v4/javascript/javascript/examples/Generators.js@430-649", "2");
         assert metadataExist();
         SourceMetadata sm = getSourceMetadata();

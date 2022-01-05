@@ -9,10 +9,10 @@
 PrologVariable(var, name) :-
   db_PROLOG.Variable_VARIABLE(var, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(terminal, path).
+  ID_PATH(artifact, terminal, path).
 
 // Relation rules are represented as function definitions.
-BASE_FunctionDefinition(terminal, v, LOCATION(path, line, pos)) :-
+BASE_FunctionDefinition(terminal, v, LOCATION(artifact, path, line, pos)) :-
   db_PROLOG.P_text_clause(_, clause, _),
   db_PROLOG.Clause_term(clause, term1),
   BASE_ParentOf(term1, binop),
@@ -23,4 +23,4 @@ BASE_FunctionDefinition(terminal, v, LOCATION(path, line, pos)) :-
   BASE_ParentOf(atom, name),
   BASE_ParentOf(name, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(terminal, path).
+  ID_PATH(artifact, terminal, path).

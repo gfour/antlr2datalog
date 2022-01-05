@@ -6,13 +6,13 @@
 // The function-declarator part of both declarations and definitions of functions.
 .decl FunctionDeclarator(id: Id, name: symbol, location: Loc)
 .output FunctionDeclarator
-FunctionDeclarator(dd2_id, name, LOCATION(path, line, pos)) :-
+FunctionDeclarator(dd2_id, name, LOCATION(artifact, path, line, pos)) :-
   db_C.DirectDeclarator_Identifier(dd_id, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   BASE_ParentOf(dd2_id, dd_id),
   db_C.DirectDeclarator_LeftParen(dd2_id, _),
   db_C.DirectDeclarator_RightParen(dd2_id, _),
-  ID_PATH(dd2_id, path).
+  ID_PATH(artifact, dd2_id, path).
 
 BASE_FunctionDeclaration(extDeclId, name, location) :-
   FunctionDeclarator(dd2_id, name, location),
@@ -43,10 +43,10 @@ BASE_Modifier(fd, mod) :-
   BASE_ParentOf(specifier, terminal),
   BASE_Terminal(terminal, mod, _, _, _, _).
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   db_C.PrimaryExpression_StringLiteral(id, terminal, _),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
 BASE_isScope(id) :- db_C.isCompoundStatement(id).
 BASE_isScope(id) :- db_C.isStructDeclarationList(id).
@@ -59,23 +59,23 @@ C_Function_ParameterDecl(fd, pd, i) :-
   BASE_RecParentOf(ptl, pd),
   UP_PATH4(ptl, db_C.isParameterTypeList, db_C.isDirectDeclarator, db_C.isDeclarator, db_C.isFunctionDefinition, fd).
 
-BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(artifact, path, line, pos)) :-
   C_Function_ParameterDecl(fd, pd, idx),
   db_C.DirectDeclarator_Identifier(dd, id),
   BASE_Terminal(id, v, line, _, _, pos),
   UP_PATH2(dd, db_C.isDeclarator, db_C.isParameterDeclaration, pd),
-  ID_PATH(pd, path).
+  ID_PATH(artifact, pd, path).
 
 // Local variable declarations.
-BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(id, v, LOCATION(artifact, path, line, pos)) :-
   db_C.DirectDeclarator_Identifier(dd, id),
   BASE_Terminal(id, v, line, _, _, pos),
   UP_PATH2(dd, db_C.isDeclarator, db_C.isInitDeclarator, idecl),
-  ID_PATH(idecl, path).
+  ID_PATH(artifact, idecl, path).
 
-BASE_Type(decl, name, LOCATION(path, line, pos)) :-
+BASE_Type(decl, name, LOCATION(artifact, path, line, pos)) :-
   db_C.StructOrUnionSpecifier_Identifier(spec, terminal),
   db_C.StructOrUnionSpecifier_LeftBrace(spec, _),
   BASE_Terminal(terminal, name, line, _, _, pos),
   UP_PATH4(spec, db_C.isTypeSpecifier, db_C.isDeclarationSpecifier, db_C.isDeclarationSpecifiers, db_C.isDeclaration, decl),
-  ID_PATH(decl, path).
+  ID_PATH(artifact, decl, path).

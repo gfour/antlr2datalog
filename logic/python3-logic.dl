@@ -5,8 +5,8 @@
 BASE_FunctionDefinition(fd, name, location) :-
   db_PYTHON3.Funcdef_NAME(fd, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(fd, path),
-  location = LOCATION(path, line, pos).
+  ID_PATH(artifact, fd, path),
+  location = LOCATION(artifact, path, line, pos).
 // In Python, function definition = declaration.
 BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
@@ -24,22 +24,22 @@ BASE_Modifier(fd, "_") :-
 
 .decl isAssign(id: Id, location: Loc)
 isAssign(id, location) :-
-  ID_PATH(id, path),
+  ID_PATH(artifact, id, path),
   db_PYTHON3.Expr_stmt_ASSIGN(id, terminal, _),
   BASE_Terminal(terminal, "=", line, _, _, pos),
-  location = LOCATION(path, line, pos).
+  location = LOCATION(artifact, path, line, pos).
 
 .decl NameInAssignment(id: Id, n: symbol, location: Loc)
 .output NameInAssignment
 
 NameInAssignment(atomId, n, location) :-
-  ID_PATH(atomId, path),
+  ID_PATH(artifact, atomId, path),
   db_PYTHON3.Atom_NAME(atomId, terminal),
   BASE_Terminal(terminal, n, line, _, _, pos),
   BASE_RecParentOf(exprStmtId, atomId),
   BASE_ParentOf(exprStmtId, assignId),
   isAssign(assignId, _),
-  location = LOCATION(path, line, pos).
+  location = LOCATION(artifact, path, line, pos).
 
 .decl FunctionUsesName(f: symbol, fLocation: Loc, v: symbol, vLocation: Loc)
 .output FunctionUsesName
@@ -59,38 +59,38 @@ Func_Name(id, name) :-
 .output NestedFunction
 
 NestedFunction(oName, outerLoc, iName, innerLoc) :-
-  ID_PATH(outer, path),
+  ID_PATH(artifact, outer, path),
   db_PYTHON3.Funcdef_NAME(outer, oTerminal),
   BASE_Terminal(oTerminal, oName, oLine, _, _, oPos),
   BASE_RecParentOf(outer, inner),
   db_PYTHON3.Funcdef_NAME(inner, iTerminal),
   BASE_Terminal(iTerminal, iName, iLine, _, _, iPos),
-  outerLoc = LOCATION(path, oLine, oPos),
-  innerLoc = LOCATION(path, iLine, iPos).
+  outerLoc = LOCATION(artifact, path, oLine, oPos),
+  innerLoc = LOCATION(artifact, path, iLine, iPos).
 
-BASE_Type(id, name, LOCATION(path, line, pos)) :-
-  ID_PATH(id, path),
+BASE_Type(id, name, LOCATION(artifact, path, line, pos)) :-
+  ID_PATH(artifact, id, path),
   db_PYTHON3.Classdef_NAME(id, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos).
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   db_PYTHON3.Atom_STRING(id, terminal, _),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
 BASE_isScope(id) :- db_PYTHON3.isSuite(id).
 
-BASE_FunctionParameter(fd, id, v, idx, LOCATION(path, line, pos)) :-
+BASE_FunctionParameter(fd, id, v, idx, LOCATION(artifact, path, line, pos)) :-
   BASE_FunctionDefinition(fd, _, _),
   db_PYTHON3.Funcdef_parameters(fd, params),
   db_PYTHON3.Parameters_typedargslist(params, tl),
   db_PYTHON3.Typedargslist_tfpdef(tl, tfp, idx),
   db_PYTHON3.Tfpdef_NAME(tfp, id),
   BASE_Terminal(id, v, line, _, _, pos),
-  ID_PATH(fd, path).
+  ID_PATH(artifact, fd, path).
 
 // Global variable declarations.
-BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(id, v, LOCATION(artifact, path, line, pos)) :-
   db_PYTHON3.Global_stmt_NAME(id, terminal, _),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).

@@ -9,10 +9,10 @@
 .decl LuaFunctionName_Count(fnId: Id, num: number)
 .output LuaFunctionName_Count
 
-LuaFunctionName_Aux(fnId, name, 0, LOCATION(path, line, pos)) :-
+LuaFunctionName_Aux(fnId, name, 0, LOCATION(artifact, path, line, pos)) :-
   db_LUA.Funcname_NAME(fnId, terminal, 0),
   BASE_Terminal(terminal, name, line, _, _, pos),
-  ID_PATH(terminal, path).
+  ID_PATH(artifact, terminal, path).
 LuaFunctionName_Aux(fnId, cat(nameRec, cat("/", name)), i, loc) :-
   db_LUA.Funcname_NAME(fnId, terminal, i), i > 0,
   BASE_Terminal(terminal, name, _, _, _, _),
@@ -29,38 +29,38 @@ BASE_FunctionDefinition(fBody, name, loc) :-
   LuaFunctionName_Aux(fnId, name, counter - 1, loc).
   // db_LUA.Funcname_NAME(fnId, terminal, _),
   // BASE_Terminal(terminal, name, line, _, _, pos),
-  // ID_PATH(statId, path).
+  // ID_PATH(artifact, statId, path).
 // Local functions.
 BASE_Modifier(fBody, "local"),
-BASE_FunctionDefinition(fBody, name, LOCATION(path, line, pos)) :-
+BASE_FunctionDefinition(fBody, name, LOCATION(artifact, path, line, pos)) :-
   db_LUA.Stat_NAME(statId, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   db_LUA.Stat_funcbody(statId, fBody),
-  ID_PATH(statId, path).
+  ID_PATH(artifact, statId, path).
 
 // No distinction between declarations and definitions.
 BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   db_LUA.String_NORMALSTRING(id, terminal),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
 BASE_isScope(id) :- db_LUA.isFuncbody(id).
 BASE_isScope(id) :- db_LUA.isBlock(id).
 
-BASE_FunctionParameter(fBody, id, v, idx, LOCATION(path, line, pos)) :-
+BASE_FunctionParameter(fBody, id, v, idx, LOCATION(artifact, path, line, pos)) :-
   db_LUA.Funcbody_parlist(fBody, pl),
   db_LUA.Parlist_namelist(pl, nl),
   db_LUA.Namelist_NAME(nl, id, idx),
   BASE_Terminal(id, v, line, _, _, pos),
-  ID_PATH(fBody, path).
+  ID_PATH(artifact, fBody, path).
 
 // Local variable assignments.
-BASE_VariableDeclaration(terminal, v, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(terminal, v, LOCATION(artifact, path, line, pos)) :-
   db_LUA.Stat_varlist(stat, vl),
   db_LUA.Varlist_var_(vl, var, _),
   db_LUA.Var__NAME(var, terminal),
   BASE_Terminal(terminal, v, line, _, _, pos),
-  ID_PATH(stat, path).
+  ID_PATH(artifact, stat, path).

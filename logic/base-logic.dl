@@ -30,11 +30,11 @@ Parent5(a1, a2, a3, a4, a5) :- Parent4(a1, a2, a3, a4), BASE_ParentOf(a4, a5).
 .type Id = symbol
 .type Loc = symbol
 
-#define LOCATION(path, line, pos) cat(path, cat(":", cat(to_string(line), cat(":", to_string(pos)))))
+#define LOCATION(artifact, path, line, pos) cat(artifact, cat(":", cat(path, cat(":", cat(to_string(line), cat(":", to_string(pos)))))))
 
-#define ID_PATH(id, path) \
+#define ID_PATH(artifact, id, path) \
   BASE_RecParentOf(MACROrootNode, id), \
-  BASE_SourceFileId(path, _, MACROrootNode)
+  BASE_SourceFileId(artifact, path, _, MACROrootNode)
 
 // Function "name" declared at source file "location".
 .decl BASE_FunctionDeclaration(id: Id, func: symbol, loc: Loc)

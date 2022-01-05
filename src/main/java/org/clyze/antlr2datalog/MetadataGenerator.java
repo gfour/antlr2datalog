@@ -20,6 +20,8 @@ public class MetadataGenerator {
     public static final String OUTPUT_FILE = "metadata.json";
 
     private final File outputDabase;
+    private final Map<String, String> artifactMap = new HashMap<>();
+
     public MetadataGenerator(File outputDatabase) {
         this.outputDabase = outputDatabase;
     }
@@ -30,9 +32,11 @@ public class MetadataGenerator {
         SourceMetadata metadata = new SourceMetadata();
 
         process("BASE_SourceFileId.csv", (String[] parts) -> {
-            String path = parts[0];
-            String id = parts[2];
-            metadata.sourceFiles.add(new SourceFile(path, id));
+            String artifact = parts[0];
+            String path = parts[1];
+            String id = parts[3];
+            metadata.sourceFiles.add(new SourceFile(artifact, path, id));
+            artifactMap.put(path, artifact);
         });
 
         process("BASE_Type.csv", ((String[] parts) -> {
@@ -43,7 +47,7 @@ public class MetadataGenerator {
                 System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
                 return;
             }
-            metadata.types.add(new Type(srcPos.position, srcPos.sourceFileName, true, id, name));
+            metadata.types.add(new Type(srcPos.position, srcPos.sourceFileName, true, srcPos.artifact, id, name));
         }));
 
         Map<String, Position> functionAreas = new HashMap<>();
@@ -83,7 +87,7 @@ public class MetadataGenerator {
                 if (Main.debug)
                     System.err.println("WARNING: function " + fd + " has no area information.");
             }
-            metadata.functions.add(new Function(srcPos.position, srcPos.sourceFileName, true, fd, name, params, area));
+            metadata.functions.add(new Function(srcPos.position, srcPos.sourceFileName, true, srcPos.artifact, fd, name, params, area));
         }));
 
         process("BASE_VariableDeclaration.csv", ((String[] parts) -> {
@@ -95,7 +99,7 @@ public class MetadataGenerator {
                 System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
                 return;
             }
-            metadata.variables.add(new Variable(srcPos.position, srcPos.sourceFileName, true, id, name, true, false));
+            metadata.variables.add(new Variable(srcPos.position, srcPos.sourceFileName, true, srcPos.artifact, id, name, true, false));
         }));
 
         process("BASE_Field.csv", ((String[] parts) -> {
@@ -107,7 +111,7 @@ public class MetadataGenerator {
                 System.err.println("WARNING: no source position for parts = " + Arrays.toString(parts));
                 return;
             }
-            metadata.fields.add(new Field(srcPos.position, srcPos.sourceFileName, true, name, id));
+            metadata.fields.add(new Field(srcPos.position, srcPos.sourceFileName, true, srcPos.artifact, name, id));
         }));
 
         try {
@@ -119,18 +123,19 @@ public class MetadataGenerator {
         }
     }
 
-    private static SourcePosition getSourcePosition(String location, int length) {
+    private SourcePosition getSourcePosition(String location, int length) {
         String[] loc = location.split(":");
-        if (loc.length != 3) {
+        if (loc.length != 4) {
             System.err.println("ERROR: malformed location: " + location);
             return null;
         }
-        String sourceFileName = loc[0];
-        long startLine = Long.parseLong(loc[1]);
+        String sourceFileName = loc[1];
+        long startLine = Long.parseLong(loc[2]);
         // Use 1-based column numbering.
-        long startCol = Long.parseLong(loc[2]) + 1;
+        long startCol = Long.parseLong(loc[3]) + 1;
         Position position = new Position(startLine, startLine, startCol, startCol + length);
-        return new SourcePosition(sourceFileName, position);
+        String artifact = artifactMap.get(sourceFileName);
+        return new SourcePosition(artifact, sourceFileName, position);
     }
 
     private void process(String relationFile, Consumer<String[]> proc) {
@@ -156,10 +161,12 @@ public class MetadataGenerator {
 }
 
 class SourcePosition {
+    final String artifact;
     final String sourceFileName;
     final Position position;
 
-    SourcePosition(String sourceFileName, Position position) {
+    SourcePosition(String artifact, String sourceFileName, Position position) {
+        this.artifact = artifact;
         this.sourceFileName = sourceFileName;
         this.position = position;
     }

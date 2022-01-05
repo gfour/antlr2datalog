@@ -27,7 +27,7 @@ public class BaseSchema extends Schema {
     public static BaseSchema create() {
         List<String> relationNames = new LinkedList<>();
         StringBuilder sbSchema = new StringBuilder();
-        sbSchema.append(".decl ").append(SOURCE_FILE_ID).append("(filename: symbol, file_id: symbol, node_id: symbol)\n");
+        sbSchema.append(".decl ").append(SOURCE_FILE_ID).append("(artifact: symbol, filename: symbol, file_id: symbol, node_id: symbol)\n");
         sbSchema.append(".input ").append(SOURCE_FILE_ID).append('\n');
         relationNames.add(SOURCE_FILE_ID);
         sbSchema.append(".decl ").append(PARENT_OF).append("(id: symbol, parent_id: symbol)\n");

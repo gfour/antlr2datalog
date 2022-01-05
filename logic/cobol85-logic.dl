@@ -1,12 +1,12 @@
 #include "schema.dl"
 #include "base-logic.dl"
 
-BASE_StringConstant(str, LOCATION(path, line, pos)) :-
+BASE_StringConstant(str, LOCATION(artifact, path, line, pos)) :-
   db_COBOL85.Literal_NONNUMERICLITERAL(id, terminal),
   BASE_Terminal(terminal, str, line, _, _, pos),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
-BASE_FunctionDefinition(id, name, LOCATION(path, line, pos)) :-
+BASE_FunctionDefinition(id, name, LOCATION(artifact, path, line, pos)) :-
   db_COBOL85.CobolWord_IDENTIFIER(id, terminal),
   BASE_Terminal(terminal, name, line, _, _, pos),
   // Grammar causes 4 "hops" to go to the procedure division header.
@@ -15,19 +15,19 @@ BASE_FunctionDefinition(id, name, LOCATION(path, line, pos)) :-
   BASE_ParentOf(id3, id2),
   BASE_ParentOf(pdb, id3),
   db_COBOL85.isProcedureDivisionBody(pdb),
-  ID_PATH(id, path).
+  ID_PATH(artifact, id, path).
 
 // No distinction between declarations and definitions.
 BASE_FunctionDeclaration(fd, name, location) :-
   BASE_FunctionDefinition(fd, name, location).
 
-BASE_isScope(id) :- BASE_SourceFileId(_, _, id).
+BASE_isScope(id) :- BASE_SourceFileId(_, _, _, id).
 
-BASE_VariableDeclaration(id, v, LOCATION(path, line, pos)) :-
+BASE_VariableDeclaration(id, v, LOCATION(artifact, path, line, pos)) :-
   db_COBOL85.CobolWord_IDENTIFIER(word, id),
   BASE_Terminal(id, v, line, _, _, pos),
   BASE_RecParentOf(ddEntry, word),
   db_COBOL85.isDataDescriptionEntry(ddEntry),
   BASE_RecParentOf(section, ddEntry),
   db_COBOL85.isDataDivisionSection(section),
-  ID_PATH(section, path).
+  ID_PATH(artifact, section, path).
