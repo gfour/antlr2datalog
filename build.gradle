@@ -42,7 +42,7 @@ test {
 }
 
 wrapper {
-    gradleVersion = '6.7'
+    gradleVersion = '7.3.3'
 }
 
 java {
@@ -85,9 +85,11 @@ task fatJar(type: Jar) {
     }
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     from project.file('src/main/resources')
+    duplicatesStrategy = 'exclude'
     with jar
 }
-fatJar.dependsOn copyParsers, bundleLogic
+processResources.dependsOn copyParsers, bundleLogic
+fatJar.dependsOn processResources
 
 artifacts {
     fatJar
